@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FpsGameMode.h"
+#include "FPSGameMode.h"
 
-void AFpsGameMode::BeginPlay()
+void AFPSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 

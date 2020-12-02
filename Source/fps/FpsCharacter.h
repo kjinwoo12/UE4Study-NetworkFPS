@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "FpsCharacter.generated.h"
+#include "FPSCharacter.generated.h"
 
 UCLASS()
-class FPS_API AFpsCharacter : public ACharacter
+class FPS_API AFPSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* FpsCameraComponent;
+	class UCameraComponent* FPSCameraComponent;
 
 public:
 	// Sets default values for this character's properties
-	AFpsCharacter();
+	AFPSCharacter();
 
 protected:
 	// Called when the game starts or when spawned

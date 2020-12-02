@@ -3,12 +3,12 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class FpsEditorTarget : TargetRules
+public class FPSEditorTarget : TargetRules
 {
-	public FpsEditorTarget( TargetInfo Target) : base(Target)
+	public FPSEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "Fps" } );
+		ExtraModuleNames.AddRange( new string[] { "FPS" } );
 	}
 }
