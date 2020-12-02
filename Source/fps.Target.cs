@@ -1,14 +1,14 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class fpsTarget : TargetRules
+public class FpsTarget : TargetRules
 {
-	public fpsTarget( TargetInfo Target) : base(Target)
+	public FpsTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "fps" } );
+		ExtraModuleNames.AddRange( new string[] { "Fps" } );
 	}
 }

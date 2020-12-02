@@ -22,5 +22,9 @@
 			"Name": "StaticMeshEditorExtension",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"WindowsNoEditor",
+		"WindowsNoEditorWin32"
 	]
 }

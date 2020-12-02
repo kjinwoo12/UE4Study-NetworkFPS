@@ -11,6 +11,9 @@ class FPS_API AFpsCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere)
+	class UCameraComponent* FpsCameraComponent;
+
 public:
 	// Sets default values for this character's properties
 	AFpsCharacter();
@@ -18,7 +21,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -26,4 +29,8 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Movement function
+	UFUNCTION() void MoveForward(float Value);
+	UFUNCTION()	void MoveRight(float Value);
+	// Jump is already made by ACharacter
 };
