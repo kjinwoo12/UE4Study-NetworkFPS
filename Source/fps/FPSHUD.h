@@ -16,9 +16,13 @@ class FPS_API AFPSHUD : public AHUD
 	
 public:
 	AFPSHUD();
+	
+protected:
+	virtual void BeginPlay() override;
 
+public:
 	virtual void DrawHUD() override;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	class UTexture2D* CrosshairTexture;
 };

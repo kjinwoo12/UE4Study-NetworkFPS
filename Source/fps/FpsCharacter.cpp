@@ -18,12 +18,14 @@ AFPSCharacter::AFPSCharacter()
 	FPSCameraComponent->bUsePawnControlRotation = true;
 
 	//Mesh for camera only
-	USkeletalMeshComponent* DefaultMesh = GetMesh();
-	DefaultMesh->SetOnlyOwnerSee(true);
-	DefaultMesh->SetupAttachment(FPSCameraComponent);
-	DefaultMesh->bCastDynamicShadow = false;
-	DefaultMesh->CastShadow = false;
+	FPSMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPSMesh"));
+	FPSMesh->SetOnlyOwnerSee(true);
+	FPSMesh->SetupAttachment(FPSCameraComponent);
+	FPSMesh->bCastDynamicShadow = false;
+	FPSMesh->CastShadow = false;
 
+	//Mesh for others like shadow, network player, etc...
+	GetMesh()->SetOwnerNoSee(true);
 }
 
 // Called when the game starts or when spawned

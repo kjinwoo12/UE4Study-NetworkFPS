@@ -14,6 +14,9 @@ class FPS_API AFPSCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* FPSCameraComponent;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh);
+	USkeletalMeshComponent* FPSMesh;
+
 public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
