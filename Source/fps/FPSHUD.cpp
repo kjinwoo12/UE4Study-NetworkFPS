@@ -27,7 +27,10 @@ void AFPSHUD::BeginPlay()
 void AFPSHUD::DrawHUD() {
 	Super::DrawHUD();
 
-	FVector2D CrossHairPosition(Canvas->ClipX * 0.5, Canvas->ClipY * 0.5f);
+	FVector2D CrossHairPosition(
+		Canvas->ClipX * 0.5 - CrosshairTexture->GetSurfaceWidth()*0.5f,
+		Canvas->ClipY * 0.5f - CrosshairTexture->GetSurfaceHeight() * 0.5f
+	);
 	FCanvasTileItem TileItem(CrossHairPosition, CrosshairTexture->Resource, FColor::Green);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(TileItem);

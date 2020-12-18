@@ -4,18 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "WeaponInputInterface.h"
 #include "FPSCharacter.generated.h"
 
 UCLASS()
-class FPS_API AFPSCharacter : public ACharacter
+class FPS_API AFPSCharacter : public ACharacter, public IWeaponInputInterface
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* FPSCameraComponent;
+	class UCameraComponent* CameraComponent;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh);
-	USkeletalMeshComponent* FPSMesh;
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USkeletalMeshComponent* HandsMeshComponent;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	class AWeaponBase* PrimaryWeapon;
 
 public:
 	// Sets default values for this character's properties
@@ -33,7 +37,24 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// Movement function
-	UFUNCTION() void MoveForward(float Value);
-	UFUNCTION()	void MoveRight(float Value);
-	// Jump is already made by ACharacter
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	// Jump() is already made by ACharacter. Don't add.
+
+	/* =============== IWeaponInputInterface =============== */
+	virtual void StartAction() override;
+	virtual void StopAction() override;
+	virtual void StartSubaction() override;
+	virtual void StopSubaction() override;
+	virtual void Reload() override;
+	/* ===================================================== */
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipWeapon(const TCHAR* WeaponReferance);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void UnEquipWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipTestGun();
 };
