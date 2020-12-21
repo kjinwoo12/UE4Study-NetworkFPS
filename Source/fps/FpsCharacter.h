@@ -50,7 +50,7 @@ public:
 	/* ===================================================== */
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(const TCHAR* WeaponReferance);
+	void EquipWeapon(FString WeaponReferance);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void UnEquipWeapon();

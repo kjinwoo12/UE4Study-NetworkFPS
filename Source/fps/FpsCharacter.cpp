@@ -119,9 +119,9 @@ void AFPSCharacter::Reload()
 	PrimaryWeapon->Reload();
 }
 
-void AFPSCharacter::EquipWeapon(const TCHAR* WeaponReference)
+void AFPSCharacter::EquipWeapon(FString WeaponReference)
 {
-	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, WeaponReference));
+	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, *WeaponReference));
 	PrimaryWeapon = GetWorld()->SpawnActor<AWeaponBase>(GeneratedBP, FVector(0, 0, 0), FRotator::ZeroRotator);
 	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
@@ -138,5 +138,5 @@ void AFPSCharacter::UnEquipWeapon()
 
 void AFPSCharacter::EquipTestGun()
 {
-	EquipWeapon(TEXT("Class'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'"));
+	EquipWeapon("Class'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'");
 }

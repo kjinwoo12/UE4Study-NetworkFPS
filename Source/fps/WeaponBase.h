@@ -128,19 +128,24 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	/* =============== IWeaponInputInterface =============== */
+	/**************************
+		IWeaponInputInterface
+	***************************/
 	virtual void StartAction() override;
 	virtual void StopAction() override;
 	virtual void StartSubaction() override;
 	virtual void StopSubaction() override;
 	virtual void Reload() override;
-	/* ===================================================== */
 
-	/* =============== For playing animation =============== */
+	/**************************
+		For playing animation
+	***************************/
 	void SetParentAnimInstance(UAnimInstance* AnimInstance);
 	void PlayAnimMontage(UAnimMontage* AnimMontage);
-	/* ===================================================== */
 
+	/**************************
+		  Getter & Setter
+	***************************/
 	float GetDelay();
 	FCollisionQueryParams* GetLineTraceCollisionQueryParams();
 
