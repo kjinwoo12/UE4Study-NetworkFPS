@@ -18,8 +18,25 @@ class FPS_API AFPSCharacter : public ACharacter, public IWeaponInputInterface
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* HandsMeshComponent;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	// PrimaryWeapon will be loaded at BeginPlay();
+	UPROPERTY(EditDefaultsOnly)
 	class AWeaponBase* PrimaryWeapon;
+
+	class AFPSHUD* HUD;
+
+	UCharacterMovementComponent* MovementComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	float MaxHealth;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	float Health;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	float MaxArmor;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	float Armor;
 
 public:
 	// Sets default values for this character's properties
@@ -32,6 +49,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void TickCrosshair();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -41,14 +59,18 @@ public:
 	void MoveRight(float Value);
 	// Jump() is already made by ACharacter. Don't add.
 
-	/* =============== IWeaponInputInterface =============== */
+	/**************************
+		IWeaponInputInterface
+	***************************/
 	virtual void StartAction() override;
 	virtual void StopAction() override;
 	virtual void StartSubaction() override;
 	virtual void StopSubaction() override;
 	virtual void Reload() override;
-	/* ===================================================== */
 
+	/**************************
+		About weapon
+	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(FString WeaponReferance);
 
@@ -57,4 +79,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipTestGun();
+
+	/**************************
+		  Getter & Setter
+	***************************/
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	float GetHealth();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	float GetArmor();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	AWeaponBase* GetPrimaryWeapon();
 };

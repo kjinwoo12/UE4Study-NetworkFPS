@@ -64,6 +64,14 @@ class FPS_API AWeaponBase : public AActor, public IWeaponInputInterface
 	UPROPERTY(EditDefaultsOnly, Category = Variable)
 	bool IsAmmoInfinite;
 
+	// 0.f ~ 1.f
+	UPROPERTY(EditDefaultsOnly, Category = Variable)
+	float Accuracy;
+
+	// higher is more stable.
+	UPROPERTY(EditDefaultsOnly, Category = Variable)
+	float MovementStability;
+
 
 	/**************************
 		  About animation
@@ -132,9 +140,13 @@ public:
 		IWeaponInputInterface
 	***************************/
 	virtual void StartAction() override;
+
 	virtual void StopAction() override;
+
 	virtual void StartSubaction() override;
+
 	virtual void StopSubaction() override;
+
 	virtual void Reload() override;
 
 	/**************************
@@ -147,11 +159,22 @@ public:
 		  Getter & Setter
 	***************************/
 	float GetDelay();
+
 	FCollisionQueryParams* GetLineTraceCollisionQueryParams();
+
+	float GetMovementStability();
+
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	int GetCurrentAmmo();
+
+	UFUNCTION(BlueprintCallable, Category = Gameplay)
+	int GetSubAmmo();
 
 protected:
 	virtual void OnAction();
+
 	virtual void OnSubaction();
+
 	virtual void OnReload();
 
 	// For hit

@@ -1,13 +1,9 @@
 # AWeaponBase
 WeaponBase is the base class for a gun and knife.
 
-# Index
-- Tutorial
-- Description
-
 # Tutorial
 ## How to create a new weapon.
-1. Create a new blueprint inherit WeaponBase.
+1. Create a new Blueprint inherits WeaponBase at `C++ class/FPS`.
 2. Set default variables.
     - Set `Reach`. It is range of your weapon.
     - Set `ActionLoopEnable` and `SubactionLoopEnable`. They allow to repeat `OnAction()` and `OnSubaction()` until player release key : Mouse1 and Mouse2.
