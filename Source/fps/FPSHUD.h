@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "FPSHud.generated.h"
+#include "FPSHUD.generated.h"
 
 /**
  * 
@@ -14,15 +14,27 @@ class FPS_API AFPSHUD : public AHUD
 {
 	GENERATED_BODY()
 	
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	float CrosshairDefaultOffset;
+
+	float CrosshairOffset;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	class UTexture2D* CrosshairTexture;
+
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	class UUserWidget* DefaultWidget;
+	
 public:
 	AFPSHUD();
-	
+	~AFPSHUD();
+	virtual void DrawHUD() override;
+	void SetCrosshairCenterOffset(float Value);
+
 protected:
+	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
-	virtual void DrawHUD() override;
-
-	UPROPERTY(EditAnywhere)
-	class UTexture2D* CrosshairTexture;
+private:
+	void DrawCrosshair();
 };

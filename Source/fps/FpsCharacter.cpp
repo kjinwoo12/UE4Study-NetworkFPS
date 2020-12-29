@@ -5,6 +5,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "WeaponBase.h"
+#include "FPSHUD.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
@@ -38,7 +40,13 @@ AFPSCharacter::AFPSCharacter()
 	BodyMesh->SetRelativeLocation(FVector(0.f, 0.f, -97.f));
 	BodyMesh->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 
-	// PrimaryWeapon will be loaded at BeginPlay();
+	MovementComponent = ACharacter::GetCharacterMovement();
+
+	// Gameplay variable
+	MaxHealth = 100;
+	Health = 100;
+	MaxArmor = 100;
+	Armor = 100;
 }
 
 // Called when the game starts or when spawned
@@ -50,6 +58,8 @@ void AFPSCharacter::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("We are using FPSCharacter."));
 	}
 
+	HUD = Cast<AFPSHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+
 	EquipTestGun();
 }
 
@@ -57,6 +67,16 @@ void AFPSCharacter::BeginPlay()
 void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	TickCrosshair();
+}
+
+void AFPSCharacter::TickCrosshair()
+{
+	if (PrimaryWeapon == NULL || HUD == NULL) return;
+	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
+	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
+	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
+	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
 }
 
 // Called to bind functionality to input
@@ -119,9 +139,9 @@ void AFPSCharacter::Reload()
 	PrimaryWeapon->Reload();
 }
 
-void AFPSCharacter::EquipWeapon(const TCHAR* WeaponReference)
+void AFPSCharacter::EquipWeapon(FString WeaponReference)
 {
-	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, WeaponReference));
+	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, *WeaponReference));
 	PrimaryWeapon = GetWorld()->SpawnActor<AWeaponBase>(GeneratedBP, FVector(0, 0, 0), FRotator::ZeroRotator);
 	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
@@ -138,5 +158,20 @@ void AFPSCharacter::UnEquipWeapon()
 
 void AFPSCharacter::EquipTestGun()
 {
-	EquipWeapon(TEXT("Class'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'"));
+	EquipWeapon("Class'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'");
+}
+
+float AFPSCharacter::GetHealth()
+{
+	return Health;
+}
+
+float AFPSCharacter::GetArmor()
+{
+	return Armor;
+}
+
+AWeaponBase* AFPSCharacter::GetPrimaryWeapon()
+{
+	return PrimaryWeapon;
 }

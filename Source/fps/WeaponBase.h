@@ -64,6 +64,14 @@ class FPS_API AWeaponBase : public AActor, public IWeaponInputInterface
 	UPROPERTY(EditDefaultsOnly, Category = Variable)
 	bool IsAmmoInfinite;
 
+	// 0.f ~ 1.f
+	UPROPERTY(EditDefaultsOnly, Category = Variable)
+	float Accuracy;
+
+	// higher is more stable.
+	UPROPERTY(EditDefaultsOnly, Category = Variable)
+	float MovementStability;
+
 
 	/**************************
 		  About animation
@@ -128,25 +136,45 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	/* =============== IWeaponInputInterface =============== */
+	/**************************
+		IWeaponInputInterface
+	***************************/
 	virtual void StartAction() override;
-	virtual void StopAction() override;
-	virtual void StartSubaction() override;
-	virtual void StopSubaction() override;
-	virtual void Reload() override;
-	/* ===================================================== */
 
-	/* =============== For playing animation =============== */
+	virtual void StopAction() override;
+
+	virtual void StartSubaction() override;
+
+	virtual void StopSubaction() override;
+
+	virtual void Reload() override;
+
+	/**************************
+		For playing animation
+	***************************/
 	void SetParentAnimInstance(UAnimInstance* AnimInstance);
 	void PlayAnimMontage(UAnimMontage* AnimMontage);
-	/* ===================================================== */
 
+	/**************************
+		  Getter & Setter
+	***************************/
 	float GetDelay();
+
 	FCollisionQueryParams* GetLineTraceCollisionQueryParams();
+
+	float GetMovementStability();
+
+	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	int GetCurrentAmmo();
+
+	UFUNCTION(BlueprintCallable, Category = Gameplay)
+	int GetSubAmmo();
 
 protected:
 	virtual void OnAction();
+
 	virtual void OnSubaction();
+
 	virtual void OnReload();
 
 	// For hit

@@ -32,6 +32,8 @@ AWeaponBase::AWeaponBase()
 	CurrentAmmo = 30;
 	SubAmmo = 90;
 	IsAmmoInfinite = false;
+	Accuracy = 1.f;
+	MovementStability = 40;
 
 	// Animation instance
 	ParentAnimInstance = NULL;
@@ -217,6 +219,21 @@ float AWeaponBase::GetDelay()
 FCollisionQueryParams* AWeaponBase::GetLineTraceCollisionQueryParams()
 {
 	return &LineTraceCollisionQueryParams;
+}
+
+float AWeaponBase::GetMovementStability()
+{
+	return MovementStability;
+}
+
+int AWeaponBase::GetCurrentAmmo()
+{
+	return CurrentAmmo;
+}
+
+int AWeaponBase::GetSubAmmo()
+{
+	return SubAmmo;
 }
 
 void AWeaponBase::LineTrace()
