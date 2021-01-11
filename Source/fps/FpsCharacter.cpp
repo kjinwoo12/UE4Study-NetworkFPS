@@ -1,16 +1,21 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FPS.h"
 #include "FPSCharacter.h"
+#include "FPS.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "WeaponBase.h"
 #include "FPSHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
+
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
 {
+	SetReplicates(true);
+
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -41,12 +46,13 @@ AFPSCharacter::AFPSCharacter()
 	BodyMesh->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 
 	MovementComponent = ACharacter::GetCharacterMovement();
+	MovementComponent->bUseFlatBaseForFloorChecks = true;
 
 	// Gameplay variable
 	MaxHealth = 100;
 	Health = 100;
 	MaxArmor = 100;
-	Armor = 100;
+	Armor = 50;
 }
 
 // Called when the game starts or when spawned
@@ -96,7 +102,15 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFPSCharacter::StopAction);
 	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::StartSubaction);
 	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::StopSubaction);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::Reload);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::StartReload);
+}
+
+void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSCharacter, Health);
+	DOREPLIFETIME(AFPSCharacter, Armor);
 }
 
 void AFPSCharacter::MoveForward(float Value)
@@ -109,34 +123,74 @@ void AFPSCharacter::MoveRight(float Value)
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
-void AFPSCharacter::StartAction()
+float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float DamageAbsolption = Damage * 0.5f;
+	DamageAbsolption = (DamageAbsolption > Armor) ? Armor : DamageAbsolption;
+	Armor -= DamageAbsolption;
+	Health -= Damage - DamageAbsolption;
+	return Damage;
+}
+
+void AFPSCharacter::StartAction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
+
+	MulticastRPCStartAction();
+}
+
+void AFPSCharacter::StopAction_Implementation()
+{
+	if (PrimaryWeapon == NULL) return;
+
+	MulticastRPCStopAction();
+}
+
+void AFPSCharacter::StartSubaction_Implementation()
+{
+	if (PrimaryWeapon == NULL) return;
+
+	MulticastRPCStartSubaction();
+}
+
+void AFPSCharacter::StopSubaction_Implementation()
+{
+	if (PrimaryWeapon == NULL) return;
+
+	MulticastRPCStopSubaction();
+}
+
+void AFPSCharacter::StartReload_Implementation()
+{
+	if (PrimaryWeapon == NULL) return;
+
+	MulticastRPCStartReload();
+}
+
+
+void AFPSCharacter::MulticastRPCStartAction_Implementation()
+{
 	PrimaryWeapon->StartAction();
 }
 
-void AFPSCharacter::StopAction()
+void AFPSCharacter::MulticastRPCStopAction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StopAction();
 }
 
-void AFPSCharacter::StartSubaction()
+void AFPSCharacter::MulticastRPCStartSubaction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StartSubaction();
 }
 
-void AFPSCharacter::StopSubaction()
+void AFPSCharacter::MulticastRPCStopSubaction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StopSubaction();
 }
 
-void AFPSCharacter::Reload()
+void AFPSCharacter::MulticastRPCStartReload_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
-	PrimaryWeapon->Reload();
+	PrimaryWeapon->StartReload();
 }
 
 void AFPSCharacter::EquipWeapon(FString WeaponReference)
@@ -174,4 +228,42 @@ float AFPSCharacter::GetArmor()
 AWeaponBase* AFPSCharacter::GetPrimaryWeapon()
 {
 	return PrimaryWeapon;
+}
+
+bool AFPSCharacter::LineTrace(FHitResult& HitResult)
+{
+	// Get Player view point
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+		PlayerViewPointLocation,
+		PlayerViewPointRotation
+	);
+
+	// Get end point
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * 5000;
+
+	//It is for checking line. Player view point to end point
+	DrawDebugLine(
+		GetWorld(),
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FColor(255, 0, 0),
+		false,
+		5.f,
+		0.f,
+		1.f
+	);
+	// CollisionParams for LineTrace
+	FCollisionQueryParams LineTraceCollisionQueryParams;
+
+	bool IsHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		ECollisionChannel::ECC_Pawn,
+		LineTraceCollisionQueryParams
+	);
+
+	return IsHit;
 }

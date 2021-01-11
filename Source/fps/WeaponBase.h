@@ -1,14 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "WeaponInputInterface.h"
+#include "WeaponInterface.h"
 #include "WeaponBase.generated.h"
 
 UCLASS()
-class FPS_API AWeaponBase : public AActor, public IWeaponInputInterface
+class FPS_API AWeaponBase : public AActor, public IWeaponInterface
 {
 	GENERATED_BODY()
 	
@@ -71,6 +71,9 @@ class FPS_API AWeaponBase : public AActor, public IWeaponInputInterface
 	// higher is more stable.
 	UPROPERTY(EditDefaultsOnly, Category = Variable)
 	float MovementStability;
+
+	UPROPERTY(EditDefaultsOnly, Category = Variable)
+	float Damage;
 
 
 	/**************************
@@ -137,17 +140,17 @@ protected:
 
 public:
 	/**************************
-		IWeaponInputInterface
+		IWeaponInterface
 	***************************/
 	virtual void StartAction() override;
-
 	virtual void StopAction() override;
-
 	virtual void StartSubaction() override;
-
 	virtual void StopSubaction() override;
+	virtual void StartReload() override;
 
-	virtual void Reload() override;
+	void OnAction();
+	void OnSubaction();
+	void OnReload();
 
 	/**************************
 		For playing animation
@@ -164,19 +167,14 @@ public:
 
 	float GetMovementStability();
 
-	UFUNCTION(BlueprintCallable, Category=Gameplay)
+	UFUNCTION(BlueprintCallable, Category = Gameplay)
 	int GetCurrentAmmo();
 
 	UFUNCTION(BlueprintCallable, Category = Gameplay)
 	int GetSubAmmo();
 
 protected:
-	virtual void OnAction();
 
-	virtual void OnSubaction();
-
-	virtual void OnReload();
-
-	// For hit
-	void LineTrace();
+	// For hit character
+	bool LineTrace(FHitResult& HitResult);
 };

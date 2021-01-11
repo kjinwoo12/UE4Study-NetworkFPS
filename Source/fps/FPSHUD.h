@@ -27,7 +27,6 @@ class FPS_API AFPSHUD : public AHUD
 	
 public:
 	AFPSHUD();
-	~AFPSHUD();
 	virtual void DrawHUD() override;
 	void SetCrosshairCenterOffset(float Value);
 

@@ -6,11 +6,11 @@
 #include "UObject/ObjectMacros.h"
 #include "UObject/ScriptMacros.h"
 #include "UObject/Interface.h"
-#include "WeaponInputInterface.generated.h"
+#include "WeaponInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UWeaponInputInterface : public UInterface
+class UWeaponInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -18,15 +18,15 @@ class UWeaponInputInterface : public UInterface
 /**
  * 
  */
-class FPS_API IWeaponInputInterface
+class FPS_API IWeaponInterface
 {
 	GENERATED_BODY()
-
+	
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	virtual void StartAction() = 0;
 	virtual void StopAction() = 0;
 	virtual void StartSubaction() = 0;
 	virtual void StopSubaction() = 0;
-	virtual void Reload() = 0;
+	virtual void StartReload() = 0;
 };

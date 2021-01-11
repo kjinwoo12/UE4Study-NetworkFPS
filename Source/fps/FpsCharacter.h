@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "WeaponInputInterface.h"
+#include "WeaponInterface.h"
 #include "FPSCharacter.generated.h"
 
 UCLASS()
-class FPS_API AFPSCharacter : public ACharacter, public IWeaponInputInterface
+class FPS_API AFPSCharacter : public ACharacter, public IWeaponInterface
 {
 	GENERATED_BODY()
 
@@ -19,7 +19,7 @@ class FPS_API AFPSCharacter : public ACharacter, public IWeaponInputInterface
 	USkeletalMeshComponent* HandsMeshComponent;
 
 	// PrimaryWeapon will be loaded at BeginPlay();
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(Replicated, EditDefaultsOnly)
 	class AWeaponBase* PrimaryWeapon;
 
 	class AFPSHUD* HUD;
@@ -29,13 +29,13 @@ class FPS_API AFPSCharacter : public ACharacter, public IWeaponInputInterface
 	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	float MaxHealth;
 	
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
 	float Health;
 
 	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	float MaxArmor;
 
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
 	float Armor;
 
 public:
@@ -59,14 +59,40 @@ public:
 	void MoveRight(float Value);
 	// Jump() is already made by ACharacter. Don't add.
 
+	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	/**************************
-		IWeaponInputInterface
+		IWeaponActionInterface
 	***************************/
+	UFUNCTION(Server, Reliable)
 	virtual void StartAction() override;
+
+	UFUNCTION(Server, Reliable)
 	virtual void StopAction() override;
+
+	UFUNCTION(Server, Reliable)
 	virtual void StartSubaction() override;
+
+	UFUNCTION(Server, Reliable)
 	virtual void StopSubaction() override;
-	virtual void Reload() override;
+
+	UFUNCTION(Server, Reliable)
+	virtual void StartReload() override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCStartAction();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCStopAction();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCStartSubaction();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCStopSubaction();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCStartReload();
 
 	/**************************
 		About weapon
@@ -91,4 +117,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetPrimaryWeapon();
+
+
+private:
+	// For hit character
+	bool LineTrace(FHitResult& HitResult);
 };

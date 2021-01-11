@@ -11,11 +11,6 @@ AFPSHUD::AFPSHUD()
 	CrosshairOffset = 0.f;
 }
 
-AFPSHUD::~AFPSHUD()
-{
-	if (DefaultWidget) DefaultWidget->RemoveFromViewport();
-}
-
 void AFPSHUD::BeginPlay()
 {
 	Super::BeginPlay();

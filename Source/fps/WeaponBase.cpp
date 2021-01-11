@@ -4,6 +4,7 @@
 #include "WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "FPSCharacter.h"
 
 /*
  * class FPS_API AWeaponBase
@@ -12,6 +13,8 @@
 // Sets default values
 AWeaponBase::AWeaponBase()
 {
+	SetReplicates(true);
+
  	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	
@@ -34,6 +37,7 @@ AWeaponBase::AWeaponBase()
 	IsAmmoInfinite = false;
 	Accuracy = 1.f;
 	MovementStability = 40;
+	Damage = 40;
 
 	// Animation instance
 	ParentAnimInstance = NULL;
@@ -68,8 +72,7 @@ void AWeaponBase::StartAction()
 		return;
 	}
 
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("StartAction() "));
+	UE_LOG(LogTemp, Log, TEXT("StartAction()"));
 
 	FunctionAfterDelay = &AWeaponBase::OnAction;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ActionDelay, ActionLoopEnable, 0.f);
@@ -86,22 +89,20 @@ void AWeaponBase::StartSubaction()
 		return;
 	}
 
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("StartSubaction()"));
+	UE_LOG(LogTemp, Log, TEXT("StartSubaction()"));
 
 	FunctionAfterDelay = &AWeaponBase::OnSubaction;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, SubactionDelay, SubactionLoopEnable, 0.f);
 }
 
-void AWeaponBase::Reload()
+void AWeaponBase::StartReload()
 {
+	UE_LOG(LogTemp, Log, TEXT("Reload()"));
+
 	// return if is on delay
 	if (FunctionAfterDelay == &AWeaponBase::OnReload 
 		|| CurrentAmmo == MagazineSize
 		|| SubAmmo <= 0) return;
-
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Reload()"));
 
 	FunctionAfterDelay = &AWeaponBase::OnReload;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
@@ -124,8 +125,7 @@ void AWeaponBase::StopAction()
 
 	if (FunctionAfterDelay != &AWeaponBase::OnAction) return;
 
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("StopAction()"));
+	UE_LOG(LogTemp, Log, TEXT("StopAction()"));
 
 	FunctionAfterDelay = NULL;
 	float Remaining = GetWorldTimerManager().GetTimerRemaining(TimerHandle);
@@ -160,11 +160,10 @@ void AWeaponBase::StopSubaction()
 
 void AWeaponBase::OnAction()
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Action()"));
+	UE_LOG(LogTemp, Log, TEXT("OnAction()"));
 
 	if (CurrentAmmo <= 0) return;
-	CurrentAmmo-=!IsAmmoInfinite;
+	CurrentAmmo -= !IsAmmoInfinite;
 
 	// Play animation
 	if (ActionAnimation != NULL) PlayAnimMontage(ActionAnimation);
@@ -173,13 +172,17 @@ void AWeaponBase::OnAction()
 	if (ActionSound != NULL)
 		UGameplayStatics::PlaySoundAtLocation(this, ActionSound, GetActorLocation());
 
-	LineTrace();
+	FHitResult HitResult;
+	if (!LineTrace(HitResult)) return;
+	FPointDamageEvent DamangeEvent;
+	DamangeEvent.HitInfo = HitResult;
+	
+	HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, GetWorld()->GetFirstPlayerController(), this);
 }
 
 void AWeaponBase::OnSubaction()
 {
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("OnSubaction()"));
+	UE_LOG(LogTemp, Log, TEXT("OnSubaction()"));
 
 	// Play animation
 	if (SubactionAnimation != NULL) PlayAnimMontage(SubactionAnimation);
@@ -191,8 +194,7 @@ void AWeaponBase::OnSubaction()
 
 void AWeaponBase::OnReload()
 {
-	if(GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("OnReload()"));
+	UE_LOG(LogTemp, Log, TEXT("OnReload()"));
 
 	int RequiredAmmo = MagazineSize - CurrentAmmo;
 	int ChargedAmmo = (RequiredAmmo < SubAmmo) ? RequiredAmmo : SubAmmo;
@@ -236,7 +238,7 @@ int AWeaponBase::GetSubAmmo()
 	return SubAmmo;
 }
 
-void AWeaponBase::LineTrace()
+bool AWeaponBase::LineTrace(FHitResult& HitResult)
 {
 	// Get Player view point
 	FVector PlayerViewPointLocation;
@@ -264,7 +266,6 @@ void AWeaponBase::LineTrace()
 		1.f
 	);
 
-	FHitResult HitResult;
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,
 		PlayerViewPointLocation,
@@ -285,7 +286,6 @@ void AWeaponBase::LineTrace()
 			0.f,
 			1.f
 		);
-		return;
 	}
 	else
 	{
@@ -300,8 +300,6 @@ void AWeaponBase::LineTrace()
 			1.f
 		);
 	}
-	
-	AActor* HitActor = HitResult.GetActor();
-	if (!HitActor) return;
-	FString HitActorLabel = HitActor->GetActorLabel();
+
+	return IsHit;
 }
