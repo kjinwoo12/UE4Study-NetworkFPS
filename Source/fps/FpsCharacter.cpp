@@ -21,7 +21,7 @@ AFPSCharacter::AFPSCharacter()
 
 	// It's named `CharacterCapsuleComponent` for successful compiling because the name `CapsuleComponent` is already exist in ACharacter
 	UCapsuleComponent* CharacterCapsuleComponent = GetCapsuleComponent();
-	CharacterCapsuleComponent->SetCapsuleHalfHeight(96.0f);
+	CharacterCapsuleComponent->SetCapsuleHalfHeight(94.0f);
 	CharacterCapsuleComponent->SetCapsuleRadius(42.0f);
 
 	// Camera
@@ -36,14 +36,14 @@ AFPSCharacter::AFPSCharacter()
 	HandsMeshComponent->SetupAttachment(CameraComponent);
 	HandsMeshComponent->bCastDynamicShadow = false;
 	HandsMeshComponent->CastShadow = false;
-	HandsMeshComponent->SetRelativeLocation(FVector(-25, 15, -150.f));
-	HandsMeshComponent->SetRelativeRotation(FRotator(-7.f, -15.f, 0.f));
+	HandsMeshComponent->SetRelativeLocation(DefaultLocationOfHandsMeshComponent);
+	HandsMeshComponent->SetRelativeRotation(DefaultRotatorOfHandsMeshComponent);
 
 	// BodyMesh for others
-	USkeletalMeshComponent* BodyMesh = GetMesh();
-	BodyMesh->SetOwnerNoSee(true);
-	BodyMesh->SetRelativeLocation(FVector(0.f, 0.f, -97.f));
-	BodyMesh->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
+	BodyMeshComponent = GetMesh();
+	BodyMeshComponent->SetOwnerNoSee(true);
+	BodyMeshComponent->SetRelativeLocation(DefaultLocationOfBodyMeshComponent);
+	BodyMeshComponent->SetRelativeRotation(DefaultRotatorOfBodyMeshComponent);
 
 	MovementComponent = ACharacter::GetCharacterMovement();
 	MovementComponent->bUseFlatBaseForFloorChecks = true;
@@ -53,6 +53,7 @@ AFPSCharacter::AFPSCharacter()
 	Health = 100;
 	MaxArmor = 100;
 	Armor = 50;
+	bIsDead = false;
 }
 
 // Called when the game starts or when spawned
@@ -90,6 +91,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	check(PlayerInputComponent);
+
 	// Movement
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFPSCharacter::MoveRight);
@@ -98,11 +101,11 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AFPSCharacter::Jump);
 
 	// Actions
-	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFPSCharacter::StartAction);
-	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFPSCharacter::StopAction);
-	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::StartSubaction);
-	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::StopSubaction);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::StartReload);
+	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFPSCharacter::ServerRPCStartAction);
+	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFPSCharacter::ServerRPCStopAction);
+	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::ServerRPCStartSubaction);
+	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::ServerRPCStopSubaction);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ServerRPCStartReload);
 }
 
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -129,38 +132,41 @@ float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
 	DamageAbsolption = (DamageAbsolption > Armor) ? Armor : DamageAbsolption;
 	Armor -= DamageAbsolption;
 	Health -= Damage - DamageAbsolption;
+	
+	if (Health <= 0) Die();
+
 	return Damage;
 }
 
-void AFPSCharacter::StartAction_Implementation()
+void AFPSCharacter::ServerRPCStartAction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 
 	MulticastRPCStartAction();
 }
 
-void AFPSCharacter::StopAction_Implementation()
+void AFPSCharacter::ServerRPCStopAction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 
 	MulticastRPCStopAction();
 }
 
-void AFPSCharacter::StartSubaction_Implementation()
+void AFPSCharacter::ServerRPCStartSubaction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 
 	MulticastRPCStartSubaction();
 }
 
-void AFPSCharacter::StopSubaction_Implementation()
+void AFPSCharacter::ServerRPCStopSubaction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 
 	MulticastRPCStopSubaction();
 }
 
-void AFPSCharacter::StartReload_Implementation()
+void AFPSCharacter::ServerRPCStartReload_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 
@@ -191,6 +197,28 @@ void AFPSCharacter::MulticastRPCStopSubaction_Implementation()
 void AFPSCharacter::MulticastRPCStartReload_Implementation()
 {
 	PrimaryWeapon->StartReload();
+}
+
+void AFPSCharacter::Die()
+{
+	UE_LOG(LogTemp, Log, TEXT("Die!"));
+
+	const FName pelvis = FName("pelvis");
+	bIsDead = true;
+	BodyMeshComponent->SetAllBodiesBelowSimulatePhysics(pelvis, true);
+	BodyMeshComponent->SetAllBodiesBelowPhysicsBlendWeight(pelvis, 1.0f);
+}
+
+void AFPSCharacter::Respawn()
+{
+	UE_LOG(LogTemp, Log, TEXT("Respawn"));
+
+	const FName pelvis = FName("pelvis");
+	bIsDead = false;
+	BodyMeshComponent->SetAllBodiesBelowSimulatePhysics(pelvis, false);
+	BodyMeshComponent->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), pelvis);
+	BodyMeshComponent->SetRelativeLocation(DefaultLocationOfBodyMeshComponent);
+	BodyMeshComponent->SetRelativeRotation(DefaultRotatorOfBodyMeshComponent);
 }
 
 void AFPSCharacter::EquipWeapon(FString WeaponReference)

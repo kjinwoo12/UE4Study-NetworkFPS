@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "WeaponInterface.h"
 #include "FPSCharacter.generated.h"
 
 UCLASS()
-class FPS_API AFPSCharacter : public ACharacter, public IWeaponInterface
+class FPS_API AFPSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -17,6 +16,12 @@ class FPS_API AFPSCharacter : public ACharacter, public IWeaponInterface
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* HandsMeshComponent;
+	const FVector DefaultLocationOfHandsMeshComponent = FVector(-25, 15, -150.f);
+	const FRotator DefaultRotatorOfHandsMeshComponent = FRotator(-7.f, -15.f, 0.f);
+
+	USkeletalMeshComponent* BodyMeshComponent;
+	const FVector DefaultLocationOfBodyMeshComponent = FVector(0.f, 0.f, -94.f);
+	const FRotator DefaultRotatorOfBodyMeshComponent = FRotator(0.f, -90.f, 0.f);
 
 	// PrimaryWeapon will be loaded at BeginPlay();
 	UPROPERTY(Replicated, EditDefaultsOnly)
@@ -37,6 +42,8 @@ class FPS_API AFPSCharacter : public ACharacter, public IWeaponInterface
 
 	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
 	float Armor;
+
+	bool bIsDead;
 
 public:
 	// Sets default values for this character's properties
@@ -62,22 +69,22 @@ public:
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	/**************************
-		IWeaponActionInterface
+		 Input event (RPC)
 	***************************/
 	UFUNCTION(Server, Reliable)
-	virtual void StartAction() override;
+	void ServerRPCStartAction();
 
 	UFUNCTION(Server, Reliable)
-	virtual void StopAction() override;
+	void ServerRPCStopAction();
 
 	UFUNCTION(Server, Reliable)
-	virtual void StartSubaction() override;
+	void ServerRPCStartSubaction();
 
 	UFUNCTION(Server, Reliable)
-	virtual void StopSubaction() override;
+	void ServerRPCStopSubaction();
 
 	UFUNCTION(Server, Reliable)
-	virtual void StartReload() override;
+	void ServerRPCStartReload();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCStartAction();
@@ -95,7 +102,16 @@ public:
 	void MulticastRPCStartReload();
 
 	/**************************
-		About weapon
+		  Characer status
+	***************************/
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void Die();
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void Respawn();
+
+	/**************************
+		   About weapon
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(FString WeaponReferance);
