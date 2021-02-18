@@ -13,7 +13,9 @@ public class FPS : ModuleRules
 			"CoreUObject", 
 			"Engine", 
 			"InputCore",
-            "UMG"
+            "UMG",
+			//"SlateCore", // For PlayerInputComponent->BindKey(...).
+			//"Slate" // For PlayerInputComponent->BindKey(...)
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { 

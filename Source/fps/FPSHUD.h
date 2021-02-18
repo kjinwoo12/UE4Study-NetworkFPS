@@ -14,15 +14,15 @@ class FPS_API AFPSHUD : public AHUD
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Variable")
 	float CrosshairDefaultOffset;
 
 	float CrosshairOffset;
 
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Texture")
 	class UTexture2D* CrosshairTexture;
 
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Widget")
 	class UUserWidget* DefaultWidget;
 	
 public:
