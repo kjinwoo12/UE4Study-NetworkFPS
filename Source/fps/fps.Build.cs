@@ -14,8 +14,8 @@ public class FPS : ModuleRules
 			"Engine", 
 			"InputCore",
             "UMG",
-			"SlateCore", // For PlayerInputComponent->BindKey(...)
-			"Slate" // For PlayerInputComponent->BindKey(...)
+			//"SlateCore", // For PlayerInputComponent->BindKey(...).
+			//"Slate" // For PlayerInputComponent->BindKey(...)
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { 

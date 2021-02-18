@@ -11,26 +11,46 @@ class FPS_API AFPSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	/**************************
+			   const
+	***************************/
+	const FVector DefaultLocationOfHandsMeshComponent = FVector(-25, 15, -150.f);
+
+	const FRotator DefaultRotatorOfHandsMeshComponent = FRotator(-7.f, -15.f, 0.f);
+
+	const FVector DefaultLocationOfBodyMeshComponent = FVector(0.f, 0.f, -94.f);
+
+	const FRotator DefaultRotatorOfBodyMeshComponent = FRotator(0.f, -90.f, 0.f);
+
+	const FName NamePelvis = FName("pelvis");
+
+	const FName NameGripPoint = FName("GripPoint");
+
+	/**************************
+			Components
+	***************************/
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* CameraComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* HandsMeshComponent;
-	const FVector DefaultLocationOfHandsMeshComponent = FVector(-25, 15, -150.f);
-	const FRotator DefaultRotatorOfHandsMeshComponent = FRotator(-7.f, -15.f, 0.f);
 
 	USkeletalMeshComponent* BodyMeshComponent;
-	const FVector DefaultLocationOfBodyMeshComponent = FVector(0.f, 0.f, -94.f);
-	const FRotator DefaultRotatorOfBodyMeshComponent = FRotator(0.f, -90.f, 0.f);
 
 	// PrimaryWeapon will be loaded at BeginPlay();
-	UPROPERTY(Replicated, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	class AWeaponBase* PrimaryWeapon;
+
+	UPROPERTY(Replicated)
+	class APickUpWeapon* PickableWeapon;
 
 	class AFPSHUD* HUD;
 
 	UCharacterMovementComponent* MovementComponent;
 
+	/**************************
+			  Variable
+	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	float MaxHealth;
 	
@@ -45,34 +65,79 @@ class FPS_API AFPSCharacter : public ACharacter
 
 	bool bIsDead;
 
+	FTimerHandle RespawnTimerHandle;
+
 public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
+	
+	/**************************
+		Initialize variable
+	***************************/
+private:
+	void InitializeCollisionComponent();
+
+	void InitializeMovementComponent();
+
+	void InitializeCamera();
+
+	void InitializeHandsMesh();
+
+	void InitializeBodyMesh();
+
+	void InitializeGameplayVariable();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	void TickCrosshair();
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	// Movement function
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-	// Jump() is already made by ACharacter. Don't add.
-
-	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	/**************************
+			 Replicate
+	***************************/
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/**************************
-		 Input event (RPC)
+		 Called every frame
 	***************************/
-	UFUNCTION(Server, Reliable)
-	void ServerRPCStartAction();
+	virtual void Tick(float DeltaTime) override;
+
+	void TickCrosshair();
+
+	/**************************
+			Bind keys
+	***************************/
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void MoveForward(float Value);
+
+	void MoveRight(float Value);
+
+	void AddControllerPitchInput(float Value) override;
+
+	void AddControllerYawInput(float Value) override;
+
+	void Jump();
+
+	void ActionPressed();
+
+	void ActionReleased();
+
+	void SubactionPressed();
+
+	void SubactionReleased();
+
+	void ReloadPressed();
+
+	void PickUpWeaponPressed();
+
+	void DropWeaponPressed();
+
+	/**************************
+				RPC
+	***************************/
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCStartAction(APlayerController* PlayerController);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPCStopAction();
@@ -86,38 +151,48 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCStartReload();
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCStartAction();
+	UFUNCTION(Server, Reliable)
+	void ServerRPCPickUpWeapon();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCStopAction();
+	void MulticastRPCPickUpWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCDropWeapon();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCStartSubaction();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCStopSubaction();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCStartReload();
+	void MulticastRPCDropWeapon();
 
 	/**************************
-		  Characer status
+	   For character's combat
 	***************************/
+	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Character")
 	void Die();
 
 	UFUNCTION(BlueprintCallable, Category = "Character")
 	void Respawn();
 
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void KnockoutBodyMesh();
+
+	UFUNCTION(BlueprintCallable, Category = "Character")
+	void WakeUpBodyMesh();
+
 	/**************************
 		   About weapon
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(FString WeaponReferance);
+	void EquipWeapon(AWeaponBase* WeaponBase);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void UnEquipWeapon();
+	AWeaponBase* UnEquipWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	APickUpWeapon* DropWeapon();
+
+	void PickUpWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipTestGun();
@@ -134,7 +209,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetPrimaryWeapon();
 
+	UFUNCTION(BlueprintCallable, Category = "Setter")
+	void SetPickableWeapon(APickUpWeapon* Instance);
 
+	/**************************
+		  Private functions
+	***************************/
 private:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);

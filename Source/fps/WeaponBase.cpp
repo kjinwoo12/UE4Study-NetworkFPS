@@ -5,6 +5,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "FPSCharacter.h"
+#include "PickUpWeapon.h"
+#include "Net/UnrealNetwork.h"
 
 /*
  * class FPS_API AWeaponBase
@@ -13,11 +15,10 @@
 // Sets default values
 AWeaponBase::AWeaponBase()
 {
-	SetReplicates(true);
+	bReplicates = true;
 
  	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
-	
+	PrimaryActorTick.bCanEverTick = false;	
 	// Components
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	RootComponent = WeaponMesh;
@@ -57,8 +58,19 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-	if (GetOwner()) WeaponMesh->bOnlyOwnerSee = true;
+void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AWeaponBase, CurrentAmmo);
+	DOREPLIFETIME(AWeaponBase, SubAmmo);
+}
+
+APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
+{
+	return (PickUpWeaponBlueprint==NULL)?NULL: GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(0, 0, 0));
 }
 
 void AWeaponBase::StartAction()
@@ -160,24 +172,44 @@ void AWeaponBase::StopSubaction()
 
 void AWeaponBase::OnAction()
 {
-	UE_LOG(LogTemp, Log, TEXT("OnAction()"));
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("OnAction() : Server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("OnAction() : Client"));
+	}
 
 	if (CurrentAmmo <= 0) return;
 	CurrentAmmo -= !IsAmmoInfinite;
 
+	MulticastRPCOnActionFx();
+
+	FHitResult HitResult;
+	if (!LineTrace(HitResult)) return;
+	FPointDamageEvent DamangeEvent;
+	DamangeEvent.HitInfo = HitResult;
+
+	HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
+}
+
+void AWeaponBase::MulticastRPCOnActionFx_Implementation()
+{
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx_Implementation() : Server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx_Implementation() : Client"));
+	}
 	// Play animation
 	if (ActionAnimation != NULL) PlayAnimMontage(ActionAnimation);
 
 	// Play sound
 	if (ActionSound != NULL)
 		UGameplayStatics::PlaySoundAtLocation(this, ActionSound, GetActorLocation());
-
-	FHitResult HitResult;
-	if (!LineTrace(HitResult)) return;
-	FPointDamageEvent DamangeEvent;
-	DamangeEvent.HitInfo = HitResult;
-	
-	HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, GetWorld()->GetFirstPlayerController(), this);
 }
 
 void AWeaponBase::OnSubaction()
@@ -202,9 +234,14 @@ void AWeaponBase::OnReload()
 	CurrentAmmo += ChargedAmmo;
 }
 
-void AWeaponBase::SetParentAnimInstance(UAnimInstance* AnimInstance)
+void AWeaponBase::SetParentAnimInstance(UAnimInstance* Instance)
 {
-	ParentAnimInstance = AnimInstance;
+	ParentAnimInstance = Instance;
+}
+
+void AWeaponBase::SetPlayerController(APlayerController* Instance)
+{
+	PlayerController = Instance;
 }
 
 void AWeaponBase::PlayAnimMontage(UAnimMontage* AnimMontage)
@@ -243,7 +280,7 @@ bool AWeaponBase::LineTrace(FHitResult& HitResult)
 	// Get Player view point
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
+	PlayerController->GetPlayerViewPoint(
 		PlayerViewPointLocation,
 		PlayerViewPointRotation
 	);
@@ -265,6 +302,8 @@ bool AWeaponBase::LineTrace(FHitResult& HitResult)
 		0.f,
 		1.f
 	);
+
+	UE_LOG(LogTemp, Log, TEXT("num : %d"), LineTraceCollisionQueryParams.GetIgnoredActors().Num());
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,
@@ -302,4 +341,11 @@ bool AWeaponBase::LineTrace(FHitResult& HitResult)
 	}
 
 	return IsHit;
+}
+
+AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, FString WeaponReference)
+{
+	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, *WeaponReference));
+	FActorSpawnParameters SpawnParameters;
+	return World->SpawnActor<AWeaponBase>(GeneratedBP, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParameters);
 }
