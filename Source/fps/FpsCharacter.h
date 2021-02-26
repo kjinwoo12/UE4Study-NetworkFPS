@@ -211,11 +211,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);
-
-	/**************************
-		  Private functions
-	***************************/
-private:
-	// For hit character
-	bool LineTrace(FHitResult& HitResult);
 };
