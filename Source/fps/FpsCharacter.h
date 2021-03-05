@@ -38,7 +38,7 @@ class FPS_API AFPSCharacter : public ACharacter
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	// PrimaryWeapon will be loaded at BeginPlay();
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Replicated)
 	class AWeaponBase* PrimaryWeapon;
 
 	UPROPERTY(Replicated)
@@ -102,7 +102,8 @@ public:
 	***************************/
 	virtual void Tick(float DeltaTime) override;
 
-	void TickCrosshair();
+	UFUNCTION(Client, UnReliable)
+	void ClientRPCTickCrosshair();
 
 	/**************************
 			Bind keys
@@ -151,17 +152,17 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCStartReload();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCRequestEquipWeaponMulticast(AWeaponBase* WeaponBase);
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MulticastRPCEquipWeapon(AWeaponBase* WeaponBase);
+
 	UFUNCTION(Server, Reliable)
 	void ServerRPCPickUpWeapon();
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCPickUpWeapon();
-
 	UFUNCTION(Server, Reliable)
 	void ServerRPCDropWeapon();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCDropWeapon();
 
 	/**************************
 	   For character's combat
@@ -190,7 +191,7 @@ public:
 	AWeaponBase* UnEquipWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	APickUpWeapon* DropWeapon();
+	void DropWeapon();
 
 	void PickUpWeapon();
 
