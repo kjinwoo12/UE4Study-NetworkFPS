@@ -9,12 +9,14 @@
 // Sets default values
 APickUpWeapon::APickUpWeapon()
 {
+	// For replication
 	bReplicates = true;
+	SetReplicateMovement(true);
 
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	//Components
+	// Components
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("UStaticMeshComponent"));
 	RootComponent = WeaponMesh;
 	WeaponMesh->SetSimulatePhysics(true);

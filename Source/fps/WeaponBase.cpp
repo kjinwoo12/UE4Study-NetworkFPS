@@ -205,11 +205,24 @@ void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx_Implementation() : Client"));
 	}
 	// Play animation
-	if (ActionAnimation != NULL) PlayAnimMontage(ActionAnimation);
+	if (ActionAnimation != NULL)
+	{
+		PlayAnimMontage(ActionAnimation);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("ActionAnimation NULL"));
+	}
 
 	// Play sound
 	if (ActionSound != NULL)
+	{
 		UGameplayStatics::PlaySoundAtLocation(this, ActionSound, GetActorLocation());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("ActionSound NULL"));
+	}
 }
 
 void AWeaponBase::OnSubaction()
@@ -236,6 +249,15 @@ void AWeaponBase::OnReload()
 
 void AWeaponBase::SetParentAnimInstance(UAnimInstance* Instance)
 {
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Server %s"), *GetActorLabel());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Client %s"), *GetActorLabel());
+	}
+
 	ParentAnimInstance = Instance;
 }
 
@@ -246,7 +268,21 @@ void AWeaponBase::SetPlayerController(APlayerController* Instance)
 
 void AWeaponBase::PlayAnimMontage(UAnimMontage* AnimMontage)
 {
-	if (ParentAnimInstance == NULL) return;
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage(): Server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage(): Client"));
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage() : label : %s"), *GetActorLabel());
+	if (ParentAnimInstance == NULL)
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage() : ParentAnimInstance == NULL"));
+		return;
+	}
 	ParentAnimInstance->Montage_Play(AnimMontage);
 }
 
@@ -302,8 +338,6 @@ bool AWeaponBase::LineTrace(FHitResult& HitResult)
 		0.f,
 		1.f
 	);
-
-	UE_LOG(LogTemp, Log, TEXT("num : %d"), LineTraceCollisionQueryParams.GetIgnoredActors().Num());
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,

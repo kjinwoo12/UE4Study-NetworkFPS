@@ -104,16 +104,17 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, Health);
 	DOREPLIFETIME(AFPSCharacter, Armor);
 	DOREPLIFETIME(AFPSCharacter, PickableWeapon);
+	DOREPLIFETIME(AFPSCharacter, PrimaryWeapon);
 }
 
 // Called every frame
 void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TickCrosshair();
+	ClientRPCTickCrosshair();
 }
 
-void AFPSCharacter::TickCrosshair()
+void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
 {
 	if (PrimaryWeapon == NULL || HUD == NULL) return;
 	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
@@ -142,8 +143,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::SubactionPressed);
 	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::SubactionReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ReloadPressed);
-	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeaponPressed);
-	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeaponPressed);
+	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeapon);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeapon);
 }
 
 void AFPSCharacter::MoveForward(float Value)
@@ -192,23 +193,13 @@ void AFPSCharacter::SubactionPressed()
 }
 
 void AFPSCharacter::SubactionReleased()
-{
+{	
 	ServerRPCStopSubaction();
 }
 
 void AFPSCharacter::ReloadPressed()
 {
 	ServerRPCStartReload();
-}
-
-void AFPSCharacter::PickUpWeaponPressed()
-{
-	ServerRPCPickUpWeapon();
-}
-
-void AFPSCharacter::DropWeaponPressed()
-{
-	ServerRPCDropWeapon();
 }
 
 bool AFPSCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
@@ -248,36 +239,62 @@ void AFPSCharacter::ServerRPCStartReload_Implementation()
 	PrimaryWeapon->StartReload();
 }
 
-void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
+bool AFPSCharacter::ServerRPCRequestEquipWeaponMulticast_Validate(AWeaponBase* WeaponBase)
 {
-	PickUpWeapon();
+	return true;
 }
 
-void AFPSCharacter::MulticastRPCPickUpWeapon_Implementation()
+void AFPSCharacter::ServerRPCRequestEquipWeaponMulticast_Implementation(AWeaponBase* WeaponBase)
 {
-	PickUpWeapon();
+	MulticastRPCEquipWeapon(WeaponBase);
+}
+
+bool AFPSCharacter::MulticastRPCEquipWeapon_Validate(AWeaponBase* WeaponBase)
+{
+	return true;
+}
+
+void AFPSCharacter::MulticastRPCEquipWeapon_Implementation(AWeaponBase* WeaponBase)
+{
+	PrimaryWeapon = WeaponBase;
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCEquipWeapon() : Server"));
+		PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCEquipWeapon() : Client"));
+	}
+
+	PrimaryWeapon->SetOwner(this);
+	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
+
+	// For Ignore owner's character when line-trace.
+	PrimaryWeapon->GetLineTraceCollisionQueryParams()->AddIgnoredActor(this);
+}
+
+void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
+{
+	if (PickableWeapon == NULL) return;
+
+	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
+	if (WeaponInstance == NULL)
+	{
+		UE_LOG(LogTemp, Log, TEXT("WeaponInstance == NULL"));
+		return;
+	}
+	EquipWeapon(WeaponInstance);
+
+	PickableWeapon->Destroy();
+	PickableWeapon = NULL;
 }
 
 void AFPSCharacter::ServerRPCDropWeapon_Implementation()
 {
-	MulticastRPCDropWeapon();
-}
-
-void AFPSCharacter::MulticastRPCDropWeapon_Implementation()
-{
-
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCDropWeapon() : Server"));
-		DropWeapon();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCDropWeapon() : Client"));
-		AWeaponBase* Weapon = UnEquipWeapon();
-		if (Weapon == NULL) return;
-		Weapon->Destroy();
-	}
+	AWeaponBase* WeaponInstance = UnEquipWeapon();
+	APickUpWeapon* PickUpWeapon = WeaponInstance->SpawnPickUpWeaponActor();
+	PickUpWeapon->SetWeaponInstance(WeaponInstance);
 }
 
 float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -306,9 +323,9 @@ void AFPSCharacter::Die()
 	bIsDead = true;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);
-	
+
 	KnockoutBodyMesh();
-	ServerRPCDropWeapon();
+	DropWeapon();
 }
 
 void AFPSCharacter::Respawn()
@@ -339,21 +356,7 @@ void AFPSCharacter::WakeUpBodyMesh()
 
 void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 {
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("EquipWeapon() : Server : label = %s"), *GetActorLabel());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("EquipWeapon() : Client : label = %s"), *GetActorLabel());
-	}
-	PrimaryWeapon = WeaponBase;
-	PrimaryWeapon->SetOwner(this);
-	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
-	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
-
-	// For Ignore owner's character when line-trace.
-	PrimaryWeapon->GetLineTraceCollisionQueryParams()->AddIgnoredActor(this);
+	ServerRPCRequestEquipWeaponMulticast(WeaponBase);
 }
 
 AWeaponBase* AFPSCharacter::UnEquipWeapon()
@@ -367,34 +370,21 @@ AWeaponBase* AFPSCharacter::UnEquipWeapon()
 	return WeaponInstance;
 }
 
-APickUpWeapon* AFPSCharacter::DropWeapon()
+void AFPSCharacter::DropWeapon()
 {
-	UE_LOG(LogTemp, Log, TEXT("DropWeapon()"));
-	
-	if (PrimaryWeapon == NULL) return NULL;
-	
-	AWeaponBase* WeaponInstance = UnEquipWeapon();
-	APickUpWeapon* PickUpWeapon = WeaponInstance->SpawnPickUpWeaponActor();
-	PickUpWeapon->SetWeaponInstance(WeaponInstance);
-	return PickUpWeapon;
+	if (PrimaryWeapon == NULL)
+	{
+		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : PrimaryWeapon == NULL"));
+		return;
+	}
+	UE_LOG(LogTemp, Log, TEXT("DropWeapon() : dropped!"));
+	ServerRPCDropWeapon();
 }
 
 void AFPSCharacter::PickUpWeapon()
 {
 	UE_LOG(LogTemp, Log, TEXT("PickUpWeapon()"));
-
-	if (PickableWeapon == NULL) return;
-	
-	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
-	if (WeaponInstance == NULL)
-	{
-		UE_LOG(LogTemp, Log, TEXT("WeaponInstance == NULL"));
-		return;
-	}
-	EquipWeapon(WeaponInstance);
-
-	PickableWeapon->Destroy();
-	PickableWeapon = NULL;
+	ServerRPCPickUpWeapon();
 }
 
 void AFPSCharacter::EquipTestGun()
