@@ -389,7 +389,7 @@ void AFPSCharacter::PickUpWeapon()
 
 void AFPSCharacter::EquipTestGun()
 {
-	EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Blueprints/Weapon/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'"));
+	EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapon/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'"));
 }
 
 float AFPSCharacter::GetHealth()
