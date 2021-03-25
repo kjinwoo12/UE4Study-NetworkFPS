@@ -39,6 +39,9 @@ void AFPSCharacter::InitializeMovementComponent()
 {
 	MovementComponent = ACharacter::GetCharacterMovement();
 	MovementComponent->bUseFlatBaseForFloorChecks = true;
+	MovementComponent->MaxWalkSpeed = 200;
+	MovementComponent->MaxWalkSpeedCrouched = 200;
+	MovementComponent->NavAgentProps.bCanCrouch = true;
 }
 
 void AFPSCharacter::InitializeCamera()
@@ -136,6 +139,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("LookUp", this, &AFPSCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Turn", this, &AFPSCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AFPSCharacter::Jump);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFPSCharacter::CrouchPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFPSCharacter::CrouchReleased);
 
 	// Actions
 	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFPSCharacter::ActionPressed);
@@ -175,6 +180,16 @@ void AFPSCharacter::Jump()
 {
 	if (bIsDead) return;
 	Super::Jump();
+}
+
+void AFPSCharacter::CrouchPressed()
+{
+	Crouch();
+}
+
+void AFPSCharacter::CrouchReleased()
+{
+	UnCrouch();
 }
 
 void AFPSCharacter::ActionPressed()
