@@ -120,6 +120,10 @@ public:
 
 	void Jump();
 
+	void CrouchPressed();
+
+	void CrouchReleased();
+
 	void ActionPressed();
 
 	void ActionReleased();
