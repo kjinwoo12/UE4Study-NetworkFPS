@@ -254,38 +254,17 @@ void AFPSCharacter::ServerRPCStartReload_Implementation()
 	PrimaryWeapon->StartReload();
 }
 
-bool AFPSCharacter::ServerRPCRequestEquipWeaponMulticast_Validate(AWeaponBase* WeaponBase)
+bool AFPSCharacter::ServerRPCEquipWeapon_Validate(AWeaponBase* WeaponBase)
 {
 	return true;
 }
 
-void AFPSCharacter::ServerRPCRequestEquipWeaponMulticast_Implementation(AWeaponBase* WeaponBase)
-{
-	MulticastRPCEquipWeapon(WeaponBase);
-}
-
-bool AFPSCharacter::MulticastRPCEquipWeapon_Validate(AWeaponBase* WeaponBase)
-{
-	return true;
-}
-
-void AFPSCharacter::MulticastRPCEquipWeapon_Implementation(AWeaponBase* WeaponBase)
+void AFPSCharacter::ServerRPCEquipWeapon_Implementation(AWeaponBase* WeaponBase)
 {
 	PrimaryWeapon = WeaponBase;
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCEquipWeapon() : Server"));
-		PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCEquipWeapon() : Client"));
-	}
-
+	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
 	PrimaryWeapon->SetOwner(this);
 	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
-
-	// For Ignore owner's character when line-trace.
 	PrimaryWeapon->GetLineTraceCollisionQueryParams()->AddIgnoredActor(this);
 }
 
@@ -296,8 +275,10 @@ void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
 	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
 	if (WeaponInstance == NULL)
 	{
-		UE_LOG(LogTemp, Log, TEXT("WeaponInstance == NULL"));
-		return;
+		UBlueprint* WeaponBaseBlueprint = PickableWeapon->GetWeaponBaseBlueprint();
+		if (WeaponBaseBlueprint == NULL) return;
+
+		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseBlueprint->GeneratedClass);
 	}
 	EquipWeapon(WeaponInstance);
 
@@ -371,7 +352,7 @@ void AFPSCharacter::WakeUpBodyMesh()
 
 void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 {
-	ServerRPCRequestEquipWeaponMulticast(WeaponBase);
+	ServerRPCEquipWeapon(WeaponBase);
 }
 
 AWeaponBase* AFPSCharacter::UnEquipWeapon()

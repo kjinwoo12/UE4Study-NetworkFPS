@@ -70,7 +70,7 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
 {
-	return (PickUpWeaponBlueprint==NULL)?NULL: GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(0, 0, 0));
+	return (PickUpWeaponBlueprint==NULL)?NULL:GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(0, 0, 0));
 }
 
 void AWeaponBase::StartAction()
@@ -380,6 +380,11 @@ bool AWeaponBase::LineTrace(FHitResult& HitResult)
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, FString WeaponReference)
 {
 	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, *WeaponReference));
+	return AWeaponBase::SpawnWeapon(World, GeneratedBP);
+}
+
+AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, UClass* GeneratedBP)
+{
 	FActorSpawnParameters SpawnParameters;
 	return World->SpawnActor<AWeaponBase>(GeneratedBP, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParameters);
 }

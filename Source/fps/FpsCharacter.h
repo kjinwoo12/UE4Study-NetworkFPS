@@ -157,10 +157,7 @@ public:
 	void ServerRPCStartReload();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCRequestEquipWeaponMulticast(AWeaponBase* WeaponBase);
-
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void MulticastRPCEquipWeapon(AWeaponBase* WeaponBase);
+	void ServerRPCEquipWeapon(AWeaponBase* WeaponBase);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPCPickUpWeapon();

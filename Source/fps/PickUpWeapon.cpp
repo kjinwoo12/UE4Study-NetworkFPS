@@ -78,6 +78,11 @@ AWeaponBase* APickUpWeapon::GetWeaponInstance()
 	return WeaponInstance;
 }
 
+UBlueprint* APickUpWeapon::GetWeaponBaseBlueprint()
+{
+	return WeaponBaseBlueprint;
+}
+
 void APickUpWeapon::SetWeaponInstance(AWeaponBase* Instance)
 {
 	WeaponInstance = Instance;

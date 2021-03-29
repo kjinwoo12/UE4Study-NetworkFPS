@@ -191,9 +191,8 @@ public:
 	void SetPlayerController(APlayerController* Instance);
 
 	/**************************
-		  Utility Method
+		    Other Method
 	***************************/
-private:
 protected:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);
@@ -202,4 +201,6 @@ public:
 	// For Spawn Weapon using Blueprint class path
 	// etc 
 	static AWeaponBase* SpawnWeapon(UWorld* World, FString WeaponReference);
+
+	static AWeaponBase* SpawnWeapon(UWorld* World, UClass* GeneratedBP);
 };
