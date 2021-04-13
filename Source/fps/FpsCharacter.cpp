@@ -9,6 +9,7 @@
 #include "FPSHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Blueprint/UserWidget.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -149,8 +150,11 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::SubactionPressed);
 	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::SubactionReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ReloadPressed);
-	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeapon);
-	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeapon);
+	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeaponPressed);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeaponPressed);
+
+	// UI
+	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFPSCharacter::GunShopPressed);
 }
 
 void AFPSCharacter::MoveForward(float Value)
@@ -223,6 +227,31 @@ void AFPSCharacter::ReloadPressed()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStartReload();
+}
+
+void AFPSCharacter::PickUpWeaponPressed()
+{
+	if (PrimaryWeapon != NULL) return;
+	PickUpWeapon();
+}
+
+void AFPSCharacter::DropWeaponPressed()
+{
+	if (PrimaryWeapon == NULL) return;
+	DropWeapon();
+}
+
+void AFPSCharacter::GunShopPressed()
+{
+	UUserWidget* GunShopWidget = HUD->GetGunShopWidget();
+	if (GunShopWidget->GetVisibility() == ESlateVisibility::Visible)
+	{
+		GunShopWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		GunShopWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 }
 
 bool AFPSCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)

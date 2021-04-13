@@ -138,6 +138,8 @@ public:
 
 	void DropWeaponPressed();
 
+	void GunShopPressed();
+
 	/**************************
 				RPC
 	***************************/

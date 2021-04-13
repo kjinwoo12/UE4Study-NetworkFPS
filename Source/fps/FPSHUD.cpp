@@ -14,7 +14,8 @@ AFPSHUD::AFPSHUD()
 void AFPSHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	if (DefaultWidget) DefaultWidget->AddToViewport();
+	InitDefaultWidget();
+	InitGunShopWidget();
 }
 
 void AFPSHUD::DrawHUD()
@@ -24,6 +25,24 @@ void AFPSHUD::DrawHUD()
 	if (CrosshairTexture) DrawCrosshair();
 }
 
+void AFPSHUD::InitDefaultWidget()
+{
+	if (DefaultWidgetClass == NULL) return;
+	DefaultWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), DefaultWidgetClass);
+
+	if (DefaultWidget == NULL) return;
+	DefaultWidget->AddToViewport();
+}
+
+void AFPSHUD::InitGunShopWidget()
+{
+	if (GunShopWidgetClass == NULL) return;
+	GunShopWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), GunShopWidgetClass);
+
+	if (GunShopWidget == NULL) return;
+	GunShopWidget->AddToViewport();
+	GunShopWidget->SetVisibility(ESlateVisibility::Collapsed);
+}
 
 void AFPSHUD::DrawCrosshair()
 {
@@ -77,4 +96,9 @@ void AFPSHUD::DrawCrosshair()
 void AFPSHUD::SetCrosshairCenterOffset(float Value)
 {
 	CrosshairOffset = Value;
+}
+
+UUserWidget* AFPSHUD::GetGunShopWidget()
+{
+	return GunShopWidget;
 }
