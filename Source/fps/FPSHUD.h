@@ -51,10 +51,14 @@ private:
 	void InitGunShopWidget();
 	void DrawCrosshair();
 
+public:
+	void OpenGunShop();
+	void CloseGunShop();
+	bool IsOpenGunShop();
+
 	/**************************
 		  Getter & Setter
 	***************************/
 public:
 	void SetCrosshairCenterOffset(float Value);
-	UUserWidget* GetGunShopWidget();
 };

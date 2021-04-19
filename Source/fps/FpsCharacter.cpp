@@ -243,14 +243,13 @@ void AFPSCharacter::DropWeaponPressed()
 
 void AFPSCharacter::GunShopPressed()
 {
-	UUserWidget* GunShopWidget = HUD->GetGunShopWidget();
-	if (GunShopWidget->GetVisibility() == ESlateVisibility::Visible)
+	if (HUD->IsOpenGunShop())
 	{
-		GunShopWidget->SetVisibility(ESlateVisibility::Collapsed);
+		HUD->CloseGunShop();
 	}
 	else
 	{
-		GunShopWidget->SetVisibility(ESlateVisibility::Visible);
+		HUD->OpenGunShop();
 	}
 }
 
