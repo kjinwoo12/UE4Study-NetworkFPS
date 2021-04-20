@@ -3,7 +3,6 @@
 
 #include "WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 #include "FPSCharacter.h"
 #include "PickUpWeapon.h"
 #include "Net/UnrealNetwork.h"
@@ -68,9 +67,24 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
-APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
+void AWeaponBase::Initialize(AFPSCharacter* FPSCharacter)
 {
-	return (PickUpWeaponBlueprint==NULL)?NULL: GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(0, 0, 0));
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Initialize() : Server : %s"), *(FPSCharacter->GetActorLabel()));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Initialize() : Client : %s"), *(FPSCharacter->GetActorLabel()));
+	}
+	SetOwner(FPSCharacter);
+	SetParentAnimInstance(FPSCharacter->GetHandsMeshComponent()->GetAnimInstance());
+}
+
+void AWeaponBase::OnUnEquipped()
+{
+	SetOwner(NULL);
+	SetParentAnimInstance(NULL);
 }
 
 void AWeaponBase::StartAction()
@@ -143,7 +157,7 @@ void AWeaponBase::StopAction()
 	float Remaining = GetWorldTimerManager().GetTimerRemaining(TimerHandle);
 	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([]()
 		{
-			//Do nothing. just wait for delay.
+			//Do nothing. It is just waiting for delay.
 		}
 	), Remaining, false);
 }
@@ -185,13 +199,6 @@ void AWeaponBase::OnAction()
 	CurrentAmmo -= !IsAmmoInfinite;
 
 	MulticastRPCOnActionFx();
-
-	FHitResult HitResult;
-	if (!LineTrace(HitResult)) return;
-	FPointDamageEvent DamangeEvent;
-	DamangeEvent.HitInfo = HitResult;
-
-	HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
 }
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
@@ -291,11 +298,6 @@ float AWeaponBase::GetDelay()
 	return GetWorldTimerManager().GetTimerRemaining(TimerHandle);
 }
 
-FCollisionQueryParams* AWeaponBase::GetLineTraceCollisionQueryParams()
-{
-	return &LineTraceCollisionQueryParams;
-}
-
 float AWeaponBase::GetMovementStability()
 {
 	return MovementStability;
@@ -311,75 +313,21 @@ int AWeaponBase::GetSubAmmo()
 	return SubAmmo;
 }
 
-bool AWeaponBase::LineTrace(FHitResult& HitResult)
+APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
 {
-	// Get Player view point
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
-	PlayerController->GetPlayerViewPoint(
-		PlayerViewPointLocation,
-		PlayerViewPointRotation
-	);
-
-	// Get end point
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-
-	// Get Muzzle point
-	FVector MuzzleLocation = Muzzle->GetComponentLocation();
-
-	//It is for checking line. Player view point to end point
-	DrawDebugLine(
-		GetWorld(),
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		FColor(255, 0, 0),
-		false,
-		5.f,
-		0.f,
-		1.f
-	);
-
-	bool IsHit = GetWorld()->LineTraceSingleByChannel(
-		HitResult,
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		ECollisionChannel::ECC_Pawn,
-		LineTraceCollisionQueryParams
-	);
-
-	if (!IsHit)
-	{
-		DrawDebugLine(
-			GetWorld(),
-			MuzzleLocation,
-			LineTraceEnd,
-			FColor(0, 255, 0),
-			false,
-			5.f,
-			0.f,
-			1.f
-		);
-	}
-	else
-	{
-		DrawDebugLine(
-			GetWorld(),
-			MuzzleLocation,
-			HitResult.ImpactPoint,
-			FColor(0, 255, 0),
-			false,
-			5.f,
-			0.f,
-			1.f
-		);
-	}
-
-	return IsHit;
+	if (PickUpWeaponBlueprint == NULL) return NULL;
+	FRotator Rotation = GetActorRotation();
+	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, FString WeaponReference)
 {
 	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, *WeaponReference));
+	return AWeaponBase::SpawnWeapon(World, GeneratedBP);
+}
+
+AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, UClass* GeneratedBP)
+{
 	FActorSpawnParameters SpawnParameters;
 	return World->SpawnActor<AWeaponBase>(GeneratedBP, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParameters);
 }

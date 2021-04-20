@@ -17,6 +17,9 @@ class FPS_API APickUpWeapon : public AActor
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* PickUpRange;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UBlueprint* WeaponBaseBlueprint;
+
 	class AWeaponBase* WeaponInstance;
 	
 public:	
@@ -54,6 +57,9 @@ public:
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetWeaponInstance();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	UBlueprint* GetWeaponBaseBlueprint();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetWeaponInstance(AWeaponBase* Instance);

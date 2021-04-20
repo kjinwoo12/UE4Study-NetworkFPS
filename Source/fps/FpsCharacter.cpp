@@ -9,6 +9,7 @@
 #include "FPSHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Blueprint/UserWidget.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -97,7 +98,10 @@ void AFPSCharacter::BeginPlay()
 
 	HUD = Cast<AFPSHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 
-	EquipTestGun();
+	if (GetNetMode() == NM_ListenServer)
+	{
+		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapon/BP_HitScanWeapon_TestGun.BP_HitScanWeapon_TestGun_C'"));
+	}
 }
 
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -131,8 +135,6 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	check(PlayerInputComponent);
-
 	// Movement
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFPSCharacter::MoveRight);
@@ -148,8 +150,11 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::SubactionPressed);
 	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::SubactionReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ReloadPressed);
-	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeapon);
-	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeapon);
+	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeaponPressed);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeaponPressed);
+
+	// UI
+	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFPSCharacter::GunShopPressed);
 }
 
 void AFPSCharacter::MoveForward(float Value)
@@ -194,27 +199,58 @@ void AFPSCharacter::CrouchReleased()
 
 void AFPSCharacter::ActionPressed()
 {
+	if (PrimaryWeapon == NULL) return;
+	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
 	ServerRPCStartAction(GetWorld()->GetFirstPlayerController());
 }
 
 void AFPSCharacter::ActionReleased()
 {
+	if (PrimaryWeapon == NULL) return;
 	ServerRPCStopAction();
 }
 
 void AFPSCharacter::SubactionPressed()
 {
+	if (PrimaryWeapon == NULL) return;
+	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
 	ServerRPCStartSubaction();
 }
 
 void AFPSCharacter::SubactionReleased()
-{	
+{
+	if (PrimaryWeapon == NULL) return;
 	ServerRPCStopSubaction();
 }
 
 void AFPSCharacter::ReloadPressed()
 {
+	if (PrimaryWeapon == NULL) return;
 	ServerRPCStartReload();
+}
+
+void AFPSCharacter::PickUpWeaponPressed()
+{
+	if (PrimaryWeapon != NULL) return;
+	PickUpWeapon();
+}
+
+void AFPSCharacter::DropWeaponPressed()
+{
+	if (PrimaryWeapon == NULL) return;
+	DropWeapon();
+}
+
+void AFPSCharacter::GunShopPressed()
+{
+	if (HUD->IsOpenGunShop())
+	{
+		HUD->CloseGunShop();
+	}
+	else
+	{
+		HUD->OpenGunShop();
+	}
 }
 
 bool AFPSCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
@@ -254,50 +290,17 @@ void AFPSCharacter::ServerRPCStartReload_Implementation()
 	PrimaryWeapon->StartReload();
 }
 
-bool AFPSCharacter::ServerRPCRequestEquipWeaponMulticast_Validate(AWeaponBase* WeaponBase)
-{
-	return true;
-}
-
-void AFPSCharacter::ServerRPCRequestEquipWeaponMulticast_Implementation(AWeaponBase* WeaponBase)
-{
-	MulticastRPCEquipWeapon(WeaponBase);
-}
-
-bool AFPSCharacter::MulticastRPCEquipWeapon_Validate(AWeaponBase* WeaponBase)
-{
-	return true;
-}
-
-void AFPSCharacter::MulticastRPCEquipWeapon_Implementation(AWeaponBase* WeaponBase)
-{
-	PrimaryWeapon = WeaponBase;
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCEquipWeapon() : Server"));
-		PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCEquipWeapon() : Client"));
-	}
-
-	PrimaryWeapon->SetOwner(this);
-	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
-
-	// For Ignore owner's character when line-trace.
-	PrimaryWeapon->GetLineTraceCollisionQueryParams()->AddIgnoredActor(this);
-}
-
 void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
 {
-	if (PickableWeapon == NULL) return;
+	if (PrimaryWeapon != NULL || PickableWeapon == NULL) return;
 
 	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
 	if (WeaponInstance == NULL)
 	{
-		UE_LOG(LogTemp, Log, TEXT("WeaponInstance == NULL"));
-		return;
+		UBlueprint* WeaponBaseBlueprint = PickableWeapon->GetWeaponBaseBlueprint();
+		if (WeaponBaseBlueprint == NULL) return;
+
+		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseBlueprint->GeneratedClass);
 	}
 	EquipWeapon(WeaponInstance);
 
@@ -310,6 +313,12 @@ void AFPSCharacter::ServerRPCDropWeapon_Implementation()
 	AWeaponBase* WeaponInstance = UnEquipWeapon();
 	APickUpWeapon* PickUpWeapon = WeaponInstance->SpawnPickUpWeaponActor();
 	PickUpWeapon->SetWeaponInstance(WeaponInstance);
+}
+
+void AFPSCharacter::OnRep_InitializePrimaryWeapon()
+{
+	if (PrimaryWeapon == NULL) return;
+	PrimaryWeapon->Initialize(this);
 }
 
 float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -371,7 +380,9 @@ void AFPSCharacter::WakeUpBodyMesh()
 
 void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 {
-	ServerRPCRequestEquipWeaponMulticast(WeaponBase);
+	PrimaryWeapon = WeaponBase;
+	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
+	PrimaryWeapon->Initialize(this);
 }
 
 AWeaponBase* AFPSCharacter::UnEquipWeapon()
@@ -379,9 +390,9 @@ AWeaponBase* AFPSCharacter::UnEquipWeapon()
 	if (PrimaryWeapon == NULL) return NULL;
 	AWeaponBase* WeaponInstance = PrimaryWeapon;
 	PrimaryWeapon = NULL;
-	WeaponInstance->SetOwner(NULL);
-	WeaponInstance->GetLineTraceCollisionQueryParams()->ClearIgnoredActors();
 	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	WeaponInstance->SetOwner(NULL);
+	WeaponInstance->OnUnEquipped();
 	return WeaponInstance;
 }
 
@@ -402,11 +413,6 @@ void AFPSCharacter::PickUpWeapon()
 	ServerRPCPickUpWeapon();
 }
 
-void AFPSCharacter::EquipTestGun()
-{
-	EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapon/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'"));
-}
-
 float AFPSCharacter::GetHealth()
 {
 	return Health;
@@ -420,6 +426,11 @@ float AFPSCharacter::GetArmor()
 AWeaponBase* AFPSCharacter::GetPrimaryWeapon()
 {
 	return PrimaryWeapon;
+}
+
+USkeletalMeshComponent* AFPSCharacter::GetHandsMeshComponent()
+{
+	return HandsMeshComponent;
 }
 
 void AFPSCharacter::SetPickableWeapon(APickUpWeapon* Instance)

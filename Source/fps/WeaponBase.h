@@ -6,12 +6,18 @@
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 
+class AFPSCharacter;
+
 UCLASS()
 class FPS_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
 
 protected:
+	/**************************
+			   const
+	***************************/
+
 	/**************************
 			Components
 	***************************/
@@ -93,7 +99,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	class UAnimMontage* ReloadAnimation;
 
-
 	/**************************
 			  Sounds
 	***************************/
@@ -130,8 +135,6 @@ private:
 	// Pointer of the function for TimerHandleForExtraInput
 	void (AWeaponBase::* FunctionAfterDelayForExtraInput)();
 
-	// CollisionParams for LineTrace
-	FCollisionQueryParams LineTraceCollisionQueryParams;
 
 public:	
 	// Sets default values for this actor's properties
@@ -142,11 +145,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	APickUpWeapon* SpawnPickUpWeaponActor();
 
 	/**************************
-		Weapon Action 
+			 on Events
+	***************************/
+	virtual void Initialize(AFPSCharacter* FPSCharacter);
+
+	virtual void OnUnEquipped();
+
+	/**************************
+		   Weapon Action 
 	***************************/
 	void StartAction();
 	void StopAction();
@@ -157,7 +165,7 @@ public:
 	/**************************
 			about Actions
 	***************************/
-	void OnAction();
+	virtual void OnAction();
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCOnActionFx();
@@ -176,8 +184,6 @@ public:
 	***************************/
 	float GetDelay();
 
-	FCollisionQueryParams* GetLineTraceCollisionQueryParams();
-
 	float GetMovementStability();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
@@ -191,15 +197,15 @@ public:
 	void SetPlayerController(APlayerController* Instance);
 
 	/**************************
-		  Utility Method
+				etc
 	***************************/
-private:
-protected:
-	// For hit character
-	bool LineTrace(FHitResult& HitResult);
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	APickUpWeapon* SpawnPickUpWeaponActor();
 
 public:
 	// For Spawn Weapon using Blueprint class path
 	// etc 
 	static AWeaponBase* SpawnWeapon(UWorld* World, FString WeaponReference);
+
+	static AWeaponBase* SpawnWeapon(UWorld* World, UClass* GeneratedBP);
 };

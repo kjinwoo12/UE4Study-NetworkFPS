@@ -14,7 +14,8 @@ AFPSHUD::AFPSHUD()
 void AFPSHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	if (DefaultWidget) DefaultWidget->AddToViewport();
+	InitDefaultWidget();
+	InitGunShopWidget();
 }
 
 void AFPSHUD::DrawHUD()
@@ -24,6 +25,20 @@ void AFPSHUD::DrawHUD()
 	if (CrosshairTexture) DrawCrosshair();
 }
 
+void AFPSHUD::InitDefaultWidget()
+{
+	if (DefaultWidgetClass == NULL) return;
+	DefaultWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), DefaultWidgetClass);
+
+	if (DefaultWidget == NULL) return;
+	DefaultWidget->AddToViewport();
+}
+
+void AFPSHUD::InitGunShopWidget()
+{
+	if (GunShopWidgetClass == NULL) return;
+	GunShopWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), GunShopWidgetClass);
+}
 
 void AFPSHUD::DrawCrosshair()
 {
@@ -77,4 +92,29 @@ void AFPSHUD::DrawCrosshair()
 void AFPSHUD::SetCrosshairCenterOffset(float Value)
 {
 	CrosshairOffset = Value;
+}
+
+void AFPSHUD::OpenGunShop()
+{
+	if (GunShopWidget == NULL) return;
+	GunShopWidget->AddToViewport();
+
+	APlayerController* PlayerController = ((APlayerController*)GetOwner());
+	PlayerController->SetShowMouseCursor(true);
+	PlayerController->SetInputMode(FInputModeGameAndUI());
+}
+
+void AFPSHUD::CloseGunShop()
+{
+	if (GunShopWidget == NULL) return;
+	GunShopWidget->RemoveFromViewport();
+
+	APlayerController* PlayerController = ((APlayerController*)GetOwner());
+	PlayerController->SetShowMouseCursor(false);
+	PlayerController->SetInputMode(FInputModeGameOnly());
+}
+
+bool AFPSHUD::IsOpenGunShop()
+{
+	return GunShopWidget->IsInViewport();
 }

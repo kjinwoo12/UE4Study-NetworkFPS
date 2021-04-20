@@ -38,9 +38,9 @@ class FPS_API AFPSCharacter : public ACharacter
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	// PrimaryWeapon will be loaded at BeginPlay();
-	UPROPERTY(EditDefaultsOnly, Replicated)
+	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing=OnRep_InitializePrimaryWeapon)
 	class AWeaponBase* PrimaryWeapon;
-
+	
 	UPROPERTY(Replicated)
 	class APickUpWeapon* PickableWeapon;
 
@@ -138,6 +138,8 @@ public:
 
 	void DropWeaponPressed();
 
+	void GunShopPressed();
+
 	/**************************
 				RPC
 	***************************/
@@ -156,17 +158,17 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCStartReload();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCRequestEquipWeaponMulticast(AWeaponBase* WeaponBase);
-
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void MulticastRPCEquipWeapon(AWeaponBase* WeaponBase);
-
 	UFUNCTION(Server, Reliable)
 	void ServerRPCPickUpWeapon();
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPCDropWeapon();
+
+	/**************************
+				OnRep
+	***************************/
+	UFUNCTION()
+	void OnRep_InitializePrimaryWeapon();
 
 	/**************************
 	   For character's combat
@@ -197,10 +199,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();
 
-	void PickUpWeapon();
-
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipTestGun();
+	void PickUpWeapon();
 
 	/**************************
 		  Getter & Setter
@@ -213,6 +213,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetPrimaryWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	USkeletalMeshComponent* GetHandsMeshComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);

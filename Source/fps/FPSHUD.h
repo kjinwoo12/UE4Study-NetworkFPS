@@ -22,18 +22,43 @@ class FPS_API AFPSHUD : public AHUD
 	UPROPERTY(EditDefaultsOnly, Category = "Texture")
 	class UTexture2D* CrosshairTexture;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Widget")
-	class UUserWidget* DefaultWidget;
+	UPROPERTY(EditAnywhere,
+				BlueprintReadOnly,
+				Category = "Widget", 
+				Meta=(AllowPrivateAccess=true))
+	TSubclassOf<class UUserWidget> DefaultWidgetClass;
+
+	UUserWidget* DefaultWidget;
+
+	UPROPERTY(EditAnywhere,
+	BlueprintReadOnly,
+		Category = "Widget",
+		Meta = (AllowPrivateAccess = true))
+	TSubclassOf<UUserWidget> GunShopWidgetClass;
+
+	UUserWidget* GunShopWidget;
 	
 public:
 	AFPSHUD();
 	virtual void DrawHUD() override;
-	void SetCrosshairCenterOffset(float Value);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:
+	void InitDefaultWidget();
+	void InitGunShopWidget();
 	void DrawCrosshair();
+
+public:
+	void OpenGunShop();
+	void CloseGunShop();
+	bool IsOpenGunShop();
+
+	/**************************
+		  Getter & Setter
+	***************************/
+public:
+	void SetCrosshairCenterOffset(float Value);
 };
