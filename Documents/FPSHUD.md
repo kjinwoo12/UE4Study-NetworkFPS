@@ -4,7 +4,6 @@ HUD with dynamic crosshair. It is used by [FPSCharacter](./FPSCharacter.md).
 # Index
 - [Tutorial](#_Tutorial)
 - [How to guide](#_How_to_Guide)
-- [Explanation](#_Explanation)
 - [Technical reference](#_Technical_reference)
 
 # Tutorial
@@ -18,7 +17,5 @@ HUD with dynamic crosshair. It is used by [FPSCharacter](./FPSCharacter.md).
 3. Set `Default Widget`
 
 # How_to_Guide
-
-# Explanation
 
 # Technical_reference

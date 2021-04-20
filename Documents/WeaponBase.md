@@ -4,7 +4,6 @@ WeaponBase is the base class for a gun and knife.
 # Index
 - [Tutorial](#_Tutorial)
 - [How to guide](#_How_to_Guide)
-- [Explanation](#_Explanation)
 - [Technical reference](#_Technical_reference)
 
 # Tutorial
@@ -32,7 +31,5 @@ AWeaponBase *WeaponBase = AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyCo
 EquipWeapon(WeaponBase)
 ```
 The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. and EquipWeapon  
-
-# Explanation
 
 # Technical_reference

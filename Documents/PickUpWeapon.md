@@ -4,7 +4,6 @@ PickUpWeapon is the base class of pickable actor. It makes WeaponBase actor can 
 # Index
 - [Tutorial](#_Tutorial)
 - [How to guide](#_How_to_Guide)
-- [Explanation](#_Explanation)
 - [Technical reference](#_Technical_reference)
 
 # Tutorial
@@ -17,7 +16,7 @@ PickUpWeapon is the base class of pickable actor. It makes WeaponBase actor can 
 Set your `PickUpWeapon` BP at `PickUpWeaponBlueprint` in `WeaponBase` BP. It makes possible to spawn the actor made using your `PickUPWeapon` BP. Check out the function `WeaponBase::SpawnPickUpWeaponActor`. It is a preparing for [How to drop weapon](##_Drop_weapon)
 
 ## Step 3. Use AWeaponBase::SpawnPickUpWeaponActor and initialize variables.
-1. Create a WeaponBase Actor. Check out [WeaponBase.md](./WEaponBase.md) tutorial.
+1. Create a WeaponBase Actor. Check out [WeaponBase.md](./WeaponBase.md) tutorial.
 2. There is a function of the Actor, `SpawnPickUpWeaponActor`
     ```C++
     AWeaponBase *Weapon = /*Create or Get WeaponBaseActor*/;
@@ -29,7 +28,5 @@ Set your `PickUpWeapon` BP at `PickUpWeaponBlueprint` in `WeaponBase` BP. It mak
     ```
 
 # How_to_Guide
-
-# Explanation
 
 # Technical_reference

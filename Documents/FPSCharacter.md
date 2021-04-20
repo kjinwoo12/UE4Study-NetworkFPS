@@ -1,10 +1,10 @@
 # AFPSCharacter
-It is the base of playable character.
+It is general playable character class.
+
 
 # Index
 - [Tutorial](#_Tutorial)
 - [How to guide](#_How_to_Guide)
-- [Explanation](#_Explanation)
 - [Technical reference](#_Technical_reference)
 
 # Tutorial
@@ -62,8 +62,5 @@ AWeaponBase class is equipable actor. Use `AFPSCharacter::EquipWeapon`.
 Read first [PickUpWeapon.md](./PickUpWeapon.md) tutorial. 
 
 Use `AFPSCharacter::DropWeapon` and `AFPSCharacter::PickUpWeapon`.
-
-# Explanation
-AFPSCharacter is general playable character class. 
 
 # Technical_reference
