@@ -21,6 +21,9 @@ class FPS_API APickUpWeapon : public AActor
 	UBlueprint* WeaponBaseBlueprint;
 
 	class AWeaponBase* WeaponInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	class USoundCue* DropSound;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -51,6 +54,13 @@ public:
 		UPrimitiveComponent* OtherComponent,
 		int32 OtherBodyIndex
 	);
+
+	UFUNCTION()
+	void OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComponent,
+		FVector NormalImpulse,
+		const FHitResult& HitResult);
 
 	/**************************
 		  Getter & Setter

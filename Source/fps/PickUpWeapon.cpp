@@ -2,7 +2,11 @@
 
 
 #include "PickUpWeapon.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "Components/AudioComponent.h"
+#include "Sound/SoundCue.h"
+#include "Math/UnrealMathUtility.h"
 #include "FpsCharacter.h"
 #include "WeaponBase.h"
 
@@ -26,6 +30,8 @@ APickUpWeapon::APickUpWeapon()
 	WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
 	WeaponMesh->SetGenerateOverlapEvents(false);
+	WeaponMesh->SetNotifyRigidBodyCollision(true);
+	WeaponMesh->OnComponentHit.AddDynamic(this, &APickUpWeapon::OnWeaponMeshComponentHit);
 
 	PickUpRange = CreateDefaultSubobject<USphereComponent>(TEXT("USphereComponent"));
 	PickUpRange->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -71,6 +77,33 @@ void APickUpWeapon::OnOverlapEnd(
 	if (!FpsCharacter) return;
 
 	FpsCharacter->SetPickableWeapon(NULL);
+}
+
+void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComponent,
+	FVector NormalImpulse,
+	const FHitResult& HitResult)
+{
+	UE_LOG(LogTemp, Log, TEXT("OnWeaponMeshComponentHit!"));
+	UAudioComponent* AudioComponent = UGameplayStatics::SpawnSoundAtLocation(this, DropSound, HitResult.Location);
+	
+	FVector Direction;
+	float Speed;
+	GetVelocity().ToDirectionAndLength(Direction, Speed);
+	UE_LOG(LogTemp, Log, TEXT("Speed : %f"), &Speed);
+
+	const float ClampRangeA = 500.f;
+	const float ClampRangeB = 30.f;
+	const float OutRangeA = 0;
+	const float OutRangeB = 5;
+
+	float ClampedValue = FMath::Clamp(Speed, ClampRangeB, ClampRangeA);
+	float InRange = ClampRangeA - ClampRangeB;
+	float CorrectInValue = ClampedValue - ClampRangeB;
+	float InPercentage = CorrectInValue / InRange;
+	float MapRangedClamped = (InPercentage * (OutRangeA - OutRangeB)) + OutRangeB;
+	AudioComponent->SetIntParameter("Power", MapRangedClamped);
 }
 
 AWeaponBase* APickUpWeapon::GetWeaponInstance()
