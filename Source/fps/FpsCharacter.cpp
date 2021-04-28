@@ -310,9 +310,22 @@ void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
 
 void AFPSCharacter::ServerRPCDropWeapon_Implementation()
 {
+	//Spawn APickUpWeapon
 	AWeaponBase* WeaponInstance = UnEquipWeapon();
 	APickUpWeapon* PickUpWeapon = WeaponInstance->SpawnPickUpWeaponActor();
 	PickUpWeapon->SetWeaponInstance(WeaponInstance);
+	
+	//Add impulse to viewpoint direction
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	WeaponInstance->GetPlayerController()->GetPlayerViewPoint(
+		PlayerViewPointLocation,
+		PlayerViewPointRotation
+	);
+	UStaticMeshComponent* WeaponMesh = PickUpWeapon->GetWeaponMesh();
+	const float ImpulsePower = 300.f;
+	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
+	UE_LOG(LogTemp, Log, TEXT("GetActorForwardVector %f %f %f"), PlayerViewPointRotation.Vector().X, PlayerViewPointRotation.Vector().Y, PlayerViewPointRotation.Vector().Z);
 }
 
 void AFPSCharacter::OnRep_InitializePrimaryWeapon()

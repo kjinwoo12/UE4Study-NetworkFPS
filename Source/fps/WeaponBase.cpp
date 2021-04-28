@@ -268,6 +268,11 @@ void AWeaponBase::SetParentAnimInstance(UAnimInstance* Instance)
 	ParentAnimInstance = Instance;
 }
 
+APlayerController* AWeaponBase::GetPlayerController()
+{
+	return PlayerController;
+}
+
 void AWeaponBase::SetPlayerController(APlayerController* Instance)
 {
 	PlayerController = Instance;

@@ -194,6 +194,8 @@ public:
 
 	void SetParentAnimInstance(UAnimInstance* AnimInstance);
 
+	APlayerController* GetPlayerController();
+
 	void SetPlayerController(APlayerController* Instance);
 
 	/**************************

@@ -65,6 +65,9 @@ public:
 	/**************************
 		  Getter & Setter
 	***************************/
+	UFUNCTION(Category = "Getter")
+	UStaticMeshComponent* GetWeaponMesh();
+
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetWeaponInstance();
 

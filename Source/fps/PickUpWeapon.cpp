@@ -106,6 +106,11 @@ void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
 	AudioComponent->SetIntParameter("Power", MapRangedClamped);
 }
 
+UStaticMeshComponent* APickUpWeapon::GetWeaponMesh()
+{
+	return WeaponMesh;
+}
+
 AWeaponBase* APickUpWeapon::GetWeaponInstance()
 {
 	return WeaponInstance;
