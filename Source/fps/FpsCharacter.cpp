@@ -399,7 +399,8 @@ void AFPSCharacter::WakeUpBodyMesh()
 void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 {
 	PrimaryWeapon = WeaponBase;
-	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NameGripPoint);
+	FName AttachingGripPointName = PrimaryWeapon->GetAttachingGripPointName();
+	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
 	PrimaryWeapon->Initialize(this);
 }
 

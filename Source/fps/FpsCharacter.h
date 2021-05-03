@@ -24,8 +24,6 @@ class FPS_API AFPSCharacter : public ACharacter
 
 	const FName NamePelvis = FName("pelvis");
 
-	const FName NameGripPoint = FName("GripPoint");
-
 	/**************************
 			Components
 	***************************/
