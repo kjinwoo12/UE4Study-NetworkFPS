@@ -14,9 +14,6 @@ class FPS_API AWeaponBase : public AActor
 	GENERATED_BODY()
 
 protected:
-	/**************************
-			   const
-	***************************/
 
 	/**************************
 			Components
@@ -30,6 +27,9 @@ protected:
 	/**************************
 			  Variable
 	***************************/
+	UPROPERTY(EditDefaultsOnly, Category = "Component")
+	FName AttachingGripPointName;
+
 	// Reach of weapon
 	UPROPERTY(EditDefaultsOnly, Category = "Variable")
 	float Reach;
@@ -192,10 +192,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	int GetSubAmmo();
 
-	void SetParentAnimInstance(UAnimInstance* AnimInstance);
-
+	UFUNCTION(BlueprintCallable, Category = "Getter")
 	APlayerController* GetPlayerController();
 
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	FName GetAttachingGripPointName();
+
+	UFUNCTION(BlueprintCallable, Category = "Setter")
+	void SetParentAnimInstance(UAnimInstance* AnimInstance);
+
+	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPlayerController(APlayerController* Instance);
 
 	/**************************

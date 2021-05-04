@@ -25,6 +25,7 @@ AWeaponBase::AWeaponBase()
 	Muzzle->SetupAttachment(RootComponent);
 
 	// Variable
+	AttachingGripPointName = "GripPoint";
 	Reach = 6000.f;
 	ActionDelay = 0.125f;
 	ActionLoopEnable = true;
@@ -254,30 +255,6 @@ void AWeaponBase::OnReload()
 	CurrentAmmo += ChargedAmmo;
 }
 
-void AWeaponBase::SetParentAnimInstance(UAnimInstance* Instance)
-{
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Server %s"), *GetActorLabel());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Client %s"), *GetActorLabel());
-	}
-
-	ParentAnimInstance = Instance;
-}
-
-APlayerController* AWeaponBase::GetPlayerController()
-{
-	return PlayerController;
-}
-
-void AWeaponBase::SetPlayerController(APlayerController* Instance)
-{
-	PlayerController = Instance;
-}
-
 void AWeaponBase::PlayAnimMontage(UAnimMontage* AnimMontage)
 {
 	if (GetNetMode() == ENetMode::NM_ListenServer)
@@ -316,6 +293,35 @@ int AWeaponBase::GetCurrentAmmo()
 int AWeaponBase::GetSubAmmo()
 {
 	return SubAmmo;
+}
+
+APlayerController* AWeaponBase::GetPlayerController()
+{
+	return PlayerController;
+}
+
+FName AWeaponBase::GetAttachingGripPointName()
+{
+	return AttachingGripPointName;
+}
+
+void AWeaponBase::SetParentAnimInstance(UAnimInstance* Instance)
+{
+	if (GetNetMode() == ENetMode::NM_ListenServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Server %s"), *GetActorLabel());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Client %s"), *GetActorLabel());
+	}
+
+	ParentAnimInstance = Instance;
+}
+
+void AWeaponBase::SetPlayerController(APlayerController* Instance)
+{
+	PlayerController = Instance;
 }
 
 APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
