@@ -36,8 +36,11 @@ class FPS_API AFPSCharacter : public ACharacter
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	// PrimaryWeapon will be loaded at BeginPlay();
-	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing=OnRep_InitializePrimaryWeapon)
+	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing = OnRep_InitializePrimaryWeapon)
 	class AWeaponBase* PrimaryWeapon;
+
+	UPROPERTY(EditDefaultsOnly, Replicated)
+	class AWeaponModelForBody* WeaponModelForBody;
 	
 	UPROPERTY(Replicated)
 	class APickUpWeapon* PickableWeapon;

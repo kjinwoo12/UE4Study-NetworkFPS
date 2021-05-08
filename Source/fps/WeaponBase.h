@@ -120,6 +120,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	UBlueprint* PickUpWeaponBlueprint;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UBlueprint* WeaponModelForBodyBlueprint;
+
 	APlayerController* PlayerController;
 
 private:
@@ -209,6 +212,9 @@ public:
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	APickUpWeapon* SpawnPickUpWeaponActor();
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	AWeaponModelForBody* SpawnWeaponModelForBodyActor();
 
 public:
 	// For Spawn Weapon using Blueprint class path

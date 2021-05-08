@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "FPSCharacter.h"
 #include "PickUpWeapon.h"
+#include "WeaponModelForBody.h"
 #include "Net/UnrealNetwork.h"
 
 /*
@@ -20,6 +21,7 @@ AWeaponBase::AWeaponBase()
 	PrimaryActorTick.bCanEverTick = false;	
 	// Components
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+	WeaponMesh->SetOnlyOwnerSee(true);
 	RootComponent = WeaponMesh;
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(RootComponent);
@@ -107,6 +109,8 @@ void AWeaponBase::StartAction()
 
 void AWeaponBase::StartSubaction()
 {
+	if (SubAmmo <= 0) return;
+
 	//Retry StartAction() after delay.
 	float Delay = GetDelay();
 	if (0.f < Delay)
@@ -126,10 +130,9 @@ void AWeaponBase::StartReload()
 {
 	UE_LOG(LogTemp, Log, TEXT("Reload()"));
 
-	// return if is on delay
+	// return if is on delay or ammo is full
 	if (FunctionAfterDelay == &AWeaponBase::OnReload 
-		|| CurrentAmmo == MagazineSize
-		|| SubAmmo <= 0) return;
+		|| CurrentAmmo == MagazineSize) return;
 
 	FunctionAfterDelay = &AWeaponBase::OnReload;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
@@ -329,6 +332,12 @@ APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
 	if (PickUpWeaponBlueprint == NULL) return NULL;
 	FRotator Rotation = GetActorRotation();
 	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+}
+
+AWeaponModelForBody* AWeaponBase::SpawnWeaponModelForBodyActor()
+{
+	if (WeaponModelForBodyBlueprint == NULL) return NULL;
+	return GetWorld()->SpawnActor<AWeaponModelForBody>(WeaponModelForBodyBlueprint->GeneratedClass, FVector(0, 0, 0), FRotator::ZeroRotator);
 }
 
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, FString WeaponReference)

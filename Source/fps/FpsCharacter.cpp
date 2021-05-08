@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "WeaponBase.h"
 #include "PickUpWeapon.h"
+#include "WeaponModelForBody.h"
 #include "FPSHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -112,6 +113,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, Armor);
 	DOREPLIFETIME(AFPSCharacter, PickableWeapon);
 	DOREPLIFETIME(AFPSCharacter, PrimaryWeapon);
+	DOREPLIFETIME(AFPSCharacter, WeaponModelForBody);
 }
 
 // Called every frame
@@ -398,20 +400,35 @@ void AFPSCharacter::WakeUpBodyMesh()
 
 void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 {
+	// Attach AWeaponBase Actor for first-person view
 	PrimaryWeapon = WeaponBase;
 	FName AttachingGripPointName = PrimaryWeapon->GetAttachingGripPointName();
 	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
 	PrimaryWeapon->Initialize(this);
+
+	// Attach AWeaponModelForBody for third-person view
+	WeaponModelForBody = PrimaryWeapon->SpawnWeaponModelForBodyActor();
+	if (WeaponModelForBody == NULL) return;
+	WeaponModelForBody->SetOwner(this);
+	WeaponModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
 }
 
 AWeaponBase* AFPSCharacter::UnEquipWeapon()
 {
 	if (PrimaryWeapon == NULL) return NULL;
+
+	// UnEquip PrimaryWeapon
 	AWeaponBase* WeaponInstance = PrimaryWeapon;
 	PrimaryWeapon = NULL;
 	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	WeaponInstance->SetOwner(NULL);
 	WeaponInstance->OnUnEquipped();
+
+	// UnEquip WeaponModelForThirdPerson
+	if (WeaponModelForBody == NULL) return WeaponInstance;
+	WeaponModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	WeaponModelForBody->Destroy();
+
 	return WeaponInstance;
 }
 

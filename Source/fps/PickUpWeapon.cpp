@@ -85,13 +85,11 @@ void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
 	FVector NormalImpulse,
 	const FHitResult& HitResult)
 {
-	UE_LOG(LogTemp, Log, TEXT("OnWeaponMeshComponentHit!"));
 	UAudioComponent* AudioComponent = UGameplayStatics::SpawnSoundAtLocation(this, DropSound, HitResult.Location);
 	
 	FVector Direction;
 	float Speed;
 	GetVelocity().ToDirectionAndLength(Direction, Speed);
-	UE_LOG(LogTemp, Log, TEXT("Speed : %f"), &Speed);
 
 	const float ClampRangeA = 500.f;
 	const float ClampRangeB = 30.f;
