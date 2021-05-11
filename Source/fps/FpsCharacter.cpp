@@ -202,7 +202,6 @@ void AFPSCharacter::CrouchReleased()
 void AFPSCharacter::ActionPressed()
 {
 	if (PrimaryWeapon == NULL) return;
-	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
 	ServerRPCStartAction(GetWorld()->GetFirstPlayerController());
 }
 
@@ -215,7 +214,6 @@ void AFPSCharacter::ActionReleased()
 void AFPSCharacter::SubactionPressed()
 {
 	if (PrimaryWeapon == NULL) return;
-	PrimaryWeapon->SetParentAnimInstance(HandsMeshComponent->GetAnimInstance());
 	ServerRPCStartSubaction();
 }
 
@@ -467,6 +465,11 @@ AWeaponBase* AFPSCharacter::GetPrimaryWeapon()
 USkeletalMeshComponent* AFPSCharacter::GetHandsMeshComponent()
 {
 	return HandsMeshComponent;
+}
+
+USkeletalMeshComponent* AFPSCharacter::GetBodyMeshComponent()
+{
+	return BodyMeshComponent;
 }
 
 void AFPSCharacter::SetPickableWeapon(APickUpWeapon* Instance)

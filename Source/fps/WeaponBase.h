@@ -85,19 +85,30 @@ protected:
 		  About animation
 	***************************/
 	// AnimInstance for play animation from parent component
-	UAnimInstance* ParentAnimInstance;
+	UAnimInstance* HandsAnimInstance;
+
+	UAnimInstance* BodyAnimInstance;
 
 	// AnimationMontage to play each time do action
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* ActionAnimation;
+	class UAnimMontage* HandsActionAnimation;
 
 	// AnimationMontage to play each time do subaction
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* SubactionAnimation;
+	UAnimMontage* HandsSubactionAnimation;
 
 	// AnimationMontage to play each time do reload
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* ReloadAnimation;
+	UAnimMontage* HandsReloadAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* BodyActionAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* BodySubactionAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* BodyReloadAnimation;
 
 	/**************************
 			  Sounds
@@ -176,11 +187,6 @@ public:
 	void OnSubaction();
 	
 	void OnReload();
-	
-	/**************************
-		For playing animation
-	***************************/
-	void PlayAnimMontage(UAnimMontage* AnimMontage);
 
 	/**************************
 		  Getter & Setter
@@ -202,7 +208,10 @@ public:
 	FName GetAttachingGripPointName();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
-	void SetParentAnimInstance(UAnimInstance* AnimInstance);
+	void SetHandsAnimInstance(UAnimInstance* AnimInstance);
+
+	UFUNCTION(BlueprintCallable, Category = "Setter")
+	void SetBodyAnimInstance(UAnimInstance* AnimInstance);
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPlayerController(APlayerController* Instance);

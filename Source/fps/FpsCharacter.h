@@ -33,6 +33,7 @@ class FPS_API AFPSCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* HandsMeshComponent;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	// PrimaryWeapon will be loaded at BeginPlay();
@@ -217,6 +218,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	USkeletalMeshComponent* GetHandsMeshComponent();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	USkeletalMeshComponent* GetBodyMeshComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);

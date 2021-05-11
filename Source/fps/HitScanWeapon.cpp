@@ -24,9 +24,7 @@ void AHitScanWeapon::OnUnEquipped()
 void AHitScanWeapon::OnAction()
 {
 	UE_LOG(LogTemp, Log, TEXT("HitScanWeapon OnAction"));
-
 	if (CurrentAmmo <= 0) return;
-	CurrentAmmo -= !IsAmmoInfinite;
 
 	Super::OnAction();
 	FHitResult HitResult;
