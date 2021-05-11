@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "FPSCharacter.h"
 #include "PickUpWeapon.h"
+#include "WeaponModelForBody.h"
 #include "Net/UnrealNetwork.h"
 
 /*
@@ -20,6 +21,7 @@ AWeaponBase::AWeaponBase()
 	PrimaryActorTick.bCanEverTick = false;	
 	// Components
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+	WeaponMesh->SetOnlyOwnerSee(true);
 	RootComponent = WeaponMesh;
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(RootComponent);
@@ -41,12 +43,16 @@ AWeaponBase::AWeaponBase()
 	Damage = 40;
 
 	// Animation instance
-	ParentAnimInstance = NULL;
+	HandsAnimInstance = NULL;
+	BodyAnimInstance = NULL;
 
 	// Animations
-	ActionAnimation = NULL;
-	SubactionAnimation = NULL;
-	ReloadAnimation = NULL;
+	HandsActionAnimation = NULL;
+	HandsSubactionAnimation = NULL;
+	HandsReloadAnimation = NULL;
+	BodyActionAnimation = NULL;
+	BodySubactionAnimation = NULL;
+	BodyReloadAnimation = NULL;
 
 	// Sounds
 	ActionSound = NULL;
@@ -79,13 +85,15 @@ void AWeaponBase::Initialize(AFPSCharacter* FPSCharacter)
 		UE_LOG(LogTemp, Log, TEXT("Initialize() : Client : %s"), *(FPSCharacter->GetActorLabel()));
 	}
 	SetOwner(FPSCharacter);
-	SetParentAnimInstance(FPSCharacter->GetHandsMeshComponent()->GetAnimInstance());
+	SetHandsAnimInstance(FPSCharacter->GetHandsMeshComponent()->GetAnimInstance());
+	SetBodyAnimInstance(FPSCharacter->GetBodyMeshComponent()->GetAnimInstance());
 }
 
 void AWeaponBase::OnUnEquipped()
 {
 	SetOwner(NULL);
-	SetParentAnimInstance(NULL);
+	SetHandsAnimInstance(NULL);
+	SetBodyAnimInstance(NULL);
 }
 
 void AWeaponBase::StartAction()
@@ -107,6 +115,8 @@ void AWeaponBase::StartAction()
 
 void AWeaponBase::StartSubaction()
 {
+	if (SubAmmo <= 0) return;
+
 	//Retry StartAction() after delay.
 	float Delay = GetDelay();
 	if (0.f < Delay)
@@ -124,18 +134,20 @@ void AWeaponBase::StartSubaction()
 
 void AWeaponBase::StartReload()
 {
-	UE_LOG(LogTemp, Log, TEXT("Reload()"));
+	UE_LOG(LogTemp, Log, TEXT("StartReload()"));
 
-	// return if is on delay
+	// return if is on delay or ammo is full
 	if (FunctionAfterDelay == &AWeaponBase::OnReload 
-		|| CurrentAmmo == MagazineSize
-		|| SubAmmo <= 0) return;
+		|| CurrentAmmo == MagazineSize) return;
 
 	FunctionAfterDelay = &AWeaponBase::OnReload;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
 
 	// Play reloading animation
-	if(ReloadAnimation!=NULL) PlayAnimMontage(ReloadAnimation);
+	if (HandsReloadAnimation != NULL && HandsAnimInstance != NULL) HandsAnimInstance->Montage_Play(HandsReloadAnimation);
+	else UE_LOG(LogTemp, Log, TEXT("HandsReloadAnimation or HandsAnimInstance is NULL"));
+	if (BodyReloadAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodyReloadAnimation);
+	else UE_LOG(LogTemp, Log, TEXT("BodyReloadAnimation or BodyAnimInstance is NULL"));
 
 	// Play reloading sound
 	if(ReloadSound) 
@@ -206,21 +218,26 @@ void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
 	if (GetNetMode() == ENetMode::NM_ListenServer)
 	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx_Implementation() : Server"));
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx() : Server"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx_Implementation() : Client"));
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx() : Client"));
 	}
+
 	// Play animation
-	if (ActionAnimation != NULL)
+	if (HandsActionAnimation != NULL && HandsAnimInstance != NULL)
 	{
-		PlayAnimMontage(ActionAnimation);
+		UE_LOG(LogTemp, Log, TEXT("HandsAnimInstance->Montage_Play(HandsActionAnimation)"));
+		HandsAnimInstance->Montage_Play(HandsActionAnimation);
 	}
-	else
+	else UE_LOG(LogTemp, Log, TEXT("HandsActionAnimation or HandsAnimInstance is NULL"));
+	if (BodyActionAnimation != NULL && BodyAnimInstance != NULL)
 	{
-		UE_LOG(LogTemp, Log, TEXT("ActionAnimation NULL"));
+		UE_LOG(LogTemp, Log, TEXT("BodyAnimInstance->Montage_Play(BodyActionAnimation)"));
+		BodyAnimInstance->Montage_Play(BodyActionAnimation);
 	}
+	else UE_LOG(LogTemp, Log, TEXT("BodyActionAnimation or BodyAnimInstance is NULL"));
 
 	// Play sound
 	if (ActionSound != NULL)
@@ -238,7 +255,10 @@ void AWeaponBase::OnSubaction()
 	UE_LOG(LogTemp, Log, TEXT("OnSubaction()"));
 
 	// Play animation
-	if (SubactionAnimation != NULL) PlayAnimMontage(SubactionAnimation);
+	if (HandsSubactionAnimation != NULL && HandsAnimInstance != NULL) HandsAnimInstance->Montage_Play(HandsSubactionAnimation);
+	else UE_LOG(LogTemp, Log, TEXT("HandsSubactionAnimation or HandsAnimInstance is NULL"));
+	if (BodySubactionAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodySubactionAnimation);
+	else UE_LOG(LogTemp, Log, TEXT("BodySubactionAnimation or BodyAnimInstance is NULL"));
 
 	// Play sound
 	if (SubactionSound != NULL)
@@ -253,26 +273,6 @@ void AWeaponBase::OnReload()
 	int ChargedAmmo = (RequiredAmmo < SubAmmo) ? RequiredAmmo : SubAmmo;
 	SubAmmo -= ChargedAmmo;
 	CurrentAmmo += ChargedAmmo;
-}
-
-void AWeaponBase::PlayAnimMontage(UAnimMontage* AnimMontage)
-{
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage(): Server"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage(): Client"));
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage() : label : %s"), *GetActorLabel());
-	if (ParentAnimInstance == NULL)
-	{
-		UE_LOG(LogTemp, Log, TEXT("PlayAnimMontage() : ParentAnimInstance == NULL"));
-		return;
-	}
-	ParentAnimInstance->Montage_Play(AnimMontage);
 }
 
 float AWeaponBase::GetDelay()
@@ -305,18 +305,14 @@ FName AWeaponBase::GetAttachingGripPointName()
 	return AttachingGripPointName;
 }
 
-void AWeaponBase::SetParentAnimInstance(UAnimInstance* Instance)
+void AWeaponBase::SetHandsAnimInstance(UAnimInstance* Instance)
 {
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Server %s"), *GetActorLabel());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("SetParentAnimInstance(): Client %s"), *GetActorLabel());
-	}
+	HandsAnimInstance = Instance;
+}
 
-	ParentAnimInstance = Instance;
+void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
+{
+	BodyAnimInstance = Instance;
 }
 
 void AWeaponBase::SetPlayerController(APlayerController* Instance)
@@ -329,6 +325,12 @@ APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
 	if (PickUpWeaponBlueprint == NULL) return NULL;
 	FRotator Rotation = GetActorRotation();
 	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+}
+
+AWeaponModelForBody* AWeaponBase::SpawnWeaponModelForBodyActor()
+{
+	if (WeaponModelForBodyBlueprint == NULL) return NULL;
+	return GetWorld()->SpawnActor<AWeaponModelForBody>(WeaponModelForBodyBlueprint->GeneratedClass, FVector(0, 0, 0), FRotator::ZeroRotator);
 }
 
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, FString WeaponReference)
