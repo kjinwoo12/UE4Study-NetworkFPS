@@ -8,6 +8,14 @@
 
 class AFPSCharacter;
 
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Rifle UMETA(DisplayName = "Rifle"),
+	Knife UMETA(DisplayName = "Knife"),
+};
+
 UCLASS()
 class FPS_API AWeaponBase : public AActor
 {
@@ -25,59 +33,62 @@ protected:
 	USceneComponent* Muzzle;
 
 	/**************************
-			  Variable
+			 Properties
 	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = "Component")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	FName AttachingGripPointName;
 
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	EWeaponType WeaponType;
+
 	// Reach of weapon
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Reach;
 
 	// Delay of Action for next action
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float ActionDelay;
 
 	// Delay of Subaction for next action
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float SubactionDelay;
 	
 	// If it's true, action will be run until StopAction is called.
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	bool ActionLoopEnable;
 
 	// If it's true, subaction will be run until StopSubaction is called.
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	bool SubactionLoopEnable;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float ReloadDelay;
 
 	// Ammo count you can hold once at one magazine
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	int MagazineSize;
 
 	// Left ammo you can use before reload
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "properties")
 	int CurrentAmmo;
 
 	// Ammo count for reload
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "properties")
 	int SubAmmo;
 
 	// If it's true, you don't consume your ammo.
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	bool IsAmmoInfinite;
 
 	// 0.f ~ 1.f
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Accuracy;
 
 	// higher is more stable.
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float MovementStability;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Variable")
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Damage;
 
 
@@ -90,24 +101,24 @@ protected:
 	UAnimInstance* BodyAnimInstance;
 
 	// AnimationMontage to play each time do action
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* HandsActionAnimation;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Hands")
+	UAnimMontage* HandsActionAnimation;
 
 	// AnimationMontage to play each time do subaction
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Hands")
 	UAnimMontage* HandsSubactionAnimation;
 
 	// AnimationMontage to play each time do reload
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Hands")
 	UAnimMontage* HandsReloadAnimation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Body")
 	UAnimMontage* BodyActionAnimation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Body")
 	UAnimMontage* BodySubactionAnimation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Body")
 	UAnimMontage* BodyReloadAnimation;
 
 	/**************************
@@ -206,6 +217,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	FName GetAttachingGripPointName();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	EWeaponType GetWeaponType();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetHandsAnimInstance(UAnimInstance* AnimInstance);
