@@ -51,21 +51,24 @@ class FPS_API AFPSCharacter : public ACharacter
 	UCharacterMovementComponent* MovementComponent;
 
 	/**************************
-			  Variable
+			Properties
 	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float MaxHealth;
 	
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Properties")
 	float Health;
 
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float MaxArmor;
 
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Properties")
 	float Armor;
 
-	bool bIsDead;
+	/**************************
+				etc
+	***************************/
+	bool IsDead;
 
 	FTimerHandle RespawnTimerHandle;
 

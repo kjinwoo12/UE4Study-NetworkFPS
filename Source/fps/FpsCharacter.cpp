@@ -41,7 +41,7 @@ void AFPSCharacter::InitializeMovementComponent()
 {
 	MovementComponent = ACharacter::GetCharacterMovement();
 	MovementComponent->bUseFlatBaseForFloorChecks = true;
-	MovementComponent->MaxWalkSpeed = 200;
+	MovementComponent->MaxWalkSpeed = 400;
 	MovementComponent->MaxWalkSpeedCrouched = 200;
 	MovementComponent->NavAgentProps.bCanCrouch = true;
 }
@@ -85,7 +85,7 @@ void AFPSCharacter::InitializeGameplayVariable()
 	Health = 100;
 	MaxArmor = 100;
 	Armor = 50;
-	bIsDead = false;
+	IsDead = false;
 }
 
 // Called when the game starts or when spawned
@@ -161,31 +161,31 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AFPSCharacter::MoveForward(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void AFPSCharacter::MoveRight(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void AFPSCharacter::AddControllerPitchInput(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	Super::AddControllerPitchInput(Value);
 }
 
 void AFPSCharacter::AddControllerYawInput(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	Super::AddControllerYawInput(Value);
 }
 
 void AFPSCharacter::Jump()
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	Super::Jump();
 }
 
@@ -341,7 +341,7 @@ void AFPSCharacter::OnRep_InitializePrimaryWeapon()
 float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Log, TEXT("FPSCharacter TakeDamage"));
-	if (bIsDead) return 0.f;
+	if (IsDead) return 0.f;
 
 	float ReducedDamageByArmor = Damage * 0.5f;
 	ReducedDamageByArmor = (ReducedDamageByArmor > Armor) ? Armor : ReducedDamageByArmor;
@@ -362,7 +362,7 @@ void AFPSCharacter::Die()
 {
 	UE_LOG(LogTemp, Log, TEXT("Die! : label = %s"), *GetActorLabel());
 
-	bIsDead = true;
+	IsDead = true;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);
 
@@ -374,7 +374,7 @@ void AFPSCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Log, TEXT("Respawn"));
 
-	bIsDead = false;
+	IsDead = false;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	HandsMeshComponent->SetOwnerNoSee(false);
 
