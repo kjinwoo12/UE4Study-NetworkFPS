@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -86,6 +87,8 @@ void AFPSCharacter::InitializeGameplayVariable()
 	MaxArmor = 100;
 	Armor = 50;
 	IsDead = false;
+	AimPitch = 0;
+	AimYaw = 0;
 }
 
 // Called when the game starts or when spawned
@@ -114,6 +117,8 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, PickableWeapon);
 	DOREPLIFETIME(AFPSCharacter, PrimaryWeapon);
 	DOREPLIFETIME(AFPSCharacter, WeaponModelForBody);
+	DOREPLIFETIME(AFPSCharacter, AimPitch);
+	DOREPLIFETIME(AFPSCharacter, AimYaw);
 }
 
 // Called every frame
@@ -121,6 +126,7 @@ void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ClientRPCTickCrosshair();
+	UpdateActorDirectionByAim(DeltaTime);
 }
 
 void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
@@ -130,6 +136,37 @@ void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
 	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
 	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
+}
+
+void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)
+{
+	if (GetNetMode() != NM_ListenServer) return;
+
+	FRotator AimRotator = FRotator(AimPitch, AimYaw, 0);
+	FRotator ControlRotation = GetControlRotation();
+	FRotator ActorRotation = GetActorRotation();
+	AimRotator = UKismetMathLibrary::RInterpTo(
+		AimRotator,
+		UKismetMathLibrary::NormalizedDeltaRotator(ControlRotation, ActorRotation),
+		DeltaTime,
+		0
+		);
+	AimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
+	AimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
+
+	// if the character is moving, or the Controller's aim direction is over 90 degree,
+	// then make body of the character to follow the aim direction.
+	float CharacterSpeed = 0;
+	FVector BodyDirection;
+	GetVelocity().ToDirectionAndLength(BodyDirection, CharacterSpeed);
+	if (CharacterSpeed > 0)
+	{ 
+		SetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
+	}
+	else if (AimRotator.Yaw < -90 || 90 < AimRotator.Yaw)
+	{
+		SetActorRotation(FRotator(0, ActorRotation.Yaw + AimRotator.Yaw - AimYaw, 0));
+	}
 }
 
 // Called to bind functionality to input
@@ -470,6 +507,16 @@ USkeletalMeshComponent* AFPSCharacter::GetHandsMeshComponent()
 USkeletalMeshComponent* AFPSCharacter::GetBodyMeshComponent()
 {
 	return BodyMeshComponent;
+}
+
+float AFPSCharacter::GetAimPtich()
+{
+	return AimPitch;
+}
+
+float AFPSCharacter::GetAimYaw()
+{
+	return AimYaw;
 }
 
 void AFPSCharacter::SetPickableWeapon(APickUpWeapon* Instance)

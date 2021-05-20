@@ -68,9 +68,20 @@ class FPS_API AFPSCharacter : public ACharacter
 	/**************************
 				etc
 	***************************/
+
+	/**************************
+				etc
+	***************************/
 	bool IsDead;
 
 	FTimerHandle RespawnTimerHandle;
+
+	UPROPERTY(Replicated)
+	float AimPitch;
+
+	UPROPERTY(Replicated)
+	float AimYaw;
+
 
 public:
 	// Sets default values for this character's properties
@@ -109,6 +120,7 @@ public:
 
 	UFUNCTION(Client, UnReliable)
 	void ClientRPCTickCrosshair();
+	void UpdateActorDirectionByAim(float DeltaTime);
 
 	/**************************
 			Bind keys
@@ -224,6 +236,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	USkeletalMeshComponent* GetBodyMeshComponent();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	float GetAimPtich();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	float GetAimYaw();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);
