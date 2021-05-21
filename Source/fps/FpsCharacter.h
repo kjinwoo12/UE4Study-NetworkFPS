@@ -68,10 +68,6 @@ class FPS_API AFPSCharacter : public ACharacter
 	/**************************
 				etc
 	***************************/
-
-	/**************************
-				etc
-	***************************/
 	bool IsDead;
 
 	FTimerHandle RespawnTimerHandle;
@@ -180,6 +176,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPCDropWeapon();
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MulticastRPCSetActorRotation(FRotator Rotator);
 
 	/**************************
 				OnRep

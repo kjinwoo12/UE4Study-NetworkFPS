@@ -161,11 +161,11 @@ void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)
 	GetVelocity().ToDirectionAndLength(BodyDirection, CharacterSpeed);
 	if (CharacterSpeed > 0)
 	{ 
-		SetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
+		MulticastRPCSetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
 	}
 	else if (AimRotator.Yaw < -90 || 90 < AimRotator.Yaw)
 	{
-		SetActorRotation(FRotator(0, ActorRotation.Yaw + AimRotator.Yaw - AimYaw, 0));
+		MulticastRPCSetActorRotation(FRotator(0, ActorRotation.Yaw + AimRotator.Yaw - AimYaw, 0));
 	}
 }
 
@@ -367,6 +367,16 @@ void AFPSCharacter::ServerRPCDropWeapon_Implementation()
 	UStaticMeshComponent* WeaponMesh = PickUpWeapon->GetWeaponMesh();
 	const float ImpulsePower = 300.f;
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
+}
+
+bool AFPSCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
+{
+	return  true;
+}
+
+void AFPSCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
+{
+	SetActorRotation(Rotator);
 }
 
 void AFPSCharacter::OnRep_InitializePrimaryWeapon()
