@@ -51,23 +51,33 @@ class FPS_API AFPSCharacter : public ACharacter
 	UCharacterMovementComponent* MovementComponent;
 
 	/**************************
-			  Variable
+			Properties
 	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float MaxHealth;
 	
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Properties")
 	float Health;
 
-	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float MaxArmor;
 
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = Gameplay)
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Properties")
 	float Armor;
 
-	bool bIsDead;
+	/**************************
+				etc
+	***************************/
+	bool IsDead;
 
 	FTimerHandle RespawnTimerHandle;
+
+	UPROPERTY(Replicated)
+	float AimPitch;
+
+	UPROPERTY(Replicated)
+	float AimYaw;
+
 
 public:
 	// Sets default values for this character's properties
@@ -106,6 +116,7 @@ public:
 
 	UFUNCTION(Client, UnReliable)
 	void ClientRPCTickCrosshair();
+	void UpdateActorDirectionByAim(float DeltaTime);
 
 	/**************************
 			Bind keys
@@ -166,6 +177,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCDropWeapon();
 
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MulticastRPCSetActorRotation(FRotator Rotator);
+
 	/**************************
 				OnRep
 	***************************/
@@ -221,6 +235,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	USkeletalMeshComponent* GetBodyMeshComponent();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	float GetAimPtich();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	float GetAimYaw();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);

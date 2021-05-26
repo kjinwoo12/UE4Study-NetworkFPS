@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -41,7 +42,7 @@ void AFPSCharacter::InitializeMovementComponent()
 {
 	MovementComponent = ACharacter::GetCharacterMovement();
 	MovementComponent->bUseFlatBaseForFloorChecks = true;
-	MovementComponent->MaxWalkSpeed = 200;
+	MovementComponent->MaxWalkSpeed = 400;
 	MovementComponent->MaxWalkSpeedCrouched = 200;
 	MovementComponent->NavAgentProps.bCanCrouch = true;
 }
@@ -85,7 +86,9 @@ void AFPSCharacter::InitializeGameplayVariable()
 	Health = 100;
 	MaxArmor = 100;
 	Armor = 50;
-	bIsDead = false;
+	IsDead = false;
+	AimPitch = 0;
+	AimYaw = 0;
 }
 
 // Called when the game starts or when spawned
@@ -114,6 +117,8 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, PickableWeapon);
 	DOREPLIFETIME(AFPSCharacter, PrimaryWeapon);
 	DOREPLIFETIME(AFPSCharacter, WeaponModelForBody);
+	DOREPLIFETIME(AFPSCharacter, AimPitch);
+	DOREPLIFETIME(AFPSCharacter, AimYaw);
 }
 
 // Called every frame
@@ -121,6 +126,7 @@ void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ClientRPCTickCrosshair();
+	UpdateActorDirectionByAim(DeltaTime);
 }
 
 void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
@@ -130,6 +136,37 @@ void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
 	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
 	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
+}
+
+void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)
+{
+	if (GetNetMode() != NM_ListenServer) return;
+
+	FRotator AimRotator = FRotator(AimPitch, AimYaw, 0);
+	FRotator ControlRotation = GetControlRotation();
+	FRotator ActorRotation = GetActorRotation();
+	AimRotator = UKismetMathLibrary::RInterpTo(
+		AimRotator,
+		UKismetMathLibrary::NormalizedDeltaRotator(ControlRotation, ActorRotation),
+		DeltaTime,
+		0
+		);
+	AimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
+	AimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
+
+	// if the character is moving, or the Controller's aim direction is over 90 degree,
+	// then make body of the character to follow the aim direction.
+	float CharacterSpeed = 0;
+	FVector BodyDirection;
+	GetVelocity().ToDirectionAndLength(BodyDirection, CharacterSpeed);
+	if (CharacterSpeed > 0)
+	{ 
+		MulticastRPCSetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
+	}
+	else if (AimRotator.Yaw < -90 || 90 < AimRotator.Yaw)
+	{
+		MulticastRPCSetActorRotation(FRotator(0, ActorRotation.Yaw + AimRotator.Yaw - AimYaw, 0));
+	}
 }
 
 // Called to bind functionality to input
@@ -161,31 +198,31 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AFPSCharacter::MoveForward(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void AFPSCharacter::MoveRight(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void AFPSCharacter::AddControllerPitchInput(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	Super::AddControllerPitchInput(Value);
 }
 
 void AFPSCharacter::AddControllerYawInput(float Value)
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	Super::AddControllerYawInput(Value);
 }
 
 void AFPSCharacter::Jump()
 {
-	if (bIsDead) return;
+	if (IsDead) return;
 	Super::Jump();
 }
 
@@ -332,6 +369,16 @@ void AFPSCharacter::ServerRPCDropWeapon_Implementation()
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
 }
 
+bool AFPSCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
+{
+	return  true;
+}
+
+void AFPSCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
+{
+	SetActorRotation(Rotator);
+}
+
 void AFPSCharacter::OnRep_InitializePrimaryWeapon()
 {
 	if (PrimaryWeapon == NULL) return;
@@ -341,7 +388,7 @@ void AFPSCharacter::OnRep_InitializePrimaryWeapon()
 float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Log, TEXT("FPSCharacter TakeDamage"));
-	if (bIsDead) return 0.f;
+	if (IsDead) return 0.f;
 
 	float ReducedDamageByArmor = Damage * 0.5f;
 	ReducedDamageByArmor = (ReducedDamageByArmor > Armor) ? Armor : ReducedDamageByArmor;
@@ -362,7 +409,7 @@ void AFPSCharacter::Die()
 {
 	UE_LOG(LogTemp, Log, TEXT("Die! : label = %s"), *GetActorLabel());
 
-	bIsDead = true;
+	IsDead = true;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);
 
@@ -374,7 +421,7 @@ void AFPSCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Log, TEXT("Respawn"));
 
-	bIsDead = false;
+	IsDead = false;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	HandsMeshComponent->SetOwnerNoSee(false);
 
@@ -470,6 +517,16 @@ USkeletalMeshComponent* AFPSCharacter::GetHandsMeshComponent()
 USkeletalMeshComponent* AFPSCharacter::GetBodyMeshComponent()
 {
 	return BodyMeshComponent;
+}
+
+float AFPSCharacter::GetAimPtich()
+{
+	return AimPitch;
+}
+
+float AFPSCharacter::GetAimYaw()
+{
+	return AimYaw;
 }
 
 void AFPSCharacter::SetPickableWeapon(APickUpWeapon* Instance)

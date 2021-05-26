@@ -26,8 +26,9 @@ AWeaponBase::AWeaponBase()
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(RootComponent);
 
-	// Variable
+	// properties
 	AttachingGripPointName = "GripPoint";
+	WeaponType = EWeaponType::Rifle;
 	Reach = 6000.f;
 	ActionDelay = 0.125f;
 	ActionLoopEnable = true;
@@ -216,38 +217,20 @@ void AWeaponBase::OnAction()
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx() : Server"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCOnActionFx() : Client"));
-	}
-
-	// Play animation
+	// Play animations
 	if (HandsActionAnimation != NULL && HandsAnimInstance != NULL)
-	{
-		UE_LOG(LogTemp, Log, TEXT("HandsAnimInstance->Montage_Play(HandsActionAnimation)"));
 		HandsAnimInstance->Montage_Play(HandsActionAnimation);
-	}
-	else UE_LOG(LogTemp, Log, TEXT("HandsActionAnimation or HandsAnimInstance is NULL"));
+	else
+		UE_LOG(LogTemp, Log, TEXT("HandsActionAnimation or HandsAnimInstance is NULL"));
 	if (BodyActionAnimation != NULL && BodyAnimInstance != NULL)
-	{
-		UE_LOG(LogTemp, Log, TEXT("BodyAnimInstance->Montage_Play(BodyActionAnimation)"));
 		BodyAnimInstance->Montage_Play(BodyActionAnimation);
-	}
 	else UE_LOG(LogTemp, Log, TEXT("BodyActionAnimation or BodyAnimInstance is NULL"));
 
 	// Play sound
 	if (ActionSound != NULL)
-	{
 		UGameplayStatics::PlaySoundAtLocation(this, ActionSound, GetActorLocation());
-	}
 	else
-	{
 		UE_LOG(LogTemp, Log, TEXT("ActionSound NULL"));
-	}
 }
 
 void AWeaponBase::OnSubaction()
@@ -303,6 +286,11 @@ APlayerController* AWeaponBase::GetPlayerController()
 FName AWeaponBase::GetAttachingGripPointName()
 {
 	return AttachingGripPointName;
+}
+
+EWeaponType AWeaponBase::GetWeaponType()
+{
+	return WeaponType;
 }
 
 void AWeaponBase::SetHandsAnimInstance(UAnimInstance* Instance)
