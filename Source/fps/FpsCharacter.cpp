@@ -104,7 +104,7 @@ void AFPSCharacter::BeginPlay()
 
 	if (GetNetMode() == NM_ListenServer)
 	{
-		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapon/BP_HitScanWeapon_TestGun.BP_HitScanWeapon_TestGun_C'"));
+		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapons/BP_HitScanWeapon_TestGun.BP_HitScanWeapon_TestGun_C'"));
 	}
 }
 
@@ -275,6 +275,8 @@ void AFPSCharacter::PickUpWeaponPressed()
 void AFPSCharacter::DropWeaponPressed()
 {
 	if (PrimaryWeapon == NULL) return;
+	ServerRPCStopAction();
+	ServerRPCStopSubaction();
 	DropWeapon();
 }
 
@@ -502,6 +504,11 @@ float AFPSCharacter::GetHealth()
 float AFPSCharacter::GetArmor()
 {
 	return Armor;
+}
+
+UCameraComponent* AFPSCharacter::GetCameraComponent()
+{
+	return CameraComponent;
 }
 
 AWeaponBase* AFPSCharacter::GetPrimaryWeapon()

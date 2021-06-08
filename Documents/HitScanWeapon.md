@@ -11,7 +11,10 @@ AHitScanWeapon is based on AWeaponBase. It is added `LineTrace` function. When `
 
 # Tutorial
 ## How to create a new weapon.
-Same with [AWeaponBase.md](./WeaponBase.md).
+Same with [AWeaponBase.md](./WeaponBase.md). But there is another step for create `BulletTracer`. Follow the steps below after finish tutorial of `AWeaponBase`.
+
+1. Find `MyContent/Weapons/Effects/BP_BulletTracer`.
+2. Set `Gameplay - Bullet Tracer Blueprint` of your new weapon blueprint as `BP_BulletTracer`.
 
 # How_to_Guide
 Same with [AWeaponBase.md](./WeaponBase.md).

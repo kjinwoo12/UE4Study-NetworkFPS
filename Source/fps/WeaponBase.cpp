@@ -200,15 +200,7 @@ void AWeaponBase::StopSubaction()
 
 void AWeaponBase::OnAction()
 {
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("OnAction() : Server"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("OnAction() : Client"));
-	}
-
+	UE_LOG(LogTemp, Log, TEXT("AWeaponBase::OnAction()"));
 	if (CurrentAmmo <= 0) return;
 	CurrentAmmo -= !IsAmmoInfinite;
 

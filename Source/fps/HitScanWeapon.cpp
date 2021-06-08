@@ -4,6 +4,7 @@
 #include "HitScanWeapon.h"
 #include "DrawDebugHelpers.h"
 #include "FPSCharacter.h"
+#include "Camera/CameraComponent.h"
 
 AHitScanWeapon::AHitScanWeapon()
 {
@@ -23,16 +24,29 @@ void AHitScanWeapon::OnUnEquipped()
 
 void AHitScanWeapon::OnAction()
 {
+	Super::OnAction();
 	UE_LOG(LogTemp, Log, TEXT("HitScanWeapon OnAction"));
 	if (CurrentAmmo <= 0) return;
 
-	Super::OnAction();
 	FHitResult HitResult;
-	if (!LineTrace(HitResult)) return;
-	FPointDamageEvent DamangeEvent;
-	DamangeEvent.HitInfo = HitResult;
+	if (LineTrace(HitResult))
+	{
+		FPointDamageEvent DamangeEvent;
+		DamangeEvent.HitInfo = HitResult;
 
-	HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
+		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
+	}
+	SpawnBulletTracer();
+}
+
+AActor* AHitScanWeapon::SpawnBulletTracer()
+{
+	UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::SpawnBulletTracer()"));
+	if (BulletTracerBlueprint == NULL) return NULL;
+	const FVector SpawnPosition = Muzzle->GetComponentToWorld().GetLocation();
+	FMinimalViewInfo CameraViewInfo;
+	Cast<AFPSCharacter>(GetOwner())->GetCameraComponent()->GetCameraView(1.0f, CameraViewInfo);
+	return GetWorld()->SpawnActor<AActor>(BulletTracerBlueprint->GeneratedClass, SpawnPosition, CameraViewInfo.Rotation);
 }
 
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
@@ -52,7 +66,7 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 	FVector MuzzleLocation = Muzzle->GetComponentLocation();
 
 	//It is for checking line. Player view point to end point
-	DrawDebugLine(
+	/*DrawDebugLine(
 		GetWorld(),
 		PlayerViewPointLocation,
 		LineTraceEnd,
@@ -61,7 +75,7 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 		5.f,
 		0.f,
 		1.f
-	);
+	);*/
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,
@@ -71,7 +85,7 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 		LineTraceCollisionQueryParams
 	);
 
-	if (!IsHit)
+	/*if (!IsHit)
 	{
 		DrawDebugLine(
 			GetWorld(),
@@ -96,7 +110,7 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 			0.f,
 			1.f
 		);
-	}
+	}*/
 
 	return IsHit;
 }

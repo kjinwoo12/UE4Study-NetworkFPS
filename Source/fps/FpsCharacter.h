@@ -228,6 +228,9 @@ public:
 	float GetArmor();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
+	UCameraComponent* GetCameraComponent();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetPrimaryWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")

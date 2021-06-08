@@ -137,13 +137,17 @@ protected:
 	class USoundBase* ReloadSound;
 
 	/**************************
-				etc
+			  Gameplay
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	UBlueprint* PickUpWeaponBlueprint;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	UBlueprint* WeaponModelForBodyBlueprint;
+
+	/**************************
+				etc
+	***************************/
 
 	APlayerController* PlayerController;
 

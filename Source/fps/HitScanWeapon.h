@@ -18,6 +18,11 @@ private:
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
 
+	/**************************
+			  Gameplay
+	***************************/
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UBlueprint* BulletTracerBlueprint;
 
 public:
 	// Sets default values for this actor's properties
@@ -34,9 +39,11 @@ public:
 	virtual void OnAction() override;
 
 	/**************************
-		   Other Method
+				etc
 	***************************/
-public:
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	AActor* SpawnBulletTracer();
+
 protected:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);
