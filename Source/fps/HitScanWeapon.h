@@ -42,7 +42,7 @@ public:
 				etc
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	AActor* SpawnBulletTracer();
+	AActor* SpawnBulletTracer(const FVector ImpactPoint);
 
 protected:
 	// For hit character

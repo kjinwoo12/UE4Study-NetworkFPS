@@ -198,6 +198,8 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCOnActionFx();
+
+	virtual void OnActionFx();
 	
 	void OnSubaction();
 	

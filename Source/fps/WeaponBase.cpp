@@ -209,6 +209,11 @@ void AWeaponBase::OnAction()
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
+	OnActionFx();
+}
+
+void AWeaponBase::OnActionFx()
+{
 	// Play animations
 	if (HandsActionAnimation != NULL && HandsAnimInstance != NULL)
 		HandsAnimInstance->Montage_Play(HandsActionAnimation);

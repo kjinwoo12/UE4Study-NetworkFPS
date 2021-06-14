@@ -36,17 +36,17 @@ void AHitScanWeapon::OnAction()
 
 		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
 	}
-	SpawnBulletTracer();
+
+	SpawnBulletTracer(HitResult.ImpactPoint);
 }
 
-AActor* AHitScanWeapon::SpawnBulletTracer()
+AActor* AHitScanWeapon::SpawnBulletTracer(const FVector ImpactPoint)
 {
 	UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::SpawnBulletTracer()"));
 	if (BulletTracerBlueprint == NULL) return NULL;
 	const FVector SpawnPosition = Muzzle->GetComponentToWorld().GetLocation();
-	FMinimalViewInfo CameraViewInfo;
-	Cast<AFPSCharacter>(GetOwner())->GetCameraComponent()->GetCameraView(1.0f, CameraViewInfo);
-	return GetWorld()->SpawnActor<AActor>(BulletTracerBlueprint->GeneratedClass, SpawnPosition, CameraViewInfo.Rotation);
+	const FVector BulletDirection = ImpactPoint - SpawnPosition;
+	return GetWorld()->SpawnActor<AActor>(BulletTracerBlueprint->GeneratedClass, SpawnPosition, BulletDirection.Rotation());
 }
 
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
@@ -85,32 +85,21 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 		LineTraceCollisionQueryParams
 	);
 
-	/*if (!IsHit)
+	if (!IsHit)
 	{
-		DrawDebugLine(
-			GetWorld(),
-			MuzzleLocation,
-			LineTraceEnd,
-			FColor(0, 255, 0),
-			false,
-			5.f,
-			0.f,
-			1.f
-		);
+		HitResult.ImpactPoint = LineTraceEnd;
 	}
-	else
-	{
-		DrawDebugLine(
-			GetWorld(),
-			MuzzleLocation,
-			HitResult.ImpactPoint,
-			FColor(0, 255, 0),
-			false,
-			5.f,
-			0.f,
-			1.f
-		);
-	}*/
+	
+	DrawDebugLine(
+		GetWorld(),
+		MuzzleLocation,
+		HitResult.ImpactPoint,
+		FColor(0, 255, 0),
+		false,
+		5.f,
+		0.f,
+		1.f
+	);
 
 	return IsHit;
 }
