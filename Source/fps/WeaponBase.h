@@ -29,9 +29,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Component")
 	USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly)
-	USceneComponent* Muzzle;
-
 	/**************************
 			 Properties
 	***************************/
@@ -198,8 +195,6 @@ public:
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCOnActionFx();
-
-	virtual void OnActionFx();
 	
 	void OnSubaction();
 	

@@ -127,6 +127,9 @@ void AFPSCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	ClientRPCTickCrosshair();
 	UpdateActorDirectionByAim(DeltaTime);
+
+	if (GetNetMode() == ENetMode::NM_Client) return;
+	ClientRPCUpdateCameraToServer();
 }
 
 void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
@@ -136,6 +139,21 @@ void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
 	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
 	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
+}
+
+void AFPSCharacter::ClientRPCUpdateCameraToServer_Implementation()
+{
+	ServerRPCSetCameraRotation(CameraComponent->GetComponentToWorld().GetRotation());
+}
+
+bool AFPSCharacter::ServerRPCSetCameraRotation_Validate(FQuat CameraRotation)
+{
+	return true;
+}
+
+void AFPSCharacter::ServerRPCSetCameraRotation_Implementation(FQuat CameraRotation)
+{
+	CameraComponent->SetWorldRotation(CameraRotation);
 }
 
 void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)

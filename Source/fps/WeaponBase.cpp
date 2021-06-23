@@ -23,8 +23,6 @@ AWeaponBase::AWeaponBase()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	WeaponMesh->SetOnlyOwnerSee(true);
 	RootComponent = WeaponMesh;
-	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
-	Muzzle->SetupAttachment(RootComponent);
 
 	// properties
 	AttachingGripPointName = "GripPoint";
@@ -208,11 +206,6 @@ void AWeaponBase::OnAction()
 }
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
-{
-	OnActionFx();
-}
-
-void AWeaponBase::OnActionFx()
 {
 	// Play animations
 	if (HandsActionAnimation != NULL && HandsAnimInstance != NULL)
