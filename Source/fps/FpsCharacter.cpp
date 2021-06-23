@@ -104,7 +104,7 @@ void AFPSCharacter::BeginPlay()
 
 	if (GetNetMode() == NM_ListenServer)
 	{
-		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapon/BP_HitScanWeapon_TestGun.BP_HitScanWeapon_TestGun_C'"));
+		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapons/BP_HitScanWeapon_TestGun.BP_HitScanWeapon_TestGun_C'"));
 	}
 }
 
@@ -127,6 +127,9 @@ void AFPSCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	ClientRPCTickCrosshair();
 	UpdateActorDirectionByAim(DeltaTime);
+
+	if (GetNetMode() == ENetMode::NM_Client) return;
+	ClientRPCUpdateCameraToServer();
 }
 
 void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
@@ -136,6 +139,21 @@ void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
 	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
 	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
+}
+
+void AFPSCharacter::ClientRPCUpdateCameraToServer_Implementation()
+{
+	ServerRPCSetCameraRotation(CameraComponent->GetComponentToWorld().GetRotation());
+}
+
+bool AFPSCharacter::ServerRPCSetCameraRotation_Validate(FQuat CameraRotation)
+{
+	return true;
+}
+
+void AFPSCharacter::ServerRPCSetCameraRotation_Implementation(FQuat CameraRotation)
+{
+	CameraComponent->SetWorldRotation(CameraRotation);
 }
 
 void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)
@@ -275,6 +293,8 @@ void AFPSCharacter::PickUpWeaponPressed()
 void AFPSCharacter::DropWeaponPressed()
 {
 	if (PrimaryWeapon == NULL) return;
+	ServerRPCStopAction();
+	ServerRPCStopSubaction();
 	DropWeapon();
 }
 
@@ -502,6 +522,11 @@ float AFPSCharacter::GetHealth()
 float AFPSCharacter::GetArmor()
 {
 	return Armor;
+}
+
+UCameraComponent* AFPSCharacter::GetCameraComponent()
+{
+	return CameraComponent;
 }
 
 AWeaponBase* AFPSCharacter::GetPrimaryWeapon()

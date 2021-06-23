@@ -29,9 +29,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Component")
 	USkeletalMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly)
-	USceneComponent* Muzzle;
-
 	/**************************
 			 Properties
 	***************************/
@@ -137,13 +134,17 @@ protected:
 	class USoundBase* ReloadSound;
 
 	/**************************
-				etc
+			  Gameplay
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	UBlueprint* PickUpWeaponBlueprint;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	UBlueprint* WeaponModelForBodyBlueprint;
+
+	/**************************
+				etc
+	***************************/
 
 	APlayerController* PlayerController;
 

@@ -15,9 +15,31 @@ class FPS_API AHitScanWeapon : public AWeaponBase
 	GENERATED_BODY()
 	
 private:
+	/**************************
+			Components
+	***************************/
+	UPROPERTY(EditDefaultsOnly)
+	USceneComponent* Muzzle;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UPointLightComponent* MuzzleFlashLight;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* MuzzleFlashTextureEffect;
+
+	/**************************
+			  Gameplay
+	***************************/
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UBlueprint* BulletTracerBlueprint;
+
+	/**************************
+				etc
+	***************************/
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
 
+	FTimerHandle MuzzleEffectTimer;
 
 public:
 	// Sets default values for this actor's properties
@@ -33,10 +55,15 @@ public:
 
 	virtual void OnAction() override;
 
+	UFUNCTION(Client, UnReliable)
+	void ClientRPCOnActionFx();
+
 	/**************************
-		   Other Method
+				etc
 	***************************/
-public:
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	AActor* SpawnBulletTracer(const FVector SpawnPosition, const FVector ImpactPoint);
+
 protected:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);

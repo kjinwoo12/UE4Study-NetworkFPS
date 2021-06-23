@@ -15,6 +15,8 @@ AWeaponModelForBody::AWeaponModelForBody()
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
 	WeaponMesh->SetOwnerNoSee(true);
 	RootComponent = WeaponMesh;
+	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
+	Muzzle->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

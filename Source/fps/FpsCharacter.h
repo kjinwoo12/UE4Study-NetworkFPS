@@ -116,6 +116,13 @@ public:
 
 	UFUNCTION(Client, UnReliable)
 	void ClientRPCTickCrosshair();
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPCUpdateCameraToServer();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRPCSetCameraRotation(FQuat CameraRotation);
+
 	void UpdateActorDirectionByAim(float DeltaTime);
 
 	/**************************
@@ -226,6 +233,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	float GetArmor();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	UCameraComponent* GetCameraComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetPrimaryWeapon();

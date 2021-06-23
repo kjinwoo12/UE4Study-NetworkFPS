@@ -16,7 +16,9 @@ protected:
 	***************************/
 	UPROPERTY(EditAnywhere, Category = "Component")
 	USkeletalMeshComponent* WeaponMesh;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category = "Component")
+	USceneComponent* Muzzle;
 public:	
 	// Sets default values for this actor's properties
 	AWeaponModelForBody();

@@ -23,7 +23,9 @@ Please update above if you know better way about setting Git environment.
 Get the issue what you want in `To do`. Set Assignees yourself or upload your comment on the card. Then move your card in `In progress`. After your Pull Request is merged, move your card to `Done` and close the issue.
 
 # Reference
-1. What is the default type of playable character? [FPSCharacter](./Documents/FPSCharacter.md)
-2. How to create a new weapon type? [WeaponBase](./Documents/WeaponBase.md)
-3. HUD with crosshair. [FPSHUD](./Documents/FPSHUD.md)
-4. How to drop weapon? [PickUpWeapon](./Documents/PickUpWeapon.md)
+- What is the default type of playable character? [FPSCharacter](./Documents/FPSCharacter.md)
+- How to create a new weapon type? [WeaponBase](./Documents/WeaponBase.md)
+- HUD with crosshair. [FPSHUD](./Documents/FPSHUD.md)
+- How to drop weapon? [PickUpWeapon](./Documents/PickUpWeapon.md)
+- [Gun Shop](./Documents/GunShop.md) system
+- What's the different about weapon between First person camera and Third person camera? [WeaponModelForBody](./Documents/WeaponModelForBody.md)
