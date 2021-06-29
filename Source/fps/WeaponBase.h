@@ -38,10 +38,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	EWeaponType WeaponType;
 
-	// Reach of weapon
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	float Reach;
-
 	// Delay of Action for next action
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float ActionDelay;

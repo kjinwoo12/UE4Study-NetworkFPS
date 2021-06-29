@@ -27,7 +27,6 @@ AWeaponBase::AWeaponBase()
 	// properties
 	AttachingGripPointName = "GripPoint";
 	WeaponType = EWeaponType::Rifle;
-	Reach = 6000.f;
 	ActionDelay = 0.125f;
 	ActionLoopEnable = true;
 	SubactionDelay = 1.f;
