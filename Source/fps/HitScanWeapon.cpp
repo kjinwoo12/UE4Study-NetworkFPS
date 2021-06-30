@@ -5,20 +5,10 @@
 #include "DrawDebugHelpers.h"
 #include "FPSCharacter.h"
 #include "Camera/CameraComponent.h"
-#include "Components/PointLightComponent.h"
 
 AHitScanWeapon::AHitScanWeapon()
 {
-	//Components
-	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
-	Muzzle->SetupAttachment(RootComponent);
-	MuzzleFlashLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("MuzzleFlashLight"));
-	MuzzleFlashLight->SetIntensity(20000.f);
-	MuzzleFlashLight->SetVisibility(false);
-	MuzzleFlashLight->SetupAttachment(RootComponent);
-	MuzzleFlashTextureEffect = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MuzzleFlashTextureEffect"));
-	MuzzleFlashTextureEffect->SetVisibility(false);
-	MuzzleFlashTextureEffect->SetupAttachment(RootComponent);
+	Reach = 6000.f;
 }
 
 void AHitScanWeapon::Initialize(AFPSCharacter* FPSCharacter)
@@ -47,37 +37,6 @@ void AHitScanWeapon::OnAction()
 
 		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
 	}
-
-	SpawnBulletTracer(Muzzle->GetComponentToWorld().GetLocation(), HitResult.ImpactPoint);
-	ClientRPCOnActionFx();
-}
-
-void AHitScanWeapon::ClientRPCOnActionFx_Implementation()
-{
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	MuzzleFlashLight->SetVisibility(true);
-	MuzzleFlashTextureEffect->SetVisibility(true);
-	FRotator Rotator = FRotator(FMath::RandRange(-90.f, 90.f), 0, -90);
-	MuzzleFlashTextureEffect->SetRelativeRotation(Rotator);
-	const float WaitTime = 0.05f;
-	TimerManager.ClearTimer(MuzzleEffectTimer);
-	TimerManager.SetTimer(
-		MuzzleEffectTimer,
-		FTimerDelegate::CreateLambda([&]()
-		{
-			MuzzleFlashLight->SetVisibility(false);
-			MuzzleFlashTextureEffect->SetVisibility(false);
-		}), 
-		WaitTime,
-		false);
-}
-
-AActor* AHitScanWeapon::SpawnBulletTracer(const FVector SpawnPosition, const FVector ImpactPoint)
-{
-	UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::SpawnBulletTracer()"));
-	if (BulletTracerBlueprint == NULL) return NULL;
-	const FVector BulletDirection = ImpactPoint - SpawnPosition;
-	return GetWorld()->SpawnActor<AActor>(BulletTracerBlueprint->GeneratedClass, SpawnPosition, BulletDirection.Rotation());
 }
 
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
@@ -92,9 +51,6 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 
 	// Get end point
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-
-	// Get Muzzle point
-	FVector MuzzleLocation = Muzzle->GetComponentLocation();
 
 	//It is for checking line. Player view point to end point
 	/*DrawDebugLine(
@@ -120,17 +76,6 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 	{
 		HitResult.ImpactPoint = LineTraceEnd;
 	}
-	
-	DrawDebugLine(
-		GetWorld(),
-		MuzzleLocation,
-		HitResult.ImpactPoint,
-		FColor(0, 255, 0),
-		false,
-		5.f,
-		0.f,
-		1.f
-	);
 
 	return IsHit;
 }

@@ -6,7 +6,7 @@
 ## 1. Fork and clone
 
 ## 2. Edit your BuildConfiguration.xml
-If you don't, your compiler will make errors or warnings. I recommend edit `BuildConfiguration.xml`.
+If you don't do this step, your compiler will make errors or warnings. I recommend edit `BuildConfiguration.xml`.
 In my case, the file is in `%appdata%/Roaming/Unreal Engine/UnrealBuildTool`.
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>

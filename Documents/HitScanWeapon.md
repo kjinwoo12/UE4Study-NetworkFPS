@@ -1,5 +1,5 @@
 # HitScanWeapon
-AHitScanWeapon is based on AWeaponBase. It is added `LineTrace` function. When `Action` or `Subaction` function is run then the `LineTrace` function is also run. And add damage if `AFPSCharacter` is detected.
+AHitScanWeapon is based on AWeaponBase. There is the function `LineTrace()`. It is run with When `OnAction` or `OnSubaction` function is run by Player. And it gives damage to `AFPSCharacter` if it is detected by `LineTrace()`
 
 ## Inheritance Hierarchy
 - [AWeaponBase](./WeaponBase.md)
@@ -11,14 +11,17 @@ AHitScanWeapon is based on AWeaponBase. It is added `LineTrace` function. When `
 
 # Tutorial
 ## How to create a new weapon.
-Same with [AWeaponBase.md](./WeaponBase.md). But there is another step for create `BulletTracer`. Follow the steps below after finish tutorial of `AWeaponBase`.
-
-1. Find `MyContent/Weapons/Effects/BP_BulletTracer`.
-2. Set `Gameplay - Bullet Tracer Blueprint` of your new weapon blueprint as `BP_BulletTracer`. You can set it other actor for using as BulletTracer.
-3. Set attributes of `MuzzleFlashLight` and `MuzzleFlashTextureEffect`. You can see the effect when your weapon is on fire if there `Visible` option is true.
+Same with [AWeaponBase.md](./WeaponBase.md).
 
 # How_to_Guide
 Same with [AWeaponBase.md](./WeaponBase.md).
 
 # Technical_reference
-Same with [AWeaponBase.md](./WeaponBase.md).
+## - Functions
+|Return|Name|Description|
+|---:|:---|:---|
+|bool|LineTrace(FHitResult&)|Detect Pawn From "Camera.position" to "Camera.Direction * `reach`". 
+## - Variables
+|Type|Name|Description|
+|---:|:---|:---|
+|float|Reach|Range of possible to detect using `LineTrace(FHitResult&)`|

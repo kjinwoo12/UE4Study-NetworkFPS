@@ -104,7 +104,7 @@ void AFPSCharacter::BeginPlay()
 
 	if (GetNetMode() == NM_ListenServer)
 	{
-		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapons/BP_HitScanWeapon_TestGun.BP_HitScanWeapon_TestGun_C'"));
+		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapons/BP_HitScanGun_TestGun.BP_HitScanGun_TestGun_C'"));
 	}
 }
 
@@ -148,7 +148,7 @@ void AFPSCharacter::ClientRPCUpdateCameraToServer_Implementation()
 
 bool AFPSCharacter::ServerRPCSetCameraRotation_Validate(FQuat CameraRotation)
 {
-	return true;
+	return true; 
 }
 
 void AFPSCharacter::ServerRPCSetCameraRotation_Implementation(FQuat CameraRotation)
