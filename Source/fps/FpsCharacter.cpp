@@ -427,8 +427,6 @@ float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
 
 void AFPSCharacter::Die()
 {
-	UE_LOG(LogTemp, Log, TEXT("Die! : label = %s"), *GetActorLabel());
-
 	IsDead = true;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);

@@ -74,14 +74,6 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 void AWeaponBase::Initialize(AFPSCharacter* FPSCharacter)
 {
-	if (GetNetMode() == ENetMode::NM_ListenServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Initialize() : Server : %s"), *(FPSCharacter->GetActorLabel()));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Initialize() : Client : %s"), *(FPSCharacter->GetActorLabel()));
-	}
 	SetOwner(FPSCharacter);
 	SetHandsAnimInstance(FPSCharacter->GetHandsMeshComponent()->GetAnimInstance());
 	SetBodyAnimInstance(FPSCharacter->GetBodyMeshComponent()->GetAnimInstance());
