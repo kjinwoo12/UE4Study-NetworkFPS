@@ -61,7 +61,7 @@ void APickUpWeapon::OnOverlapBegin(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	AFPSCharacter* FpsCharacter = Cast<AFPSCharacter>(OtherActor);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
 	if (!FpsCharacter) return;
 
 	FpsCharacter->SetPickableWeapon(this);
@@ -73,7 +73,7 @@ void APickUpWeapon::OnOverlapEnd(
 	UPrimitiveComponent* OtherComponent,
 	int32 OtherBodyIndex)
 {
-	AFPSCharacter* FpsCharacter = Cast<AFPSCharacter>(OtherActor);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
 	if (!FpsCharacter) return;
 
 	FpsCharacter->SetPickableWeapon(NULL);

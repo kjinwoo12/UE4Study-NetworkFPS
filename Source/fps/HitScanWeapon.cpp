@@ -11,7 +11,7 @@ AHitScanWeapon::AHitScanWeapon()
 	Reach = 6000.f;
 }
 
-void AHitScanWeapon::Initialize(AFPSCharacter* FPSCharacter)
+void AHitScanWeapon::Initialize(AFpsCharacter* FPSCharacter)
 {
 	AWeaponBase::Initialize(FPSCharacter);
 	LineTraceCollisionQueryParams.AddIgnoredActor(FPSCharacter);

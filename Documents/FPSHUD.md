@@ -3,8 +3,8 @@ HUD with dynamic crosshair. It is used by [FPSCharacter](./FPSCharacter.md).
 
 # Index
 - [Tutorial](#_Tutorial)
-- [How to guide](#_How_to_Guide)
 - [Technical reference](#_Technical_reference)
+- [How to guide](#_How_to_Guide)
 
 # Tutorial
 ## Step 1. Create a new `FPSHUD` BP
@@ -16,6 +16,9 @@ HUD with dynamic crosshair. It is used by [FPSCharacter](./FPSCharacter.md).
         - Wrong texture -> <img src="img/CrosshairPoint_worng.png" width = "100px" style="vertical-align: middle">
 3. Set `Default Widget`
 
-# How_to_Guide
-
 # Technical_reference
+- Type : Blueprint HUD
+- Path : `MyContent/UI/HUD`
+    - `BP_FPSHUD` : HUD for FPSCharacter
+
+# How_to_Guide
