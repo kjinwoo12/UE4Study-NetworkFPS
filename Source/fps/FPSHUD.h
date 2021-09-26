@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "FPSHUD.generated.h"
+#include "FpsHUD.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FPS_API AFPSHUD : public AHUD
+class FPS_API AFpsHud : public AHUD
 {
 	GENERATED_BODY()
 	
@@ -39,7 +39,7 @@ class FPS_API AFPSHUD : public AHUD
 	UUserWidget* GunShopWidget;
 	
 public:
-	AFPSHUD();
+	AFpsHud();
 	virtual void DrawHUD() override;
 
 protected:

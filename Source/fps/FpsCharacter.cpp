@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FPSCharacter.h"
-#include "FPS.h"
+#include "FpsCharacter.h"
+#include "Fps.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "WeaponBase.h"
@@ -16,7 +16,7 @@
 #include "DrawDebugHelpers.h"
 
 // Sets default values
-AFPSCharacter::AFPSCharacter()
+AFpsCharacter::AFpsCharacter()
 {
 	bReplicates = true;
 
@@ -31,14 +31,14 @@ AFPSCharacter::AFPSCharacter()
 	InitializeGameplayVariable();
 }
 
-void AFPSCharacter::InitializeCollisionComponent()
+void AFpsCharacter::InitializeCollisionComponent()
 {
 	UCapsuleComponent* CharacterCapsuleComponent = GetCapsuleComponent();
 	CharacterCapsuleComponent->SetCapsuleHalfHeight(94.0f);
 	CharacterCapsuleComponent->SetCapsuleRadius(42.0f);
 }
 
-void AFPSCharacter::InitializeMovementComponent()
+void AFpsCharacter::InitializeMovementComponent()
 {
 	MovementComponent = ACharacter::GetCharacterMovement();
 	MovementComponent->bUseFlatBaseForFloorChecks = true;
@@ -47,7 +47,7 @@ void AFPSCharacter::InitializeMovementComponent()
 	MovementComponent->NavAgentProps.bCanCrouch = true;
 }
 
-void AFPSCharacter::InitializeCamera()
+void AFpsCharacter::InitializeCamera()
 {
 	// Camera
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCameraComponent"));
@@ -56,7 +56,7 @@ void AFPSCharacter::InitializeCamera()
 	CameraComponent->bUsePawnControlRotation = true;
 }
 
-void AFPSCharacter::InitializeHandsMesh()
+void AFpsCharacter::InitializeHandsMesh()
 {
 	if (CameraComponent == NULL)
 	{
@@ -72,7 +72,7 @@ void AFPSCharacter::InitializeHandsMesh()
 	HandsMeshComponent->SetRelativeRotation(DefaultRotatorOfHandsMeshComponent);
 }
 
-void AFPSCharacter::InitializeBodyMesh()
+void AFpsCharacter::InitializeBodyMesh()
 {
 	BodyMeshComponent = GetMesh();
 	BodyMeshComponent->SetOwnerNoSee(true);
@@ -80,7 +80,7 @@ void AFPSCharacter::InitializeBodyMesh()
 	BodyMeshComponent->SetRelativeRotation(DefaultRotatorOfBodyMeshComponent);
 }
 
-void AFPSCharacter::InitializeGameplayVariable()
+void AFpsCharacter::InitializeGameplayVariable()
 {
 	MaxHealth = 100;
 	Health = 100;
@@ -92,7 +92,7 @@ void AFPSCharacter::InitializeGameplayVariable()
 }
 
 // Called when the game starts or when spawned
-void AFPSCharacter::BeginPlay()
+void AFpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	if (GEngine)
@@ -100,7 +100,7 @@ void AFPSCharacter::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("We are using FPSCharacter."));
 	}
 
-	HUD = Cast<AFPSHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	HUD = Cast<AFpsHud>(GetWorld()->GetFirstPlayerController()->GetHUD());
 
 	if (GetNetMode() == NM_ListenServer)
 	{
@@ -108,21 +108,21 @@ void AFPSCharacter::BeginPlay()
 	}
 }
 
-void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AFPSCharacter, Health);
-	DOREPLIFETIME(AFPSCharacter, Armor);
-	DOREPLIFETIME(AFPSCharacter, PickableWeapon);
-	DOREPLIFETIME(AFPSCharacter, PrimaryWeapon);
-	DOREPLIFETIME(AFPSCharacter, WeaponModelForBody);
-	DOREPLIFETIME(AFPSCharacter, AimPitch);
-	DOREPLIFETIME(AFPSCharacter, AimYaw);
+	DOREPLIFETIME(AFpsCharacter, Health);
+	DOREPLIFETIME(AFpsCharacter, Armor);
+	DOREPLIFETIME(AFpsCharacter, PickableWeapon);
+	DOREPLIFETIME(AFpsCharacter, PrimaryWeapon);
+	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
+	DOREPLIFETIME(AFpsCharacter, AimPitch);
+	DOREPLIFETIME(AFpsCharacter, AimYaw);
 }
 
 // Called every frame
-void AFPSCharacter::Tick(float DeltaTime)
+void AFpsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	ClientRPCTickCrosshair();
@@ -132,7 +132,7 @@ void AFPSCharacter::Tick(float DeltaTime)
 	ClientRPCUpdateCameraToServer();
 }
 
-void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
+void AFpsCharacter::ClientRPCTickCrosshair_Implementation()
 {
 	if (PrimaryWeapon == NULL || HUD == NULL) return;
 	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
@@ -141,22 +141,22 @@ void AFPSCharacter::ClientRPCTickCrosshair_Implementation()
 	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
 }
 
-void AFPSCharacter::ClientRPCUpdateCameraToServer_Implementation()
+void AFpsCharacter::ClientRPCUpdateCameraToServer_Implementation()
 {
 	ServerRPCSetCameraRotation(CameraComponent->GetComponentToWorld().GetRotation());
 }
 
-bool AFPSCharacter::ServerRPCSetCameraRotation_Validate(FQuat CameraRotation)
+bool AFpsCharacter::ServerRPCSetCameraRotation_Validate(FQuat CameraRotation)
 {
 	return true; 
 }
 
-void AFPSCharacter::ServerRPCSetCameraRotation_Implementation(FQuat CameraRotation)
+void AFpsCharacter::ServerRPCSetCameraRotation_Implementation(FQuat CameraRotation)
 {
 	CameraComponent->SetWorldRotation(CameraRotation);
 }
 
-void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)
+void AFpsCharacter::UpdateActorDirectionByAim(float DeltaTime)
 {
 	if (GetNetMode() != NM_ListenServer) return;
 
@@ -188,109 +188,109 @@ void AFPSCharacter::UpdateActorDirectionByAim(float DeltaTime)
 }
 
 // Called to bind functionality to input
-void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	// Movement
-	PlayerInputComponent->BindAxis("MoveForward", this, &AFPSCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AFPSCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("LookUp", this, &AFPSCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("Turn", this, &AFPSCharacter::AddControllerYawInput);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AFPSCharacter::Jump);
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFPSCharacter::CrouchPressed);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFPSCharacter::CrouchReleased);
+	PlayerInputComponent->BindAxis("MoveForward", this, &AFpsCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AFpsCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("LookUp", this, &AFpsCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AFpsCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AFpsCharacter::Jump);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFpsCharacter::CrouchPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFpsCharacter::CrouchReleased);
 
 	// Actions
-	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFPSCharacter::ActionPressed);
-	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFPSCharacter::ActionReleased);
-	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFPSCharacter::SubactionPressed);
-	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFPSCharacter::SubactionReleased);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ReloadPressed);
-	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFPSCharacter::PickUpWeaponPressed);
-	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFPSCharacter::DropWeaponPressed);
+	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFpsCharacter::ActionPressed);
+	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFpsCharacter::ActionReleased);
+	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFpsCharacter::SubactionPressed);
+	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFpsCharacter::SubactionReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFpsCharacter::ReloadPressed);
+	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFpsCharacter::PickUpWeaponPressed);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFpsCharacter::DropWeaponPressed);
 
 	// UI
-	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFPSCharacter::GunShopPressed);
+	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFpsCharacter::GunShopPressed);
 }
 
-void AFPSCharacter::MoveForward(float Value)
+void AFpsCharacter::MoveForward(float Value)
 {
 	if (IsDead) return;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
 
-void AFPSCharacter::MoveRight(float Value)
+void AFpsCharacter::MoveRight(float Value)
 {
 	if (IsDead) return;
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
-void AFPSCharacter::AddControllerPitchInput(float Value)
+void AFpsCharacter::AddControllerPitchInput(float Value)
 {
 	if (IsDead) return;
 	Super::AddControllerPitchInput(Value);
 }
 
-void AFPSCharacter::AddControllerYawInput(float Value)
+void AFpsCharacter::AddControllerYawInput(float Value)
 {
 	if (IsDead) return;
 	Super::AddControllerYawInput(Value);
 }
 
-void AFPSCharacter::Jump()
+void AFpsCharacter::Jump()
 {
 	if (IsDead) return;
 	Super::Jump();
 }
 
-void AFPSCharacter::CrouchPressed()
+void AFpsCharacter::CrouchPressed()
 {
 	Crouch();
 }
 
-void AFPSCharacter::CrouchReleased()
+void AFpsCharacter::CrouchReleased()
 {
 	UnCrouch();
 }
 
-void AFPSCharacter::ActionPressed()
+void AFpsCharacter::ActionPressed()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStartAction(GetWorld()->GetFirstPlayerController());
 }
 
-void AFPSCharacter::ActionReleased()
+void AFpsCharacter::ActionReleased()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStopAction();
 }
 
-void AFPSCharacter::SubactionPressed()
+void AFpsCharacter::SubactionPressed()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStartSubaction();
 }
 
-void AFPSCharacter::SubactionReleased()
+void AFpsCharacter::SubactionReleased()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStopSubaction();
 }
 
-void AFPSCharacter::ReloadPressed()
+void AFpsCharacter::ReloadPressed()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStartReload();
 }
 
-void AFPSCharacter::PickUpWeaponPressed()
+void AFpsCharacter::PickUpWeaponPressed()
 {
 	if (PrimaryWeapon != NULL) return;
 	PickUpWeapon();
 }
 
-void AFPSCharacter::DropWeaponPressed()
+void AFpsCharacter::DropWeaponPressed()
 {
 	if (PrimaryWeapon == NULL) return;
 	ServerRPCStopAction();
@@ -298,7 +298,7 @@ void AFPSCharacter::DropWeaponPressed()
 	DropWeapon();
 }
 
-void AFPSCharacter::GunShopPressed()
+void AFpsCharacter::GunShopPressed()
 {
 	if (HUD->IsOpenGunShop())
 	{
@@ -310,44 +310,44 @@ void AFPSCharacter::GunShopPressed()
 	}
 }
 
-bool AFPSCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
+bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
 {
 	if (PlayerController == NULL) return false;
 	return true;
 }
 
-void AFPSCharacter::ServerRPCStartAction_Implementation(APlayerController* PlayerController)
+void AFpsCharacter::ServerRPCStartAction_Implementation(APlayerController* PlayerController)
 {
 	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->SetPlayerController(PlayerController);
 	PrimaryWeapon->StartAction();
 }
 
-void AFPSCharacter::ServerRPCStopAction_Implementation()
+void AFpsCharacter::ServerRPCStopAction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StopAction();
 }
 
-void AFPSCharacter::ServerRPCStartSubaction_Implementation()
+void AFpsCharacter::ServerRPCStartSubaction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StartSubaction();
 }
 
-void AFPSCharacter::ServerRPCStopSubaction_Implementation()
+void AFpsCharacter::ServerRPCStopSubaction_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StopSubaction();
 }
 
-void AFPSCharacter::ServerRPCStartReload_Implementation()
+void AFpsCharacter::ServerRPCStartReload_Implementation()
 {
 	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->StartReload();
 }
 
-void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
+void AFpsCharacter::ServerRPCPickUpWeapon_Implementation()
 {
 	if (PrimaryWeapon != NULL || PickableWeapon == NULL) return;
 
@@ -365,7 +365,7 @@ void AFPSCharacter::ServerRPCPickUpWeapon_Implementation()
 	PickableWeapon = NULL;
 }
 
-void AFPSCharacter::ServerRPCDropWeapon_Implementation()
+void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 {
 	//Get Player direction for adding impulse to PickUpWeapon.
 	APlayerController* PlayerController = PrimaryWeapon->GetPlayerController();
@@ -389,23 +389,23 @@ void AFPSCharacter::ServerRPCDropWeapon_Implementation()
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
 }
 
-bool AFPSCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
+bool AFpsCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
 {
 	return  true;
 }
 
-void AFPSCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
+void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
 {
 	SetActorRotation(Rotator);
 }
 
-void AFPSCharacter::OnRep_InitializePrimaryWeapon()
+void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 {
 	if (PrimaryWeapon == NULL) return;
 	PrimaryWeapon->Initialize(this);
 }
 
-float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float AFpsCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Log, TEXT("FPSCharacter TakeDamage"));
 	if (IsDead) return 0.f;
@@ -419,13 +419,13 @@ float AFPSCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
 	{
 		Die();
 		const float RespawnDelay = 2.f;
-		GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &AFPSCharacter::Respawn, RespawnDelay, false, RespawnDelay);
+		GetWorldTimerManager().SetTimer(RespawnTimerHandle, this, &AFpsCharacter::Respawn, RespawnDelay, false, RespawnDelay);
 	}
 
 	return Damage;
 }
 
-void AFPSCharacter::Die()
+void AFpsCharacter::Die()
 {
 	IsDead = true;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
@@ -435,7 +435,7 @@ void AFPSCharacter::Die()
 	DropWeapon();
 }
 
-void AFPSCharacter::Respawn()
+void AFpsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Log, TEXT("Respawn"));
 
@@ -447,13 +447,13 @@ void AFPSCharacter::Respawn()
 	InitializeGameplayVariable();
 }
 
-void AFPSCharacter::KnockoutBodyMesh()
+void AFpsCharacter::KnockoutBodyMesh()
 {
 	BodyMeshComponent->SetAllBodiesBelowSimulatePhysics(NamePelvis, true);
 	BodyMeshComponent->SetAllBodiesBelowPhysicsBlendWeight(NamePelvis, 1.0f);
 }
 
-void AFPSCharacter::WakeUpBodyMesh()
+void AFpsCharacter::WakeUpBodyMesh()
 {
 	BodyMeshComponent->SetAllBodiesBelowSimulatePhysics(NamePelvis, false);
 	BodyMeshComponent->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), NamePelvis);
@@ -461,7 +461,7 @@ void AFPSCharacter::WakeUpBodyMesh()
 	BodyMeshComponent->SetRelativeRotation(DefaultRotatorOfBodyMeshComponent);
 }
 
-void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
+void AFpsCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 {
 	// Attach AWeaponBase Actor for first-person view
 	PrimaryWeapon = WeaponBase;
@@ -476,7 +476,7 @@ void AFPSCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 	WeaponModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
 }
 
-AWeaponBase* AFPSCharacter::UnEquipWeapon()
+AWeaponBase* AFpsCharacter::UnEquipWeapon()
 {
 	if (PrimaryWeapon == NULL) return NULL;
 
@@ -495,7 +495,7 @@ AWeaponBase* AFPSCharacter::UnEquipWeapon()
 	return WeaponInstance;
 }
 
-void AFPSCharacter::DropWeapon()
+void AFpsCharacter::DropWeapon()
 {
 	if (PrimaryWeapon == NULL)
 	{
@@ -506,53 +506,53 @@ void AFPSCharacter::DropWeapon()
 	ServerRPCDropWeapon();
 }
 
-void AFPSCharacter::PickUpWeapon()
+void AFpsCharacter::PickUpWeapon()
 {
 	UE_LOG(LogTemp, Log, TEXT("PickUpWeapon()"));
 	ServerRPCPickUpWeapon();
 }
 
-float AFPSCharacter::GetHealth()
+float AFpsCharacter::GetHealth()
 {
 	return Health;
 }
 
-float AFPSCharacter::GetArmor()
+float AFpsCharacter::GetArmor()
 {
 	return Armor;
 }
 
-UCameraComponent* AFPSCharacter::GetCameraComponent()
+UCameraComponent* AFpsCharacter::GetCameraComponent()
 {
 	return CameraComponent;
 }
 
-AWeaponBase* AFPSCharacter::GetPrimaryWeapon()
+AWeaponBase* AFpsCharacter::GetPrimaryWeapon()
 {
 	return PrimaryWeapon;
 }
 
-USkeletalMeshComponent* AFPSCharacter::GetHandsMeshComponent()
+USkeletalMeshComponent* AFpsCharacter::GetHandsMeshComponent()
 {
 	return HandsMeshComponent;
 }
 
-USkeletalMeshComponent* AFPSCharacter::GetBodyMeshComponent()
+USkeletalMeshComponent* AFpsCharacter::GetBodyMeshComponent()
 {
 	return BodyMeshComponent;
 }
 
-float AFPSCharacter::GetAimPtich()
+float AFpsCharacter::GetAimPtich()
 {
 	return AimPitch;
 }
 
-float AFPSCharacter::GetAimYaw()
+float AFpsCharacter::GetAimYaw()
 {
 	return AimYaw;
 }
 
-void AFPSCharacter::SetPickableWeapon(APickUpWeapon* Instance)
+void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)
 {
 	PickableWeapon = Instance;
 }

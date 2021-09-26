@@ -1,31 +1,31 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FPSHUD.h"
+#include "FpsHud.h"
 #include "Engine/Canvas.h"
 #include "Blueprint/UserWidget.h"
 
-AFPSHUD::AFPSHUD()
+AFpsHud::AFpsHud()
 {
 	CrosshairDefaultOffset = 0.f;
 	CrosshairOffset = 0.f;
 }
 
-void AFPSHUD::BeginPlay()
+void AFpsHud::BeginPlay()
 {
 	Super::BeginPlay();
 	InitDefaultWidget();
 	InitGunShopWidget();
 }
 
-void AFPSHUD::DrawHUD()
+void AFpsHud::DrawHUD()
 {
 	Super::DrawHUD();
 
 	if (CrosshairTexture) DrawCrosshair();
 }
 
-void AFPSHUD::InitDefaultWidget()
+void AFpsHud::InitDefaultWidget()
 {
 	if (DefaultWidgetClass == NULL) return;
 	DefaultWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), DefaultWidgetClass);
@@ -34,13 +34,13 @@ void AFPSHUD::InitDefaultWidget()
 	DefaultWidget->AddToViewport();
 }
 
-void AFPSHUD::InitGunShopWidget()
+void AFpsHud::InitGunShopWidget()
 {
 	if (GunShopWidgetClass == NULL) return;
 	GunShopWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), GunShopWidgetClass);
 }
 
-void AFPSHUD::DrawCrosshair()
+void AFpsHud::DrawCrosshair()
 {
 	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 	const FVector2D TextureOffset(CrosshairTexture->GetSizeX() * 0.5f, CrosshairTexture->GetSizeY() * 0.5f);
@@ -89,12 +89,12 @@ void AFPSHUD::DrawCrosshair()
 	Canvas->DrawItem(Bottom);
 }
 
-void AFPSHUD::SetCrosshairCenterOffset(float Value)
+void AFpsHud::SetCrosshairCenterOffset(float Value)
 {
 	CrosshairOffset = Value;
 }
 
-void AFPSHUD::OpenGunShop()
+void AFpsHud::OpenGunShop()
 {
 	if (GunShopWidget == NULL) return;
 	GunShopWidget->AddToViewport();
@@ -104,7 +104,7 @@ void AFPSHUD::OpenGunShop()
 	PlayerController->SetInputMode(FInputModeGameAndUI());
 }
 
-void AFPSHUD::CloseGunShop()
+void AFpsHud::CloseGunShop()
 {
 	if (GunShopWidget == NULL) return;
 	GunShopWidget->RemoveFromViewport();
@@ -114,7 +114,7 @@ void AFPSHUD::CloseGunShop()
 	PlayerController->SetInputMode(FInputModeGameOnly());
 }
 
-bool AFPSHUD::IsOpenGunShop()
+bool AFpsHud::IsOpenGunShop()
 {
 	return GunShopWidget->IsInViewport();
 }

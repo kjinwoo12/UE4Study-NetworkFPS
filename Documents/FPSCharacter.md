@@ -8,7 +8,7 @@ It is general playable character class.
 - [Technical reference](#_Technical_reference)
 
 # Tutorial
-## Step 1. Create a new FPSCharacter BP.
+## Step 1. Create a new FpsCharacter BP.
 1. Create a new Blueprint inherits FPSCharacter at `C++ Class/FPS`.
 2. Set Skeletal Meshs
     - HandsMeshComponent : Show at first-person camera.
@@ -16,7 +16,7 @@ It is general playable character class.
 3. Set Height and Radius of CapsuleComponent
 
 ## Step 2. Set a new FPSCharacter in your project
-1. Create a new Blueprint inherits `AFPSCharacter`.
+1. Create a new Blueprint inherits `AFpsCharacter`.
 2. Open the Project Settings ( Edit -> Project settings )
 3. Enter Project -> Map & Mode
 4. Change Default Pawn Class to Blueprint AFPSCharacter.

@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "FPSCharacter.generated.h"
+#include "FpsCharacter.generated.h"
 
 UCLASS()
-class FPS_API AFPSCharacter : public ACharacter
+class FPS_API AFpsCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -46,7 +46,7 @@ class FPS_API AFPSCharacter : public ACharacter
 	UPROPERTY(Replicated)
 	class APickUpWeapon* PickableWeapon;
 
-	class AFPSHUD* HUD;
+	class AFpsHud* HUD;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -81,7 +81,7 @@ class FPS_API AFPSCharacter : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	AFPSCharacter();
+	AFpsCharacter();
 	
 	/**************************
 		Initialize variable

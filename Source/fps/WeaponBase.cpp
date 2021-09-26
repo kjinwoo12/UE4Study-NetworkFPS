@@ -72,7 +72,7 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
-void AWeaponBase::Initialize(AFPSCharacter* FPSCharacter)
+void AWeaponBase::Initialize(AFpsCharacter* FPSCharacter)
 {
 	SetOwner(FPSCharacter);
 	SetHandsAnimInstance(FPSCharacter->GetHandsMeshComponent()->GetAnimInstance());

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 
-class AFPSCharacter;
+class AFpsCharacter;
 
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
@@ -171,7 +171,7 @@ public:
 	/**************************
 			 on Events
 	***************************/
-	virtual void Initialize(AFPSCharacter* FPSCharacter);
+	virtual void Initialize(AFpsCharacter* FPSCharacter);
 
 	virtual void OnUnEquipped();
 
