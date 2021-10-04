@@ -4,7 +4,19 @@
 #include "FpsPlayerController.h"
 #include "GameFramework/GameModeBase.h"
 #include "FpsGameInstance.h"
-#include "FpsGameInstance.h"
+#include "Net/UnrealNetwork.h"
+
+AFpsPlayerController::AFpsPlayerController()
+{
+	bReplicates = true;
+}
+
+void AFpsPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFpsPlayerController, Team);
+}
 
 void AFpsPlayerController::ConnectTo(const FString Url)
 {
@@ -30,5 +42,14 @@ bool AFpsPlayerController::ServerRPCUpdateName_Validate(const FString& name)
 void AFpsPlayerController::ServerRPCUpdateName_Implementation(const FString& name)
 {
 	SetName(name);
-	UE_LOG(LogTemp, Log, TEXT("ServerRPCUpdateName : %s"), *name);
+}
+
+bool AFpsPlayerController::ServerRPCUpdateTeam_Validate(EPlayerTeam playerTeam)
+{
+	return true;
+}
+
+void AFpsPlayerController::ServerRPCUpdateTeam_Implementation(EPlayerTeam playerTeam)
+{
+	Team = playerTeam;
 }
