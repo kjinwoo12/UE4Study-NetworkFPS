@@ -9,20 +9,11 @@
 /**
  * 
  */
-UENUM(BlueprintType)
-enum class EPlayerTeam : uint8
-{
-	TeamTerror UMETA(DisplayName = "Team Terror"),
-	TeamCounterTerror UMETA(DisplayName = "Team Counter-Terror")
-};
 
 UCLASS()
 class FPS_API AFpsPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-public:
-	UPROPERTY(Replicated)
-	EPlayerTeam Team;
 
 public:
 	AFpsPlayerController();
@@ -32,12 +23,13 @@ public:
 
 	virtual void OnLogin();
 
+	/* =========== RPCs============ */
 	UFUNCTION(Client, Reliable)
 	void ClientRPCOnLogin();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-	void ServerRPCUpdateName(const FString& name);
+	void ServerRPCUpdateName(const FString& Name);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-	void ServerRPCUpdateTeam(EPlayerTeam PlayerTeam);
+	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<class AFpsCharacter> CharacterClass);
 };
