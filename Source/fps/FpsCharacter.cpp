@@ -12,6 +12,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "FpsPlayerController.h"
+#include "FpsPlayerState.h"
 
 #include "DrawDebugHelpers.h"
 
@@ -95,12 +97,20 @@ void AFpsCharacter::InitializeGameplayVariable()
 void AFpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("We are using FPSCharacter."));
-	}
 
-	HUD = Cast<AFpsHud>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	UE_LOG(LogTemp, Log, TEXT("FpsCharacterIsSpawned"));
+
+	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetOwner());
+	if (PlayerController)
+	{
+		AFpsPlayerState* State = PlayerController->GetPlayerState<AFpsPlayerState>();
+		UE_LOG(LogTemp, Log, TEXT("PlayerController now on %s"), *State->GetPlayerName());
+		HUD = Cast<AFpsHud>(PlayerController);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayerController is not exist"));
+	}
 
 	if (GetNetMode() == NM_ListenServer)
 	{

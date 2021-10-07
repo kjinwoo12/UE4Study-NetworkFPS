@@ -4,18 +4,12 @@
 #include "FpsPlayerController.h"
 #include "GameFramework/GameModeBase.h"
 #include "FpsGameInstance.h"
-#include "Net/UnrealNetwork.h"
+#include "FpsPlayerState.h"
+#include "FpsCharacter.h"
 
 AFpsPlayerController::AFpsPlayerController()
 {
 	bReplicates = true;
-}
-
-void AFpsPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AFpsPlayerController, Team);
 }
 
 void AFpsPlayerController::ConnectTo(const FString Url)
@@ -25,11 +19,13 @@ void AFpsPlayerController::ConnectTo(const FString Url)
 
 void AFpsPlayerController::OnLogin()
 {
+	UE_LOG(LogTemp, Log, TEXT("Server OnLogin() %s"), *GetName());
 	ClientRPCOnLogin();
 }
 
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
+	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());
 	UFpsGameInstance* gameInstance = Cast<UFpsGameInstance>(GetGameInstance());
 	ServerRPCUpdateName(gameInstance->GetLocalPlayerName());
 }
@@ -39,17 +35,21 @@ bool AFpsPlayerController::ServerRPCUpdateName_Validate(const FString& name)
 	return true;
 }
 
-void AFpsPlayerController::ServerRPCUpdateName_Implementation(const FString& name)
+void AFpsPlayerController::ServerRPCUpdateName_Implementation(const FString& Name)
 {
-	SetName(name);
+	AFpsPlayerState* State = GetPlayerState<AFpsPlayerState>();
+	State->SetPlayerName(Name);
 }
 
-bool AFpsPlayerController::ServerRPCUpdateTeam_Validate(EPlayerTeam playerTeam)
+bool AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Validate(TSubclassOf<AFpsCharacter> CharacterClass)
 {
-	return true;
+	if (CharacterClass) return true;
+	else return false;
 }
 
-void AFpsPlayerController::ServerRPCUpdateTeam_Implementation(EPlayerTeam playerTeam)
+void AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Implementation(TSubclassOf<AFpsCharacter> CharacterClass)
 {
-	Team = playerTeam;
+	FActorSpawnParameters SpawnParameters;
+	AFpsCharacter *SpawnedCharacter = GetWorld()->SpawnActor<AFpsCharacter>(CharacterClass, FVector(0, 0, 100), FRotator::ZeroRotator, SpawnParameters);
+	Possess(SpawnedCharacter);
 }
