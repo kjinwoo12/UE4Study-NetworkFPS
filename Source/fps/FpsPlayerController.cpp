@@ -41,15 +41,15 @@ void AFpsPlayerController::ServerRPCUpdateName_Implementation(const FString& Nam
 	State->SetPlayerName(Name);
 }
 
-bool AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Validate(TSubclassOf<AFpsCharacter> CharacterClass)
+bool AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Validate(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
 	if (CharacterClass) return true;
 	else return false;
 }
 
-void AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Implementation(TSubclassOf<AFpsCharacter> CharacterClass)
+void AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Implementation(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
 	FActorSpawnParameters SpawnParameters;
-	AFpsCharacter *SpawnedCharacter = GetWorld()->SpawnActor<AFpsCharacter>(CharacterClass, FVector(0, 0, 100), FRotator::ZeroRotator, SpawnParameters);
+	AFpsCharacter *SpawnedCharacter = GetWorld()->SpawnActor<AFpsCharacter>(CharacterClass, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), SpawnParameters);
 	Possess(SpawnedCharacter);
 }

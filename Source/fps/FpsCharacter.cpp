@@ -105,7 +105,7 @@ void AFpsCharacter::BeginPlay()
 	{
 		AFpsPlayerState* State = PlayerController->GetPlayerState<AFpsPlayerState>();
 		UE_LOG(LogTemp, Log, TEXT("PlayerController now on %s"), *State->GetPlayerName());
-		HUD = Cast<AFpsHud>(PlayerController);
+		HUD = Cast<AFpsHud>(PlayerController->GetHUD());
 	}
 	else
 	{
@@ -310,6 +310,10 @@ void AFpsCharacter::DropWeaponPressed()
 
 void AFpsCharacter::GunShopPressed()
 {
+	if (!IsValid(HUD)) {
+		UE_LOG(LogTemp, Log, TEXT("HUD is not valid"));
+		return;
+	}
 	if (HUD->IsOpenGunShop())
 	{
 		HUD->CloseGunShop();

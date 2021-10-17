@@ -31,5 +31,5 @@ public:
 	void ServerRPCUpdateName(const FString& Name);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<class AFpsCharacter> CharacterClass);
+	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 };
