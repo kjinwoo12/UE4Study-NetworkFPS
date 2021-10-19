@@ -227,13 +227,13 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void AFpsCharacter::MoveForward(float Value)
 {
 	if (IsDead) return;
-	AddMovementInput(GetActorForwardVector(), Value);
+	AddMovementInput(GetOwner()->GetActorForwardVector(), Value);
 }
 
 void AFpsCharacter::MoveRight(float Value)
 {
 	if (IsDead) return;
-	AddMovementInput(GetActorRightVector(), Value);
+	AddMovementInput(GetOwner()->GetActorRightVector(), Value);
 }
 
 void AFpsCharacter::AddControllerPitchInput(float Value)
