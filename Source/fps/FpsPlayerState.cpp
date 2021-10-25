@@ -18,3 +18,7 @@ FString AFpsPlayerState::GetPlayerNameCustom() const
 {
 	return Name;
 }
+
+EPlayerTeam AFpsPlayerState::GetTeam() {
+	return Team;
+}

@@ -21,12 +21,13 @@ UCLASS()
 class FPS_API AFpsPlayerState : public APlayerState
 {
 	GENERATED_BODY()
-public:
+private:
 	FString Name;
-
 	EPlayerTeam Team;
+
 public:
 	AFpsPlayerState();
 	virtual void SetPlayerName(const FString& S);
 	virtual FString GetPlayerNameCustom() const;
+	EPlayerTeam GetTeam();
 };

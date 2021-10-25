@@ -13,7 +13,7 @@ UCLASS()
 class FPS_API AWaitingPlayersMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void PostLogin(APlayerController* NewPlayer);
 };
