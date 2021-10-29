@@ -13,7 +13,14 @@ UCLASS()
 class FPS_API AWaitingPlayersMode : public AGameModeBase
 {
 	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AGameModeBase> preparedGameModeSubclass;
 
 public:
 	virtual void PostLogin(APlayerController* NewPlayer);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void ServerRPCOnPlayerFull();
 };

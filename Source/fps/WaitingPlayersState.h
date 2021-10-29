@@ -15,6 +15,10 @@ class FPS_API AWaitingPlayersState : public AGameStateBase
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(BlueprintReadOnly)
+	int maxTeamSize = 1;
+	
+public:
 	UFUNCTION(BlueprintCallable)
 	int GetTerrorTeamSize();
 
