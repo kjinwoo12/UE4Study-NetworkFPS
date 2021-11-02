@@ -4,11 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "PlayerTeam.h"
 #include "FpsPlayerController.generated.h"
-
-/**
- * 
- */
 
 UCLASS()
 class FPS_API AFpsPlayerController : public APlayerController
@@ -28,7 +25,10 @@ public:
 	void ClientRPCOnLogin();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-	void ServerRPCUpdateName(const FString& Name);
+	void ServerRPCSetName(const FString& Name);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+	void ServerRPCSetTeam(EPlayerTeam Team);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
 	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);

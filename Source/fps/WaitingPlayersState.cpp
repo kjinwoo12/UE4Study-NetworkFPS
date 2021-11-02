@@ -10,8 +10,7 @@ int AWaitingPlayersState::GetTerrorTeamSize()
 	for (APlayerState* state : PlayerArray) 
 	{
 		AFpsPlayerState* fpsState = (AFpsPlayerState*)state;
-		EPlayerTeam team = fpsState->GetTeam();
-		if (team == EPlayerTeam::TeamTerror) 
+		if (fpsState->Team == EPlayerTeam::TeamTerror)
 		{
 			size++;
 		}
@@ -25,8 +24,7 @@ int AWaitingPlayersState::GetCounterTerrorTeamSize()
 	for (APlayerState* state : PlayerArray)
 	{
 		AFpsPlayerState* fpsState = (AFpsPlayerState*)state;
-		EPlayerTeam team = fpsState->GetTeam();
-		if (team == EPlayerTeam::TeamCounterTerror)
+		if (fpsState->Team == EPlayerTeam::TeamCounterTerror)
 		{
 			size++;
 		}

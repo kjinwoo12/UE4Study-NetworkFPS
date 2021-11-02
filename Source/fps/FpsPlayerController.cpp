@@ -27,18 +27,29 @@ void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());
 	UFpsGameInstance* gameInstance = Cast<UFpsGameInstance>(GetGameInstance());
-	ServerRPCUpdateName(gameInstance->GetLocalPlayerName());
+	ServerRPCSetName(gameInstance->GetLocalPlayerName());
 }
 
-bool AFpsPlayerController::ServerRPCUpdateName_Validate(const FString& name)
+bool AFpsPlayerController::ServerRPCSetName_Validate(const FString& name)
 {
 	return true;
 }
 
-void AFpsPlayerController::ServerRPCUpdateName_Implementation(const FString& Name)
+void AFpsPlayerController::ServerRPCSetName_Implementation(const FString& Name)
 {
 	AFpsPlayerState* State = GetPlayerState<AFpsPlayerState>();
 	State->SetPlayerName(Name);
+}
+
+bool AFpsPlayerController::ServerRPCSetTeam_Validate(const EPlayerTeam Team)
+{
+	return true;
+}
+
+void AFpsPlayerController::ServerRPCSetTeam_Implementation(const EPlayerTeam Team)
+{
+	AFpsPlayerState* playerState = (AFpsPlayerState*)this->PlayerState;
+	playerState->Team = Team;
 }
 
 bool AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Validate(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
