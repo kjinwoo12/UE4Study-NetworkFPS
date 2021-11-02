@@ -7,6 +7,13 @@
 AFpsPlayerState::AFpsPlayerState()
 {
 	bUseCustomPlayerNames = true;
+	Team = EPlayerTeam::None;
+}
+
+void AFpsPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AFpsPlayerState, Team);
 }
 
 void AFpsPlayerState::SetPlayerName(const FString& S)
@@ -17,8 +24,4 @@ void AFpsPlayerState::SetPlayerName(const FString& S)
 FString AFpsPlayerState::GetPlayerNameCustom() const
 {
 	return Name;
-}
-
-EPlayerTeam AFpsPlayerState::GetTeam() {
-	return Team;
 }

@@ -138,8 +138,10 @@ void AFpsCharacter::Tick(float DeltaTime)
 	ClientRPCTickCrosshair();
 	UpdateActorDirectionByAim(DeltaTime);
 
-	if (GetNetMode() == ENetMode::NM_Client) return;
-	ClientRPCUpdateCameraToServer();
+	if (GetNetMode() == ENetMode::NM_DedicatedServer) 
+	{
+		ClientRPCUpdateCameraToServer();
+	}
 }
 
 void AFpsCharacter::ClientRPCTickCrosshair_Implementation()
