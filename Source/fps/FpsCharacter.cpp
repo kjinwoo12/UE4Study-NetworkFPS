@@ -170,7 +170,7 @@ void AFpsCharacter::ServerRPCSetCameraRotation_Implementation(FQuat CameraRotati
 
 void AFpsCharacter::UpdateActorDirectionByAim(float DeltaTime)
 {
-	if (GetNetMode() != NM_ListenServer) return;
+	if (GetNetMode() == NM_Client) return;
 
 	FRotator AimRotator = FRotator(AimPitch, AimYaw, 0);
 	FRotator ControlRotation = GetControlRotation();
