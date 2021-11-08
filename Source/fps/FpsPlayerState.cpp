@@ -13,6 +13,7 @@ AFpsPlayerState::AFpsPlayerState()
 void AFpsPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AFpsPlayerState, Name);
 	DOREPLIFETIME(AFpsPlayerState, Team);
 }
 

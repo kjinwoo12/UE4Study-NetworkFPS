@@ -1,7 +1,7 @@
 #pragma once
 #include "PlayerTeam.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum class EPlayerTeam : uint8
 {
 	TeamTerror UMETA(DisplayName = "Team Terror"),

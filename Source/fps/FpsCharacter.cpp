@@ -99,23 +99,6 @@ void AFpsCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Log, TEXT("FpsCharacterIsSpawned"));
-
-	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetOwner());
-	if (PlayerController)
-	{
-		AFpsPlayerState* State = PlayerController->GetPlayerState<AFpsPlayerState>();
-		UE_LOG(LogTemp, Log, TEXT("PlayerController now on %s"), *State->GetPlayerName());
-		HUD = Cast<AFpsHud>(PlayerController->GetHUD());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("PlayerController is not exist"));
-	}
-
-	if (GetNetMode() == NM_ListenServer)
-	{
-		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapons/BP_HitScanGun_TestGun.BP_HitScanGun_TestGun_C'"));
-	}
 }
 
 void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -229,13 +212,13 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void AFpsCharacter::MoveForward(float Value)
 {
 	if (IsDead) return;
-	AddMovementInput(GetOwner()->GetActorForwardVector(), Value);
+	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void AFpsCharacter::MoveRight(float Value)
 {
 	if (IsDead) return;
-	AddMovementInput(GetOwner()->GetActorRightVector(), Value);
+	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void AFpsCharacter::AddControllerPitchInput(float Value)
@@ -326,6 +309,16 @@ void AFpsCharacter::GunShopPressed()
 	}
 }
 
+void AFpsCharacter::OnPossess()
+{
+	ClientRPCInitializeHud();
+}
+
+void AFpsCharacter::OnGameReady()
+{
+	Respawn();
+}
+
 bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
 {
 	if (PlayerController == NULL) return false;
@@ -399,7 +392,6 @@ void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 	PickUpWeapon->SetWeaponInstance(WeaponInstance);
 	
 	//Add impulse to viewpoint direction
-	
 	UStaticMeshComponent* WeaponMesh = PickUpWeapon->GetWeaponMesh();
 	const float ImpulsePower = 300.f;
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
@@ -407,12 +399,31 @@ void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 
 bool AFpsCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
 {
-	return  true;
+	return true;
 }
 
 void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
 {
 	SetActorRotation(Rotator);
+}
+
+void AFpsCharacter::ClientRPCInitializeHud_Implementation()
+{
+	AFpsPlayerController* PlayerController = (AFpsPlayerController*)GetOwner();
+	if (IsValid(PlayerController))
+	{
+		AFpsPlayerState* State = PlayerController->GetPlayerState<AFpsPlayerState>();
+		UE_LOG(LogTemp, Log, TEXT("PlayerController now on %s"), *State->GetPlayerName());
+		HUD = (AFpsHud*)PlayerController->GetHUD();
+		if (!IsValid(HUD))
+		{
+			UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::InitializeHud() : HUD is not valid"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayerController is not exist"));
+	}
 }
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
@@ -461,6 +472,7 @@ void AFpsCharacter::Respawn()
 
 	WakeUpBodyMesh();
 	InitializeGameplayVariable();
+	SetActorTransform(SpawnTransform);
 }
 
 void AFpsCharacter::KnockoutBodyMesh()
@@ -571,4 +583,9 @@ float AFpsCharacter::GetAimYaw()
 void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)
 {
 	PickableWeapon = Instance;
+}
+
+void AFpsCharacter::SetSpawnTransform(FTransform Transform) 
+{
+	SpawnTransform = Transform;
 }

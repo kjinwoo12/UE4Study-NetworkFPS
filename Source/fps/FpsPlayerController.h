@@ -20,6 +20,12 @@ public:
 
 	virtual void OnLogin();
 
+	UFUNCTION(BlueprintCallable)
+	void OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
+
+	UFUNCTION(BlueprintCallable)
+	void OnGameReady();
+
 	/* =========== RPCs============ */
 	UFUNCTION(Client, Reliable)
 	void ClientRPCOnLogin();
@@ -27,9 +33,9 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
 	void ServerRPCSetName(const FString& Name);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPCSetTeam(EPlayerTeam Team);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 };

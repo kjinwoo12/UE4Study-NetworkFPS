@@ -78,6 +78,8 @@ class FPS_API AFpsCharacter : public ACharacter
 	UPROPERTY(Replicated)
 	float AimYaw;
 
+	FTransform SpawnTransform;
+
 
 public:
 	// Sets default values for this character's properties
@@ -161,6 +163,13 @@ public:
 	void GunShopPressed();
 
 	/**************************
+			  OnEvent
+	***************************/
+	void OnPossess();
+
+	void OnGameReady();
+
+	/**************************
 				RPC
 	***************************/
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -186,6 +195,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MulticastRPCSetActorRotation(FRotator Rotator);
+
+	UFUNCTION(Client, Reliable)
+	void ClientRPCInitializeHud();
 
 	/**************************
 				OnRep
@@ -254,4 +266,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);
+
+	void SetSpawnTransform(FTransform Transform);
 };

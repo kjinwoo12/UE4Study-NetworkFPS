@@ -12,6 +12,7 @@ class FPS_API AFpsPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 private:
+	UPROPERTY(Replicated)
 	FString Name;
 
 public:
