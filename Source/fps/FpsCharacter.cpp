@@ -129,11 +129,16 @@ void AFpsCharacter::Tick(float DeltaTime)
 
 void AFpsCharacter::ClientRPCTickCrosshair_Implementation()
 {
-	if (PrimaryWeapon == NULL || HUD == NULL) return;
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController) || PrimaryWeapon == NULL) return;
+
+	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
+	if (!IsValid(FpsHud)) return;
+
 	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
 	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
-	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
+	FpsHud->SetCrosshairCenterOffset(CrosshairCenterOffset);
 }
 
 void AFpsCharacter::ClientRPCUpdateCameraToServer_Implementation()
@@ -295,23 +300,27 @@ void AFpsCharacter::DropWeaponPressed()
 
 void AFpsCharacter::GunShopPressed()
 {
-	if (!IsValid(HUD)) {
-		UE_LOG(LogTemp, Log, TEXT("HUD is not valid"));
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayerController is invalid"));
 		return;
 	}
-	if (HUD->IsOpenGunShop())
+
+	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
+	if (!IsValid(FpsHud))
 	{
-		HUD->CloseGunShop();
+		UE_LOG(LogTemp, Log, TEXT("HUD is invalid"));
+		return;
+	}
+	if (FpsHud->IsOpenGunShop())
+	{
+		FpsHud->CloseGunShop();
 	}
 	else
 	{
-		HUD->OpenGunShop();
+		FpsHud->OpenGunShop();
 	}
-}
-
-void AFpsCharacter::OnPossess()
-{
-	ClientRPCInitializeHud();
 }
 
 void AFpsCharacter::OnGameReady()
@@ -405,25 +414,6 @@ bool AFpsCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
 void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
 {
 	SetActorRotation(Rotator);
-}
-
-void AFpsCharacter::ClientRPCInitializeHud_Implementation()
-{
-	AFpsPlayerController* PlayerController = (AFpsPlayerController*)GetOwner();
-	if (IsValid(PlayerController))
-	{
-		AFpsPlayerState* State = PlayerController->GetPlayerState<AFpsPlayerState>();
-		UE_LOG(LogTemp, Log, TEXT("PlayerController now on %s"), *State->GetPlayerName());
-		HUD = (AFpsHud*)PlayerController->GetHUD();
-		if (!IsValid(HUD))
-		{
-			UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::InitializeHud() : HUD is not valid"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("PlayerController is not exist"));
-	}
 }
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
@@ -578,6 +568,11 @@ float AFpsCharacter::GetAimPtich()
 float AFpsCharacter::GetAimYaw()
 {
 	return AimYaw;
+}
+
+TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()
+{
+	return HudSubclass;
 }
 
 void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)

@@ -16,6 +16,7 @@ void AFpsHud::BeginPlay()
 	Super::BeginPlay();
 	InitDefaultWidget();
 	InitGunShopWidget();
+	UE_LOG(LogTemp, Log, TEXT("AFpsHud::BeginPlay"));
 }
 
 void AFpsHud::DrawHUD()

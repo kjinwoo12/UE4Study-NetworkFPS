@@ -46,9 +46,13 @@ class FPS_API AFpsCharacter : public ACharacter
 	UPROPERTY(Replicated)
 	class APickUpWeapon* PickableWeapon;
 
-	class AFpsHud* HUD;
-
 	UCharacterMovementComponent* MovementComponent;
+
+	/**************************
+			SubClass
+	***************************/
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AHUD> HudSubclass;
 
 	/**************************
 			Properties
@@ -165,8 +169,6 @@ public:
 	/**************************
 			  OnEvent
 	***************************/
-	void OnPossess();
-
 	void OnGameReady();
 
 	/**************************
@@ -195,9 +197,6 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MulticastRPCSetActorRotation(FRotator Rotator);
-
-	UFUNCTION(Client, Reliable)
-	void ClientRPCInitializeHud();
 
 	/**************************
 				OnRep
@@ -263,6 +262,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	float GetAimYaw();
+
+	UFUNCTION(Category = "Getter")
+	TSubclassOf<AHUD> GetHudSubclass();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);

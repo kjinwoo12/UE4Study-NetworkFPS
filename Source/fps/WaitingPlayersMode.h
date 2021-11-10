@@ -19,6 +19,8 @@ public:
 	TSubclassOf<AGameModeBase> preparedGameModeSubclass;
 
 public:
+	virtual void BeginPlay() override;
+
 	virtual void PostLogin(APlayerController* NewPlayer);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)

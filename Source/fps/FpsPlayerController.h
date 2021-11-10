@@ -20,6 +20,8 @@ public:
 
 	virtual void OnLogin();
 
+	virtual void OnPossess(APawn* InPawn);
+
 	UFUNCTION(BlueprintCallable)
 	void OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 
