@@ -28,7 +28,8 @@ void AFpsPlayerController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(InPawn);
 	if (!IsValid(FpsCharacter)) return;
-	
+
+	FpsCharacter->OnGameReady();
 	ClientSetHUD(FpsCharacter->GetHudSubclass());
 }
 
@@ -36,12 +37,6 @@ void AFpsPlayerController::OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AF
 {
 	ServerRPCSetTeam(team);
 	ServerRPCSpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
-}
-
-void AFpsPlayerController::OnGameReady()
-{
-	AFpsCharacter* character = (AFpsCharacter*)GetPawn();
-	character->OnGameReady();
 }
 
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()

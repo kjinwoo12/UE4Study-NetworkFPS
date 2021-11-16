@@ -36,7 +36,7 @@ class FPS_API AFpsHud : public AHUD
 		Meta = (AllowPrivateAccess = true))
 	TSubclassOf<UUserWidget> GunShopWidgetClass;
 
-	UUserWidget* GunShopWidget;
+	class UGunShopWidget* GunShopWidget;
 	
 public:
 	AFpsHud();

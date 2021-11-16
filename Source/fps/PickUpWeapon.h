@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PickUpWeapon.generated.h"
 
+class AWeaponBase;
+
 UCLASS()
 class FPS_API APickUpWeapon : public AActor
 {
@@ -18,7 +20,7 @@ class FPS_API APickUpWeapon : public AActor
 	class USphereComponent* PickUpRange;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UBlueprint* WeaponBaseBlueprint;
+	TSubclassOf<AWeaponBase> WeaponBaseSubclass;
 
 	class AWeaponBase* WeaponInstance;
 
@@ -33,9 +35,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
 
 	UFUNCTION()
 	void OnOverlapBegin(
@@ -72,7 +72,7 @@ public:
 	AWeaponBase* GetWeaponInstance();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
-	UBlueprint* GetWeaponBaseBlueprint();
+	TSubclassOf<AWeaponBase> GetWeaponBaseSubclass();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetWeaponInstance(AWeaponBase* Instance);

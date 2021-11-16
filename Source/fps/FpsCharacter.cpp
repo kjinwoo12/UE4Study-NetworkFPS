@@ -14,8 +14,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "FpsPlayerController.h"
 #include "FpsPlayerState.h"
-
-#include "DrawDebugHelpers.h"
+#include "GunShop.h"
 
 // Sets default values
 AFpsCharacter::AFpsCharacter()
@@ -91,6 +90,21 @@ void AFpsCharacter::InitializeGameplayVariable()
 	IsDead = false;
 	AimPitch = 0;
 	AimYaw = 0;
+	GunShop = nullptr;
+}
+
+void AFpsCharacter::InitializeGunShop()
+{
+	GunShop = GetWorld()->SpawnActor<AGunShop>();
+	if (IsValid(GunShop)) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("GunShop is spawned"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("GunShop is invalid"));
+	}
+	GunShop->SetOwner(GetController());
 }
 
 // Called when the game starts or when spawned
@@ -112,22 +126,26 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
 	DOREPLIFETIME(AFpsCharacter, AimPitch);
 	DOREPLIFETIME(AFpsCharacter, AimYaw);
+	DOREPLIFETIME(AFpsCharacter, GunShop);
 }
 
 // Called every frame
 void AFpsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	ClientRPCTickCrosshair();
 	UpdateActorDirectionByAim(DeltaTime);
 
 	if (GetNetMode() == ENetMode::NM_DedicatedServer) 
 	{
 		ClientRPCUpdateCameraToServer();
 	}
+	else
+	{
+		TickCrosshair();
+	}
 }
 
-void AFpsCharacter::ClientRPCTickCrosshair_Implementation()
+void AFpsCharacter::TickCrosshair()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (!IsValid(PlayerController) || PrimaryWeapon == NULL) return;
@@ -326,17 +344,26 @@ void AFpsCharacter::GunShopPressed()
 void AFpsCharacter::OnGameReady()
 {
 	Respawn();
+	InitializeGunShop();
 }
 
 bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
 {
-	if (PlayerController == NULL) return false;
+	if (PlayerController == NULL) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Validate = false"));
+		return false;
+	}
 	return true;
 }
 
 void AFpsCharacter::ServerRPCStartAction_Implementation(APlayerController* PlayerController)
 {
-	if (PrimaryWeapon == NULL) return;
+	if (PrimaryWeapon == NULL)
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Implementation = PrimaryWeapon NULL"));
+		return;
+	}
 	PrimaryWeapon->SetPlayerController(PlayerController);
 	PrimaryWeapon->StartAction();
 }
@@ -372,10 +399,10 @@ void AFpsCharacter::ServerRPCPickUpWeapon_Implementation()
 	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
 	if (WeaponInstance == NULL)
 	{
-		UBlueprint* WeaponBaseBlueprint = PickableWeapon->GetWeaponBaseBlueprint();
-		if (WeaponBaseBlueprint == NULL) return;
+		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickableWeapon->GetWeaponBaseSubclass();
+		if (WeaponBaseSubclass == nullptr) return;
 
-		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseBlueprint->GeneratedClass);
+		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
 	}
 	EquipWeapon(WeaponInstance);
 
@@ -386,8 +413,12 @@ void AFpsCharacter::ServerRPCPickUpWeapon_Implementation()
 void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 {
 	//Get Player direction for adding impulse to PickUpWeapon.
-	APlayerController* PlayerController = PrimaryWeapon->GetPlayerController();
-	if (PlayerController == NULL) return;
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Log, TEXT("ServerRPCDropWeapon() : PlayerController is invalid"));
+		return;
+	}
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
 	PlayerController->GetPlayerViewPoint(
@@ -573,6 +604,11 @@ float AFpsCharacter::GetAimYaw()
 TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()
 {
 	return HudSubclass;
+}
+
+AGunShop* AFpsCharacter::GetGunShop()
+{
+	return GunShop;
 }
 
 void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)

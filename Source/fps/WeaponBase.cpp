@@ -291,21 +291,13 @@ void AWeaponBase::SetPlayerController(APlayerController* Instance)
 
 APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
 {
-	if (PickUpWeaponBlueprint == NULL) return NULL;
 	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponBlueprint->GeneratedClass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
 AWeaponModelForBody* AWeaponBase::SpawnWeaponModelForBodyActor()
 {
-	if (WeaponModelForBodyBlueprint == NULL) return NULL;
-	return GetWorld()->SpawnActor<AWeaponModelForBody>(WeaponModelForBodyBlueprint->GeneratedClass, FVector(0, 0, 0), FRotator::ZeroRotator);
-}
-
-AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, FString WeaponReference)
-{
-	UClass* GeneratedBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, *WeaponReference));
-	return AWeaponBase::SpawnWeapon(World, GeneratedBP);
+	return GetWorld()->SpawnActor<AWeaponModelForBody>(WeaponModelForBodySubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
 }
 
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, UClass* GeneratedBP)

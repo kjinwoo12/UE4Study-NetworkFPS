@@ -4,6 +4,7 @@
 #include "FpsHud.h"
 #include "Engine/Canvas.h"
 #include "Blueprint/UserWidget.h"
+#include "GunShopWidget.h"
 
 AFpsHud::AFpsHud()
 {
@@ -38,7 +39,8 @@ void AFpsHud::InitDefaultWidget()
 void AFpsHud::InitGunShopWidget()
 {
 	if (GunShopWidgetClass == NULL) return;
-	GunShopWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), GunShopWidgetClass);
+	GunShopWidget = CreateWidget<UGunShopWidget>(GetOwningPlayerController(), GunShopWidgetClass);
+	GunShopWidget->SetOwningPlayer(GetOwningPlayerController());
 }
 
 void AFpsHud::DrawCrosshair()

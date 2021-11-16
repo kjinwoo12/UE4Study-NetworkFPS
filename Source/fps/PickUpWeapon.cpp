@@ -27,6 +27,7 @@ APickUpWeapon::APickUpWeapon()
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	WeaponMesh->SetCollisionObjectType(ECC_WorldDynamic);
 	WeaponMesh->SetCollisionResponseToChannels(ECR_Block);
+	WeaponMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
 	WeaponMesh->SetGenerateOverlapEvents(false);
@@ -45,12 +46,11 @@ APickUpWeapon::APickUpWeapon()
 void APickUpWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-// Called every frame
-void APickUpWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("PickUpWeapon::BeginPlay() : Client"));
+		WeaponMesh->OnComponentHit.AddDynamic(this, &APickUpWeapon::OnWeaponMeshComponentHit);
+	}
 }
 
 void APickUpWeapon::OnOverlapBegin(
@@ -62,7 +62,7 @@ void APickUpWeapon::OnOverlapBegin(
 	const FHitResult& SweepResult)
 {
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
-	if (!FpsCharacter) return;
+	if (!IsValid(FpsCharacter)) return;
 
 	FpsCharacter->SetPickableWeapon(this);
 }
@@ -74,7 +74,7 @@ void APickUpWeapon::OnOverlapEnd(
 	int32 OtherBodyIndex)
 {
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
-	if (!FpsCharacter) return;
+	if (!IsValid(FpsCharacter)) return;
 
 	FpsCharacter->SetPickableWeapon(NULL);
 }
@@ -85,8 +85,7 @@ void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
 	FVector NormalImpulse,
 	const FHitResult& HitResult)
 {
-	UAudioComponent* AudioComponent = UGameplayStatics::SpawnSoundAtLocation(this, DropSound, HitResult.Location);
-	
+
 	FVector Direction;
 	float Speed;
 	GetVelocity().ToDirectionAndLength(Direction, Speed);
@@ -101,6 +100,7 @@ void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
 	float CorrectInValue = ClampedValue - ClampRangeB;
 	float InPercentage = CorrectInValue / InRange;
 	float MapRangedClamped = (InPercentage * (OutRangeA - OutRangeB)) + OutRangeB;
+	UAudioComponent* AudioComponent = UGameplayStatics::SpawnSoundAtLocation(this, DropSound, HitResult.Location);
 	AudioComponent->SetIntParameter("Power", MapRangedClamped);
 }
 
@@ -114,9 +114,9 @@ AWeaponBase* APickUpWeapon::GetWeaponInstance()
 	return WeaponInstance;
 }
 
-UBlueprint* APickUpWeapon::GetWeaponBaseBlueprint()
+TSubclassOf<AWeaponBase> APickUpWeapon::GetWeaponBaseSubclass()
 {
-	return WeaponBaseBlueprint;
+	return WeaponBaseSubclass;
 }
 
 void APickUpWeapon::SetWeaponInstance(AWeaponBase* Instance)

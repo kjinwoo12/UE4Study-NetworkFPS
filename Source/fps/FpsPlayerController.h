@@ -7,6 +7,8 @@
 #include "PlayerTeam.h"
 #include "FpsPlayerController.generated.h"
 
+class AFpsCharacter;
+
 UCLASS()
 class FPS_API AFpsPlayerController : public APlayerController
 {
@@ -25,9 +27,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 
-	UFUNCTION(BlueprintCallable)
-	void OnGameReady();
-
 	/* =========== RPCs============ */
 	UFUNCTION(Client, Reliable)
 	void ClientRPCOnLogin();
@@ -39,5 +38,5 @@ public:
 	void ServerRPCSetTeam(EPlayerTeam Team);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
+	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 };

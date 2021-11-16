@@ -15,6 +15,7 @@ AHitScanGun::AHitScanGun()
 	MuzzleFlashLight->SetupAttachment(RootComponent);
 	MuzzleFlashTextureEffect = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MuzzleFlashTextureEffect"));
 	MuzzleFlashTextureEffect->SetVisibility(false);
+	MuzzleFlashTextureEffect->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	MuzzleFlashTextureEffect->SetupAttachment(RootComponent);
 }
 

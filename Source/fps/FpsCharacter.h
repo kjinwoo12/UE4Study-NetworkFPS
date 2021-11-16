@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "FpsCharacter.generated.h"
 
+class AGunShop;
+
 UCLASS()
 class FPS_API AFpsCharacter : public ACharacter
 {
@@ -36,7 +38,6 @@ class FPS_API AFpsCharacter : public ACharacter
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
 
-	// PrimaryWeapon will be loaded at BeginPlay();
 	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing = OnRep_InitializePrimaryWeapon)
 	class AWeaponBase* PrimaryWeapon;
 
@@ -70,27 +71,35 @@ class FPS_API AFpsCharacter : public ACharacter
 	float Armor;
 
 	/**************************
-				etc
+		  Character Status
 	***************************/
 	bool IsDead;
 
 	FTimerHandle RespawnTimerHandle;
 
+	FTransform SpawnTransform;
+
+	/**************************
+				Aim
+	***************************/
 	UPROPERTY(Replicated)
 	float AimPitch;
 
 	UPROPERTY(Replicated)
 	float AimYaw;
-
-	FTransform SpawnTransform;
-
+	 
+	/**************************
+				etc
+	***************************/
+	UPROPERTY(Replicated)
+	AGunShop* GunShop;
 
 public:
 	// Sets default values for this character's properties
 	AFpsCharacter();
 	
 	/**************************
-		Initialize variable
+			Initialize
 	***************************/
 private:
 	void InitializeCollisionComponent();
@@ -104,6 +113,8 @@ private:
 	void InitializeBodyMesh();
 
 	void InitializeGameplayVariable();
+
+	void InitializeGunShop();
 
 protected:
 	// Called when the game starts or when spawned
@@ -120,8 +131,8 @@ public:
 	***************************/
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(Client, UnReliable)
-	void ClientRPCTickCrosshair();
+	UFUNCTION()
+	void TickCrosshair();
 
 	UFUNCTION(Client, Reliable)
 	void ClientRPCUpdateCameraToServer();
@@ -263,8 +274,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	float GetAimYaw();
 
-	UFUNCTION(Category = "Getter")
 	TSubclassOf<AHUD> GetHudSubclass();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	AGunShop* GetGunShop();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetPickableWeapon(APickUpWeapon* Instance);
