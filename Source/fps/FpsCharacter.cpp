@@ -59,7 +59,7 @@ void AFpsCharacter::InitializeCamera()
 
 void AFpsCharacter::InitializeHandsMesh()
 {
-	if (CameraComponent == NULL)
+	if (!IsValid(CameraComponent))
 	{
 		UE_LOG(LogTemp, Log, TEXT("Failed initializeHandsMesh() : No CameraComponent"));
 		return;
@@ -148,7 +148,7 @@ void AFpsCharacter::Tick(float DeltaTime)
 void AFpsCharacter::TickCrosshair()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (!IsValid(PlayerController) || PrimaryWeapon == NULL) return;
+	if (!IsValid(PlayerController) || !IsValid(PrimaryWeapon)) return;
 
 	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
 	if (!IsValid(FpsHud)) return;
@@ -274,43 +274,43 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStartAction(GetWorld()->GetFirstPlayerController());
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStartSubaction();
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStopSubaction();
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStartReload();
 }
 
 void AFpsCharacter::PickUpWeaponPressed()
 {
-	if (PrimaryWeapon != NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PickUpWeapon();
 }
 
 void AFpsCharacter::DropWeaponPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 	ServerRPCStopSubaction();
 	DropWeapon();
@@ -349,7 +349,7 @@ void AFpsCharacter::OnGameReady()
 
 bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
 {
-	if (PlayerController == NULL) 
+	if (IsValid(PrimaryWeapon))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Validate = false"));
 		return false;
@@ -359,7 +359,7 @@ bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerContr
 
 void AFpsCharacter::ServerRPCStartAction_Implementation(APlayerController* PlayerController)
 {
-	if (PrimaryWeapon == NULL)
+	if (IsValid(PrimaryWeapon))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Implementation = PrimaryWeapon NULL"));
 		return;
@@ -370,34 +370,34 @@ void AFpsCharacter::ServerRPCStartAction_Implementation(APlayerController* Playe
 
 void AFpsCharacter::ServerRPCStopAction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StopAction();
 }
 
 void AFpsCharacter::ServerRPCStartSubaction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StartSubaction();
 }
 
 void AFpsCharacter::ServerRPCStopSubaction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StopSubaction();
 }
 
 void AFpsCharacter::ServerRPCStartReload_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StartReload();
 }
 
 void AFpsCharacter::ServerRPCPickUpWeapon_Implementation()
 {
-	if (PrimaryWeapon != NULL || PickableWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon) || !IsValid(PickableWeapon)) return;
 
 	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
-	if (WeaponInstance == NULL)
+	if (!IsValid(WeaponInstance))
 	{
 		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickableWeapon->GetWeaponBaseSubclass();
 		if (WeaponBaseSubclass == nullptr) return;
@@ -449,7 +449,7 @@ void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->Initialize(this);
 }
 
@@ -520,24 +520,24 @@ void AFpsCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 
 	// Attach AWeaponModelForBody for third-person view
 	WeaponModelForBody = PrimaryWeapon->SpawnWeaponModelForBodyActor();
-	if (WeaponModelForBody == NULL) return;
+	if (!IsValid(WeaponModelForBody)) return;
 	WeaponModelForBody->SetOwner(this);
 	WeaponModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
 }
 
 AWeaponBase* AFpsCharacter::UnEquipWeapon()
 {
-	if (PrimaryWeapon == NULL) return NULL;
+	if (!IsValid(PrimaryWeapon)) return NULL;
 
 	// UnEquip PrimaryWeapon
 	AWeaponBase* WeaponInstance = PrimaryWeapon;
-	PrimaryWeapon = NULL;
+	PrimaryWeapon = nullptr;
 	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	WeaponInstance->SetOwner(NULL);
 	WeaponInstance->OnUnEquipped();
 
 	// UnEquip WeaponModelForThirdPerson
-	if (WeaponModelForBody == NULL) return WeaponInstance;
+	if (!IsValid(WeaponModelForBody)) return WeaponInstance;
 	WeaponModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	WeaponModelForBody->Destroy();
 
@@ -546,9 +546,9 @@ AWeaponBase* AFpsCharacter::UnEquipWeapon()
 
 void AFpsCharacter::DropWeapon()
 {
-	if (PrimaryWeapon == NULL)
+	if (!IsValid(PrimaryWeapon))
 	{
-		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : PrimaryWeapon == NULL"));
+		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : PrimaryWeapon is invalid"));
 		return;
 	}
 	UE_LOG(LogTemp, Log, TEXT("DropWeapon() : dropped!"));

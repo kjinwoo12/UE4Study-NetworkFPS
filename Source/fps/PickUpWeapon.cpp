@@ -46,11 +46,6 @@ APickUpWeapon::APickUpWeapon()
 void APickUpWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	if (GetNetMode() != NM_DedicatedServer)
-	{
-		UE_LOG(LogTemp, Log, TEXT("PickUpWeapon::BeginPlay() : Client"));
-		WeaponMesh->OnComponentHit.AddDynamic(this, &APickUpWeapon::OnWeaponMeshComponentHit);
-	}
 }
 
 void APickUpWeapon::OnOverlapBegin(
@@ -85,7 +80,11 @@ void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
 	FVector NormalImpulse,
 	const FHitResult& HitResult)
 {
-
+	if (GetNetMode() == NM_DedicatedServer)
+	{
+		return;
+	}
+	
 	FVector Direction;
 	float Speed;
 	GetVelocity().ToDirectionAndLength(Direction, Speed);
