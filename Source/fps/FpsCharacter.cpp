@@ -14,8 +14,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "FpsPlayerController.h"
 #include "FpsPlayerState.h"
-
-#include "DrawDebugHelpers.h"
+#include "GunShop.h"
 
 // Sets default values
 AFpsCharacter::AFpsCharacter()
@@ -60,7 +59,7 @@ void AFpsCharacter::InitializeCamera()
 
 void AFpsCharacter::InitializeHandsMesh()
 {
-	if (CameraComponent == NULL)
+	if (!IsValid(CameraComponent))
 	{
 		UE_LOG(LogTemp, Log, TEXT("Failed initializeHandsMesh() : No CameraComponent"));
 		return;
@@ -91,6 +90,21 @@ void AFpsCharacter::InitializeGameplayVariable()
 	IsDead = false;
 	AimPitch = 0;
 	AimYaw = 0;
+	GunShop = nullptr;
+}
+
+void AFpsCharacter::InitializeGunShop()
+{
+	GunShop = GetWorld()->SpawnActor<AGunShop>();
+	if (IsValid(GunShop)) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("GunShop is spawned"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("GunShop is invalid"));
+	}
+	GunShop->SetOwner(GetController());
 }
 
 // Called when the game starts or when spawned
@@ -99,23 +113,6 @@ void AFpsCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Log, TEXT("FpsCharacterIsSpawned"));
-
-	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetOwner());
-	if (PlayerController)
-	{
-		AFpsPlayerState* State = PlayerController->GetPlayerState<AFpsPlayerState>();
-		UE_LOG(LogTemp, Log, TEXT("PlayerController now on %s"), *State->GetPlayerName());
-		HUD = Cast<AFpsHud>(PlayerController->GetHUD());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("PlayerController is not exist"));
-	}
-
-	if (GetNetMode() == NM_ListenServer)
-	{
-		EquipWeapon(AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Weapons/BP_HitScanGun_TestGun.BP_HitScanGun_TestGun_C'"));
-	}
 }
 
 void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -129,28 +126,37 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
 	DOREPLIFETIME(AFpsCharacter, AimPitch);
 	DOREPLIFETIME(AFpsCharacter, AimYaw);
+	DOREPLIFETIME(AFpsCharacter, GunShop);
 }
 
 // Called every frame
 void AFpsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	ClientRPCTickCrosshair();
 	UpdateActorDirectionByAim(DeltaTime);
 
 	if (GetNetMode() == ENetMode::NM_DedicatedServer) 
 	{
 		ClientRPCUpdateCameraToServer();
 	}
+	else
+	{
+		TickCrosshair();
+	}
 }
 
-void AFpsCharacter::ClientRPCTickCrosshair_Implementation()
+void AFpsCharacter::TickCrosshair()
 {
-	if (PrimaryWeapon == NULL || HUD == NULL) return;
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController) || !IsValid(PrimaryWeapon)) return;
+
+	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
+	if (!IsValid(FpsHud)) return;
+
 	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
 	const float CrosshairCenterOffset = CharacterSpeedOffset + JumpingOffset;
-	HUD->SetCrosshairCenterOffset(CrosshairCenterOffset);
+	FpsHud->SetCrosshairCenterOffset(CrosshairCenterOffset);
 }
 
 void AFpsCharacter::ClientRPCUpdateCameraToServer_Implementation()
@@ -229,13 +235,13 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void AFpsCharacter::MoveForward(float Value)
 {
 	if (IsDead) return;
-	AddMovementInput(GetOwner()->GetActorForwardVector(), Value);
+	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void AFpsCharacter::MoveRight(float Value)
 {
 	if (IsDead) return;
-	AddMovementInput(GetOwner()->GetActorRightVector(), Value);
+	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void AFpsCharacter::AddControllerPitchInput(float Value)
@@ -268,43 +274,43 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStartAction(GetWorld()->GetFirstPlayerController());
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStartSubaction();
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStopSubaction();
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	ServerRPCStartReload();
 }
 
 void AFpsCharacter::PickUpWeaponPressed()
 {
-	if (PrimaryWeapon != NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PickUpWeapon();
 }
 
 void AFpsCharacter::DropWeaponPressed()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 	ServerRPCStopSubaction();
 	DropWeapon();
@@ -312,68 +318,91 @@ void AFpsCharacter::DropWeaponPressed()
 
 void AFpsCharacter::GunShopPressed()
 {
-	if (!IsValid(HUD)) {
-		UE_LOG(LogTemp, Log, TEXT("HUD is not valid"));
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayerController is invalid"));
 		return;
 	}
-	if (HUD->IsOpenGunShop())
+
+	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
+	if (!IsValid(FpsHud))
 	{
-		HUD->CloseGunShop();
+		UE_LOG(LogTemp, Log, TEXT("HUD is invalid"));
+		return;
+	}
+	if (FpsHud->IsOpenGunShop())
+	{
+		FpsHud->CloseGunShop();
 	}
 	else
 	{
-		HUD->OpenGunShop();
+		FpsHud->OpenGunShop();
 	}
+}
+
+void AFpsCharacter::OnGameReady()
+{
+	Respawn();
+	InitializeGunShop();
 }
 
 bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
 {
-	if (PlayerController == NULL) return false;
+	if (IsValid(PrimaryWeapon))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Validate = false"));
+		return false;
+	}
 	return true;
 }
 
 void AFpsCharacter::ServerRPCStartAction_Implementation(APlayerController* PlayerController)
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Implementation = PrimaryWeapon NULL"));
+		return;
+	}
 	PrimaryWeapon->SetPlayerController(PlayerController);
 	PrimaryWeapon->StartAction();
 }
 
 void AFpsCharacter::ServerRPCStopAction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StopAction();
 }
 
 void AFpsCharacter::ServerRPCStartSubaction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StartSubaction();
 }
 
 void AFpsCharacter::ServerRPCStopSubaction_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StopSubaction();
 }
 
 void AFpsCharacter::ServerRPCStartReload_Implementation()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StartReload();
 }
 
 void AFpsCharacter::ServerRPCPickUpWeapon_Implementation()
 {
-	if (PrimaryWeapon != NULL || PickableWeapon == NULL) return;
+	if (IsValid(PrimaryWeapon) || !IsValid(PickableWeapon)) return;
 
 	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
-	if (WeaponInstance == NULL)
+	if (!IsValid(WeaponInstance))
 	{
-		UBlueprint* WeaponBaseBlueprint = PickableWeapon->GetWeaponBaseBlueprint();
-		if (WeaponBaseBlueprint == NULL) return;
+		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickableWeapon->GetWeaponBaseSubclass();
+		if (WeaponBaseSubclass == nullptr) return;
 
-		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseBlueprint->GeneratedClass);
+		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
 	}
 	EquipWeapon(WeaponInstance);
 
@@ -384,8 +413,12 @@ void AFpsCharacter::ServerRPCPickUpWeapon_Implementation()
 void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 {
 	//Get Player direction for adding impulse to PickUpWeapon.
-	APlayerController* PlayerController = PrimaryWeapon->GetPlayerController();
-	if (PlayerController == NULL) return;
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Log, TEXT("ServerRPCDropWeapon() : PlayerController is invalid"));
+		return;
+	}
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
 	PlayerController->GetPlayerViewPoint(
@@ -399,7 +432,6 @@ void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 	PickUpWeapon->SetWeaponInstance(WeaponInstance);
 	
 	//Add impulse to viewpoint direction
-	
 	UStaticMeshComponent* WeaponMesh = PickUpWeapon->GetWeaponMesh();
 	const float ImpulsePower = 300.f;
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
@@ -407,7 +439,7 @@ void AFpsCharacter::ServerRPCDropWeapon_Implementation()
 
 bool AFpsCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
 {
-	return  true;
+	return true;
 }
 
 void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
@@ -417,7 +449,7 @@ void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 {
-	if (PrimaryWeapon == NULL) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->Initialize(this);
 }
 
@@ -461,6 +493,7 @@ void AFpsCharacter::Respawn()
 
 	WakeUpBodyMesh();
 	InitializeGameplayVariable();
+	SetActorTransform(SpawnTransform);
 }
 
 void AFpsCharacter::KnockoutBodyMesh()
@@ -487,24 +520,24 @@ void AFpsCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 
 	// Attach AWeaponModelForBody for third-person view
 	WeaponModelForBody = PrimaryWeapon->SpawnWeaponModelForBodyActor();
-	if (WeaponModelForBody == NULL) return;
+	if (!IsValid(WeaponModelForBody)) return;
 	WeaponModelForBody->SetOwner(this);
 	WeaponModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
 }
 
 AWeaponBase* AFpsCharacter::UnEquipWeapon()
 {
-	if (PrimaryWeapon == NULL) return NULL;
+	if (!IsValid(PrimaryWeapon)) return NULL;
 
 	// UnEquip PrimaryWeapon
 	AWeaponBase* WeaponInstance = PrimaryWeapon;
-	PrimaryWeapon = NULL;
+	PrimaryWeapon = nullptr;
 	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	WeaponInstance->SetOwner(NULL);
 	WeaponInstance->OnUnEquipped();
 
 	// UnEquip WeaponModelForThirdPerson
-	if (WeaponModelForBody == NULL) return WeaponInstance;
+	if (!IsValid(WeaponModelForBody)) return WeaponInstance;
 	WeaponModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	WeaponModelForBody->Destroy();
 
@@ -513,9 +546,9 @@ AWeaponBase* AFpsCharacter::UnEquipWeapon()
 
 void AFpsCharacter::DropWeapon()
 {
-	if (PrimaryWeapon == NULL)
+	if (!IsValid(PrimaryWeapon))
 	{
-		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : PrimaryWeapon == NULL"));
+		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : PrimaryWeapon is invalid"));
 		return;
 	}
 	UE_LOG(LogTemp, Log, TEXT("DropWeapon() : dropped!"));
@@ -568,7 +601,22 @@ float AFpsCharacter::GetAimYaw()
 	return AimYaw;
 }
 
+TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()
+{
+	return HudSubclass;
+}
+
+AGunShop* AFpsCharacter::GetGunShop()
+{
+	return GunShop;
+}
+
 void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)
 {
 	PickableWeapon = Instance;
+}
+
+void AFpsCharacter::SetSpawnTransform(FTransform Transform) 
+{
+	SpawnTransform = Transform;
 }

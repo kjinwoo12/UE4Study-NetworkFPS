@@ -4,6 +4,13 @@
 #include "WaitingPlayersMode.h"
 #include "FpsPlayerController.h"
 
+void AWaitingPlayersMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::BeginPlay"));
+}
+
 void AWaitingPlayersMode::PostLogin(APlayerController* newPlayer)
 {
 	if (GetNetMode() != ENetMode::NM_DedicatedServer) return;
@@ -15,4 +22,5 @@ void AWaitingPlayersMode::PostLogin(APlayerController* newPlayer)
 void AWaitingPlayersMode::ServerRPCOnPlayerFull_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::ServerRPCOnPlayerFull"));
+	
 }

@@ -7,6 +7,8 @@
 #include "WeaponBase.generated.h"
 
 class AFpsCharacter;
+class APickUpWeapon;
+class AWeaponModelForBody;
 
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
@@ -133,10 +135,10 @@ protected:
 			  Gameplay
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UBlueprint* PickUpWeaponBlueprint;
+	TSubclassOf<APickUpWeapon> PickUpWeaponSubclass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UBlueprint* WeaponModelForBodyBlueprint;
+	TSubclassOf<AWeaponModelForBody> WeaponModelForBodySubclass;
 
 	/**************************
 				etc
@@ -237,9 +239,5 @@ public:
 	AWeaponModelForBody* SpawnWeaponModelForBodyActor();
 
 public:
-	// For Spawn Weapon using Blueprint class path
-	// etc 
-	static AWeaponBase* SpawnWeapon(UWorld* World, FString WeaponReference);
-
-	static AWeaponBase* SpawnWeapon(UWorld* World, UClass* GeneratedBP);
+	static AWeaponBase* SpawnWeapon(UWorld* World, UClass* GeneratedBP); 
 };

@@ -23,6 +23,22 @@ void AFpsPlayerController::OnLogin()
 	ClientRPCOnLogin();
 }
 
+void AFpsPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(InPawn);
+	if (!IsValid(FpsCharacter)) return;
+
+	FpsCharacter->OnGameReady();
+	ClientSetHUD(FpsCharacter->GetHudSubclass());
+}
+
+void AFpsPlayerController::OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform)
+{
+	ServerRPCSetTeam(team);
+	ServerRPCSpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
+}
+
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());
@@ -62,5 +78,6 @@ void AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Implementation(TSub
 {
 	FActorSpawnParameters SpawnParameters;
 	AFpsCharacter *SpawnedCharacter = GetWorld()->SpawnActor<AFpsCharacter>(CharacterClass, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), SpawnParameters);
+	SpawnedCharacter->SetSpawnTransform(SpawnTransform);
 	Possess(SpawnedCharacter);
 }
