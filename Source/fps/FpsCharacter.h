@@ -180,13 +180,17 @@ public:
 	/**************************
 			  OnEvent
 	***************************/
-	void OnGameReady();
+	void OnPossessed();
+
+	void OnPlayerFull();
+
+	void OnRoundStart();
 
 	/**************************
 				RPC
 	***************************/
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCStartAction(APlayerController* PlayerController);
+	UFUNCTION(Server, Reliable)
+	void ServerRPCStartAction();
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPCStopAction();

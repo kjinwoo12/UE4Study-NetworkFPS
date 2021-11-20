@@ -29,7 +29,7 @@ void AFpsPlayerController::OnPossess(APawn* InPawn)
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(InPawn);
 	if (!IsValid(FpsCharacter)) return;
 
-	FpsCharacter->OnGameReady();
+	FpsCharacter->OnPossessed();
 	ClientSetHUD(FpsCharacter->GetHudSubclass());
 }
 

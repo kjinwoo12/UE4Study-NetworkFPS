@@ -35,12 +35,37 @@ void AHitScanWeapon::OnAction()
 		FPointDamageEvent DamangeEvent;
 		DamangeEvent.HitInfo = HitResult;
 
+		AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
+		if (!IsValid(Character)) 
+		{
+			UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::OnAction / Owner Character is invalid"));
+			return;
+		}
+		APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+		if (!IsValid(PlayerController))
+		{
+			UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::OnAction / PlayerController is invalid"));
+			return;
+		}
 		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
 	}
 }
 
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 {
+	AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
+	if (!IsValid(Character))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::LineTrace / Owner Character is invalid"));
+		return false;
+	}
+	APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::LineTrace / PlayerController is invalid"));
+		return false;
+	}
+
 	// Get Player view point
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;

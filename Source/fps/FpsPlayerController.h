@@ -27,7 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 
-	/* =========== RPCs============ */
+	/**************************
+				RPC
+	***************************/
 	UFUNCTION(Client, Reliable)
 	void ClientRPCOnLogin();
 

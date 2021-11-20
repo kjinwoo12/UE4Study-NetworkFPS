@@ -143,9 +143,6 @@ protected:
 	/**************************
 				etc
 	***************************/
-
-	APlayerController* PlayerController;
-
 private:
 	// TimerHandle to make weapon on delay
 	FTimerHandle TimerHandle;
@@ -212,9 +209,6 @@ public:
 	int GetSubAmmo();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
-	APlayerController* GetPlayerController();
-
-	UFUNCTION(BlueprintCallable, Category = "Getter")
 	FName GetAttachingGripPointName();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
@@ -225,9 +219,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetBodyAnimInstance(UAnimInstance* AnimInstance);
-
-	UFUNCTION(BlueprintCallable, Category = "Setter")
-	void SetPlayerController(APlayerController* Instance);
 
 	/**************************
 				etc

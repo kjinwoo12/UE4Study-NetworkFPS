@@ -11,7 +11,6 @@ AGunShop::AGunShop()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
-
 }
 
 // Called when the game starts or when spawned
@@ -27,7 +26,13 @@ bool AGunShop::ServerRpcBuyItem_Validate(TSubclassOf<AWeaponBase> WeaponBlueprin
 
 void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSubclass)
 {
-	APlayerController* PlayerController = GetOwner<APlayerController>();
+	AFpsCharacter* OwnerCharacter = Cast<AFpsCharacter>(GetOwner());
+	if (!IsValid(OwnerCharacter))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AGunShop::ServerRpcBuyItem / OwnerCharacter is invalid"));
+		return;
+	}
+	APlayerController* PlayerController = Cast<APlayerController>(OwnerCharacter->GetController());
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Log, TEXT("PlayerController is invalid"));

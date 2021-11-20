@@ -104,7 +104,7 @@ void AFpsCharacter::InitializeGunShop()
 	{
 		UE_LOG(LogTemp, Log, TEXT("GunShop is invalid"));
 	}
-	GunShop->SetOwner(GetController());
+	GunShop->SetOwner(this);
 }
 
 // Called when the game starts or when spawned
@@ -274,31 +274,31 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (IsValid(PrimaryWeapon)) return;
-	ServerRPCStartAction(GetWorld()->GetFirstPlayerController());
+	if (!IsValid(PrimaryWeapon)) return;
+	ServerRPCStartAction();
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartSubaction();
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopSubaction();
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartReload();
 }
 
@@ -341,54 +341,54 @@ void AFpsCharacter::GunShopPressed()
 	}
 }
 
-void AFpsCharacter::OnGameReady()
+void AFpsCharacter::OnPossessed()
 {
 	Respawn();
 	InitializeGunShop();
 }
 
-bool AFpsCharacter::ServerRPCStartAction_Validate(APlayerController* PlayerController)
+void AFpsCharacter::OnPlayerFull()
 {
-	if (IsValid(PrimaryWeapon))
-	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Validate = false"));
-		return false;
-	}
-	return true;
+	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::OnPlayerFull"));
+	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetController());
+	if (!IsValid(PlayerController)) return;
+
+	PrimaryWeapon->StopAction();
+	PrimaryWeapon->StopSubaction();
+	bBlockInput = true;
 }
 
-void AFpsCharacter::ServerRPCStartAction_Implementation(APlayerController* PlayerController)
+void AFpsCharacter::ServerRPCStartAction_Implementation()
 {
-	if (IsValid(PrimaryWeapon))
+	if (!IsValid(PrimaryWeapon))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRPCStartAction_Implementation = PrimaryWeapon NULL"));
 		return;
 	}
-	PrimaryWeapon->SetPlayerController(PlayerController);
 	PrimaryWeapon->StartAction();
 }
 
 void AFpsCharacter::ServerRPCStopAction_Implementation()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StopAction();
 }
 
 void AFpsCharacter::ServerRPCStartSubaction_Implementation()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StartSubaction();
 }
 
 void AFpsCharacter::ServerRPCStopSubaction_Implementation()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StopSubaction();
 }
 
 void AFpsCharacter::ServerRPCStartReload_Implementation()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->StartReload();
 }
 
