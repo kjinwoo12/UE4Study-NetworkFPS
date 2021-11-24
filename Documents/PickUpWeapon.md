@@ -31,3 +31,43 @@ Set your `PickUpWeapon` BP at `PickUpWeaponBlueprint` in `WeaponBase` BP. It mak
 # How_to_Guide
 
 # Technical_reference
+## Variables
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|UStaticMeshComponent*|WeaponMesh||
+|USphereComponent*|PickUpRange||
+|TSubclassOf\<AWeaponBase>|WeaponBaseSubclass||
+|AWeaponBase*|WeaponInstance||
+|USoundCue*|DropSound||
+
+</details>
+
+## Constructors
+<details open>
+<summary></summary>
+
+|prarams|Description|
+|-|-|
+|none|none|
+
+</details>
+
+## Functions
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|virtual void|BeginPlay||
+|void|OnOverlapBegin<br/>(<br/>&emsp;<br/>&emsp;UPrimitiveComponent* OverlappedComponent,<br/>&emsp;AActor* OtherActor,<br/>&emsp;UPrimitiveComponent* OtherComponent,<br/>&emsp;int32 OtherBodyIndex,<br/>&emsp;bool bFromSweep,<br/>&emsp;const FHitResult& SweepResult<br/>)||
+|void|OnOverlapEnd<br/>(<br/>&emsp;UPrimitiveComponent* OverlappedComponent,<br/>&emsp;AActor* OtherActor,<br/>&emsp;UPrimitiveComponent* OtherComponent,<br/>&emsp;int32 OtherBodyIndex<br/>)||
+|void|OnWeaponMeshComponentHit<br/>(<br/>&emsp;UPrimitiveComponent* HitComponent,<br/>&emsp;AActor* OtherActor,<br/>&emsp;UPrimitiveComponent* OtherComponent,<br/>&emsp;FVector NormalImpulse,<br/>&emsp;const FHitResult& HitResult<br/>)||
+|UStaticMeshComponent*|GetWeaponMesh||
+|AWeaponBase*|GetWeaponInstance||
+|TSubclassOf\<[AWeaponBase](./WeaponBase.md)>|GetWeaponBaseSubclass||
+|void|SetWeaponInstance<br/>(<br/>&emsp;AWeaponBase* Instance<br/>)||
+
+</details>

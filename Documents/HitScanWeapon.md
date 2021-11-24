@@ -17,11 +17,36 @@ Same with [AWeaponBase.md](./WeaponBase.md).
 Same with [AWeaponBase.md](./WeaponBase.md).
 
 # Technical_reference
-## - Functions
-|Return|Name|Description|
-|---:|:---|:---|
-|bool|LineTrace(FHitResult&)|Detect Pawn From "Camera.position" to "Camera.Direction * `reach`". 
-## - Variables
-|Type|Name|Description|
-|---:|:---|:---|
-|float|Reach|Range of possible to detect using `LineTrace(FHitResult&)`|
+## Variables
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|float|Reach||
+|FCollisionQueryParams|LineTraceCollisionQueryParams||
+
+</details>
+
+## Constructors
+<details open>
+<summary></summary>
+
+|prarams|Description|
+|-|-|
+|none|none|
+
+</details>
+
+## Functions
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|virtual void|Initialize<br/>(<br/>&emsp;[AFpsCharacter](./FpsCharacter.md)* FPSCharacter<br/>)||
+|virtual void|OnUnEquipped||
+|virtual void|OnAction||
+|bool|LineTrace<br/>(<br/>&emsp;FHitResult& HitResult<br/>)||
+
+</details>
