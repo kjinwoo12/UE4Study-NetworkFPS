@@ -4,6 +4,7 @@
 #include "WeaponBase.h"
 #include "FpsCharacter.h"
 #include "WeaponBase.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 AGunShop::AGunShop()
@@ -11,6 +12,8 @@ AGunShop::AGunShop()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+
+	RootComponent = CreateDefaultSubobject<USphereComponent>(TEXT("DefaultComponent"));
 }
 
 // Called when the game starts or when spawned
