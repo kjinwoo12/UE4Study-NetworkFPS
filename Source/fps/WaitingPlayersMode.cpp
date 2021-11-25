@@ -29,6 +29,7 @@ void AWaitingPlayersMode::PostLogin(APlayerController* newPlayer)
 
 void AWaitingPlayersMode::OnPlayerFull()
 {
+	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::OnPlayerFull"));
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		APlayerController* PlayerController = Iterator->Get();

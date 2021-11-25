@@ -24,9 +24,6 @@ public:
 
 	virtual void OnPossess(APawn* InPawn);
 
-	UFUNCTION(BlueprintCallable)
-	void OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform);
-
 	/**************************
 				RPC
 	***************************/
@@ -36,9 +33,13 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
 	void ServerRPCSetName(const FString& Name);
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCSetTeam(EPlayerTeam Team);
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+	void ServerRpcOnSelectedTeam(EPlayerTeam Team, TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCSpawnAsPlayableCharacter(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform);
+	/**************************
+				etc
+	***************************/
+	void SetTeam(EPlayerTeam Team);
+
+	void SpawnAsPlayableCharacter(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform);
 };

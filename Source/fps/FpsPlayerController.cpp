@@ -33,12 +33,6 @@ void AFpsPlayerController::OnPossess(APawn* InPawn)
 	ClientSetHUD(FpsCharacter->GetHudSubclass());
 }
 
-void AFpsPlayerController::OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform)
-{
-	ServerRPCSetTeam(team);
-	ServerRPCSpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
-}
-
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());
@@ -57,24 +51,24 @@ void AFpsPlayerController::ServerRPCSetName_Implementation(const FString& Name)
 	State->SetPlayerName(Name);
 }
 
-bool AFpsPlayerController::ServerRPCSetTeam_Validate(const EPlayerTeam Team)
+bool AFpsPlayerController::ServerRpcOnSelectedTeam_Validate(EPlayerTeam team, TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
 	return true;
 }
 
-void AFpsPlayerController::ServerRPCSetTeam_Implementation(const EPlayerTeam Team)
+void AFpsPlayerController::ServerRpcOnSelectedTeam_Implementation(EPlayerTeam Team, TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
+{
+	SetTeam(Team);
+	SpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
+}
+
+void AFpsPlayerController::SetTeam(const EPlayerTeam Team)
 {
 	AFpsPlayerState* playerState = (AFpsPlayerState*)this->PlayerState;
 	playerState->Team = Team;
 }
 
-bool AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Validate(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
-{
-	if (CharacterClass) return true;
-	else return false;
-}
-
-void AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Implementation(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
+void AFpsPlayerController::SpawnAsPlayableCharacter(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
 	FActorSpawnParameters SpawnParameters;
 	AFpsCharacter *SpawnedCharacter = GetWorld()->SpawnActor<AFpsCharacter>(CharacterClass, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), SpawnParameters);
