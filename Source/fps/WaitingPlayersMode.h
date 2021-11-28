@@ -26,11 +26,12 @@ public:
 	/**************************
 			  OnEvent
 	***************************/
+	void OnPlayerJoinTeam();
+	
 	void OnPlayerFull();
 
 	/**************************
-				RPC
+				etc
 	***************************/
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void ServerRPCOnPlayerFull();
+	bool IsPlayerFullOnTeam();
 };

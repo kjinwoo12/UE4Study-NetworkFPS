@@ -3,6 +3,7 @@
 
 #include "WaitingPlayersMode.h"
 #include "FpsPlayerController.h"
+#include "FpsPlayerState.h"
 #include "WaitingPlayersState.h"
 #include "FpsCharacter.h"
 
@@ -19,9 +20,11 @@ void AWaitingPlayersMode::PostLogin(APlayerController* newPlayer)
 	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::PostLogin"));
 	AFpsPlayerController* playerController = (AFpsPlayerController*)newPlayer;
 	playerController->OnLogin();
+}
 
-	AWaitingPlayersState* State = GetGameState<AWaitingPlayersState>();
-	if (State->PlayerArray.Num() >= State->MaxTeamSize * 2)
+void AWaitingPlayersMode::OnPlayerJoinTeam()
+{
+	if (IsPlayerFullOnTeam())
 	{
 		OnPlayerFull();
 	}
@@ -30,18 +33,36 @@ void AWaitingPlayersMode::PostLogin(APlayerController* newPlayer)
 void AWaitingPlayersMode::OnPlayerFull()
 {
 	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::OnPlayerFull"));
+	AWaitingPlayersState* State = GetGameState<AWaitingPlayersState>();
+
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		APlayerController* PlayerController = Iterator->Get();
-		AFpsCharacter* Character = Cast<AFpsCharacter>(PlayerController->GetPawn());
-		if (IsValid(Character))
+		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
+		if (IsValid(FpsPlayerController))
 		{
-			Character->OnPlayerFull();
+			FpsPlayerController->OnPlayerFull();
 		}
 	}
 }
 
-void AWaitingPlayersMode::ServerRPCOnPlayerFull_Implementation()
+bool AWaitingPlayersMode::IsPlayerFullOnTeam() 
 {
-	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::ServerRPCOnPlayerFull"));
+	AWaitingPlayersState* State = GetGameState<AWaitingPlayersState>();
+	if (!IsValid(State)) return false;
+
+	const int MaxPlayerSize = State->MaxTeamSize * 2;
+	int CurrentPlayerOnTeamSize = 0;
+	for (APlayerState* PlayerState : State->PlayerArray)
+	{
+		AFpsPlayerState* FpsPlayerState = Cast<AFpsPlayerState>(PlayerState);
+		if (FpsPlayerState->Team != EPlayerTeam::None) CurrentPlayerOnTeamSize++;
+	}
+	if (MaxPlayerSize <= CurrentPlayerOnTeamSize)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

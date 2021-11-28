@@ -19,10 +19,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ConnectTo(const FString URL);
-
+	/**************************
+			 On Event
+	***************************/
 	virtual void OnLogin();
 
 	virtual void OnPossess(APawn* InPawn);
+
+	void OnPlayerFull();
 
 	/**************************
 				RPC

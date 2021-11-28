@@ -6,6 +6,8 @@
 #include "FpsGameInstance.h"
 #include "FpsPlayerState.h"
 #include "FpsCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "WaitingPlayersMode.h"
 
 AFpsPlayerController::AFpsPlayerController()
 {
@@ -33,6 +35,15 @@ void AFpsPlayerController::OnPossess(APawn* InPawn)
 	ClientSetHUD(FpsCharacter->GetHudSubclass());
 }
 
+void AFpsPlayerController::OnPlayerFull()
+{
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetPawn());
+	if (IsValid(FpsCharacter))
+	{
+		FpsCharacter->OnPlayerFull();
+	}
+}
+
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());
@@ -58,8 +69,13 @@ bool AFpsPlayerController::ServerRpcOnSelectedTeam_Validate(EPlayerTeam team, TS
 
 void AFpsPlayerController::ServerRpcOnSelectedTeam_Implementation(EPlayerTeam Team, TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
+	UE_LOG(LogTemp, Log, TEXT("AFpsPlayerController::ServerRPCOnSelectedTeam"));
 	SetTeam(Team);
 	SpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
+	
+	AWaitingPlayersMode* GameMode = Cast<AWaitingPlayersMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!IsValid(GameMode)) return;
+	GameMode->OnPlayerJoinTeam();
 }
 
 void AFpsPlayerController::SetTeam(const EPlayerTeam Team)

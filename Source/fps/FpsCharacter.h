@@ -8,6 +8,15 @@
 
 class AGunShop;
 
+UENUM(BlueprintType)
+enum class EFpsCharacterStatus : uint8
+{
+	Alive UMETA(DisplayName = "Alive"), // Controllable all
+	Stopped UMETA(DisplayName = "Stopped"), // Controllable only Mouse
+	Freeze UMETA(DisplayName = "Freeze"), // Controllable nothing
+	Dead UMETA(DisplayName = "Dead"), // Same with Freeze but the character is dead.
+};
+
 UCLASS()
 class FPS_API AFpsCharacter : public ACharacter
 {
@@ -73,7 +82,8 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 		  Character Status
 	***************************/
-	bool IsDead;
+	UPROPERTY(Replicated)
+	EFpsCharacterStatus Status;
 
 	FTimerHandle RespawnTimerHandle;
 

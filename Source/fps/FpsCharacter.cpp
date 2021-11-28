@@ -7,7 +7,7 @@
 #include "WeaponBase.h"
 #include "PickUpWeapon.h"
 #include "WeaponModelForBody.h"
-#include "FPSHUD.h"
+#include "FpsCharacterHud.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
@@ -83,11 +83,11 @@ void AFpsCharacter::InitializeBodyMesh()
 
 void AFpsCharacter::InitializeGameplayVariable()
 {
+	Status = EFpsCharacterStatus::Alive;
 	MaxHealth = 100;
 	Health = 100;
 	MaxArmor = 100;
 	Armor = 50;
-	IsDead = false;
 	AimPitch = 0;
 	AimYaw = 0;
 	GunShop = nullptr;
@@ -124,6 +124,7 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, PickableWeapon);
 	DOREPLIFETIME(AFpsCharacter, PrimaryWeapon);
 	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
+	DOREPLIFETIME(AFpsCharacter, Status);
 	DOREPLIFETIME(AFpsCharacter, AimPitch);
 	DOREPLIFETIME(AFpsCharacter, AimYaw);
 	DOREPLIFETIME(AFpsCharacter, GunShop);
@@ -150,7 +151,7 @@ void AFpsCharacter::TickCrosshair()
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (!IsValid(PlayerController) || !IsValid(PrimaryWeapon)) return;
 
-	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
+	AFpsCharacterHud* FpsHud = Cast<AFpsCharacterHud>(PlayerController->GetHUD());
 	if (!IsValid(FpsHud)) return;
 
 	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
@@ -234,36 +235,39 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AFpsCharacter::MoveForward(float Value)
 {
-	if (IsDead) return;
+	if (Status != EFpsCharacterStatus::Alive) return;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void AFpsCharacter::MoveRight(float Value)
 {
-	if (IsDead) return;
+	if (Status != EFpsCharacterStatus::Alive) return;
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void AFpsCharacter::AddControllerPitchInput(float Value)
 {
-	if (IsDead) return;
+	if (Status == EFpsCharacterStatus::Dead ||
+		Status == EFpsCharacterStatus::Freeze) return;
 	Super::AddControllerPitchInput(Value);
 }
 
 void AFpsCharacter::AddControllerYawInput(float Value)
 {
-	if (IsDead) return;
+	if (Status == EFpsCharacterStatus::Dead ||
+		Status == EFpsCharacterStatus::Freeze) return;
 	Super::AddControllerYawInput(Value);
 }
 
 void AFpsCharacter::Jump()
 {
-	if (IsDead) return;
+	if (Status != EFpsCharacterStatus::Alive) return;
 	Super::Jump();
 }
 
 void AFpsCharacter::CrouchPressed()
 {
+	if (Status != EFpsCharacterStatus::Alive) return;
 	Crouch();
 }
 
@@ -274,43 +278,52 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (!IsValid(PrimaryWeapon)) return;
+	if (Status != EFpsCharacterStatus::Alive ||
+		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartAction();
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (!IsValid(PrimaryWeapon)) return;
+	if (Status != EFpsCharacterStatus::Alive ||
+		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (!IsValid(PrimaryWeapon)) return;
+	if (Status != EFpsCharacterStatus::Alive ||
+		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartSubaction();
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (!IsValid(PrimaryWeapon)) return;
+	if (Status != EFpsCharacterStatus::Alive ||
+		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopSubaction();
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (!IsValid(PrimaryWeapon)) return;
+	if (Status != EFpsCharacterStatus::Alive ||
+		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartReload();
 }
 
 void AFpsCharacter::PickUpWeaponPressed()
 {
-	if (IsValid(PrimaryWeapon)) return;
+	if (Status == EFpsCharacterStatus::Dead ||
+		Status == EFpsCharacterStatus::Freeze ||
+		IsValid(PrimaryWeapon)) return;
 	PickUpWeapon();
 }
 
 void AFpsCharacter::DropWeaponPressed()
 {
-	if (!IsValid(PrimaryWeapon)) return;
+	if (Status == EFpsCharacterStatus::Dead ||
+		Status == EFpsCharacterStatus::Freeze ||
+		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 	ServerRPCStopSubaction();
 	DropWeapon();
@@ -325,7 +338,7 @@ void AFpsCharacter::GunShopPressed()
 		return;
 	}
 
-	AFpsHud* FpsHud = Cast<AFpsHud>(PlayerController->GetHUD());
+	AFpsCharacterHud* FpsHud = Cast<AFpsCharacterHud>(PlayerController->GetHUD());
 	if (!IsValid(FpsHud))
 	{
 		UE_LOG(LogTemp, Log, TEXT("HUD is invalid"));
@@ -350,12 +363,12 @@ void AFpsCharacter::OnPossessed()
 void AFpsCharacter::OnPlayerFull()
 {
 	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::OnPlayerFull"));
-	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetController());
-	if (!IsValid(PlayerController)) return;
-
-	PrimaryWeapon->StopAction();
-	PrimaryWeapon->StopSubaction();
-	bBlockInput = true;
+	if (IsValid(PrimaryWeapon))
+	{
+		PrimaryWeapon->StopAction();
+		PrimaryWeapon->StopSubaction();
+	}
+	Status = EFpsCharacterStatus::Freeze;
 }
 
 void AFpsCharacter::ServerRPCStartAction_Implementation()
@@ -456,7 +469,7 @@ void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 float AFpsCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Log, TEXT("FPSCharacter TakeDamage"));
-	if (IsDead) return 0.f;
+	if (Status == EFpsCharacterStatus::Dead) return 0.f;
 
 	float ReducedDamageByArmor = Damage * 0.5f;
 	ReducedDamageByArmor = (ReducedDamageByArmor > Armor) ? Armor : ReducedDamageByArmor;
@@ -475,7 +488,15 @@ float AFpsCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
 
 void AFpsCharacter::Die()
 {
-	IsDead = true;
+	if (GetNetMode() == NM_DedicatedServer)
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Die Server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Die Client"));
+	}
+	Status = EFpsCharacterStatus::Dead;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);
 
@@ -487,7 +508,6 @@ void AFpsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Log, TEXT("Respawn"));
 
-	IsDead = false;
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	HandsMeshComponent->SetOwnerNoSee(false);
 
