@@ -53,3 +53,87 @@ EquipWeapon(WeaponBase)
 The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. and EquipWeapon  
 
 # Technical_reference
+
+## Variables
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|USkeletalMeshComponent*|WeaponMesh||
+|FName|AttachingGripPointName||
+|EWeaponType|WeaponType||
+|float|ActionDelay||
+|float|SubactionDelay||
+|bool|ActionLoopEnable||
+|bool|SubactionLoopEnable||
+|float|ReloadDelay||
+|int|MagazineSize||
+|int|CurrentAmmo||
+|int|SubAmmo||
+|bool|IsAmmoInfinite||
+|float|Accuracy||
+|float|MovementStability||
+|float|Damage||
+|About|animation||
+|UAnimInstance*|HandsAnimInstance||
+|UAnimInstance*|BodyAnimInstance||
+|UAnimMontage*|HandsActionAnimation||
+|UAnimMontage*|HandsSubactionAnimation||
+|UAnimMontage*|HandsReloadAnimation||
+|UAnimMontage*|BodyActionAnimation||
+|UAnimMontage*|BodySubactionAnimation||
+|UAnimMontage*|BodyReloadAnimation||
+|USoundBase*|ActionSound||
+|USoundBase*|SubactionSound||
+|USoundBase*|ReloadSound||
+|TSubclassOf\<[APickUpWeapon](./PickUpWeapon.md)>|PickUpWeaponSubclass||
+|TSubclassOf\<[AWeaponModelForBody](WeaponModelForBody.md)>|WeaponModelForBodySubclass||
+|FTimerHandle|TimerHandle||
+|void|(AWeaponBase::* FunctionAfterDelay)()||
+|FTimerHandle|TimerHandleForExtraInput||
+|void|(AWeaponBase::* FunctionAfterDelayForExtraInput)()||
+
+</details>
+
+## Constructors
+<details open>
+<summary></summary>
+
+|prarams|Description|
+|-|-|
+|none|none|
+
+</details>
+
+## Functions
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|virtual void|BeginPlay||
+|virtual void|Initialize<br/>(<br/>&emsp;AFpsCharacter* FPSCharacter<br/>)||
+|virtual void|OnUnEquipped||
+|void|StartAction||
+|void|StopAction||
+|void|StartSubaction||
+|void|StopSubaction||
+|void|StartReload||
+|virtual void|OnAction||
+|void|MulticastRPCOnActionFx||
+|void|OnSubaction||
+|void|OnReload||
+|float|GetDelay||
+|float|GetMovementStability||
+|int|GetCurrentAmmo||
+|int|GetSubAmmo||
+|FName|GetAttachingGripPointName||
+|[EWeaponType](./WeaponType.md)|GetWeaponType||
+|void|SetHandsAnimInstance<br/>(<br/>&emsp;UAnimInstance* AnimInstance<br/>)||
+|void|SetBodyAnimInstance<br/>(<br/>&emsp;UAnimInstance* AnimInstance<br/>)||
+|[APickUpWeapon](./PickUpWeapon.md)*|SpawnPickUpWeaponActor||
+|[AWeaponModelForBody](./WeaponModelForBody.md)*|SpawnWeaponModelForBodyActor||
+|static [AWeaponBase](./WeaponBase.md)*|SpawnWeapon<br/>(<br/>&emsp;UWorld* World,<br/>&emsp;UClass* GeneratedBP<br/>)||
+
+</details>

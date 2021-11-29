@@ -6,28 +6,28 @@
 
 int AWaitingPlayersState::GetTerrorTeamSize()
 {
-	int size = 0;
-	for (APlayerState* state : PlayerArray) 
+	int Size = 0;
+	for (APlayerState* State : PlayerArray) 
 	{
-		AFpsPlayerState* fpsState = (AFpsPlayerState*)state;
-		if (fpsState->Team == EPlayerTeam::TeamTerror)
+		AFpsPlayerState* FpsState = (AFpsPlayerState*)State;
+		if (FpsState->Team == EPlayerTeam::TeamTerror)
 		{
-			size++;
+			Size++;
 		}
 	}
-	return size;
+	return Size;
 }
 
 int AWaitingPlayersState::GetCounterTerrorTeamSize()
 {
-	int size = 0;
-	for (APlayerState* state : PlayerArray)
+	int Size = 0;
+	for (APlayerState* State : PlayerArray)
 	{
-		AFpsPlayerState* fpsState = (AFpsPlayerState*)state;
-		if (fpsState->Team == EPlayerTeam::TeamCounterTerror)
+		AFpsPlayerState* FpsState = (AFpsPlayerState*)State;
+		if (FpsState->Team == EPlayerTeam::TeamCounterTerror)
 		{
-			size++;
+			Size++;
 		}
 	}
-	return size;
+	return Size;
 }

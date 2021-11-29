@@ -3,6 +3,9 @@
 
 #include "WaitingPlayersMode.h"
 #include "FpsPlayerController.h"
+#include "FpsPlayerState.h"
+#include "WaitingPlayersState.h"
+#include "FpsCharacter.h"
 
 void AWaitingPlayersMode::BeginPlay()
 {
@@ -19,8 +22,47 @@ void AWaitingPlayersMode::PostLogin(APlayerController* newPlayer)
 	playerController->OnLogin();
 }
 
-void AWaitingPlayersMode::ServerRPCOnPlayerFull_Implementation()
+void AWaitingPlayersMode::OnPlayerJoinTeam()
 {
-	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::ServerRPCOnPlayerFull"));
-	
+	if (IsPlayerFullOnTeam())
+	{
+		OnPlayerFull();
+	}
+}
+
+void AWaitingPlayersMode::OnPlayerFull()
+{
+	UE_LOG(LogTemp, Log, TEXT("AWaitingPlayersMode::OnPlayerFull"));
+	AWaitingPlayersState* State = GetGameState<AWaitingPlayersState>();
+
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
+		if (IsValid(FpsPlayerController))
+		{
+			FpsPlayerController->OnPlayerFull();
+		}
+	}
+}
+
+bool AWaitingPlayersMode::IsPlayerFullOnTeam() 
+{
+	AWaitingPlayersState* State = GetGameState<AWaitingPlayersState>();
+	if (!IsValid(State)) return false;
+
+	const int MaxPlayerSize = State->MaxTeamSize * 2;
+	int CurrentPlayerOnTeamSize = 0;
+	for (APlayerState* PlayerState : State->PlayerArray)
+	{
+		AFpsPlayerState* FpsPlayerState = Cast<AFpsPlayerState>(PlayerState);
+		if (FpsPlayerState->Team != EPlayerTeam::None) CurrentPlayerOnTeamSize++;
+	}
+	if (MaxPlayerSize <= CurrentPlayerOnTeamSize)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

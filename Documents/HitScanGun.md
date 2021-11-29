@@ -4,6 +4,7 @@ AHitScanGun is based on AHitScanWeapon. It is added Muzzle and BulletTracer from
 ## Inheritance Hierarchy
 - [AWeaponBase](./WeaponBase.md)
     - [AHitScanWeapon](./HitScanWeapon.md)
+        - AHitScanGun
 
 # Index
 - [Tutorial](#_Tutorial)
@@ -23,5 +24,39 @@ Same with [AHitScanWeapon.md](./WeaponBase.md). But there is another step for cr
 Same with [AHitScanWeapon.md](./WeaponBase.md).
 
 # Technical_reference
-## BP_BulletTracer
-It is just an actor based on `AActor`. Base directory is `MyContent/Weapon/Effects`. I recommend that don't make it for other usage etc projectile weapon.
+## Variables
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|USceneComponent*|Muzzle|For setting location of `MuzzleFlashLight` and `MuzzleFlashTextureeffect`|
+|UPointLightComponent*|MuzzleFlashLight||
+|UStaticMeshComponent*|MuzzleFlashTextureEffect||
+|UBlueprint*|BulletTracerBlueprint|It is just an actor based on `AActor`. Base directory is `MyContent/Weapon/Effects`. I recommend that don't make it for other usage etc projectile weapon.|
+|FTimerHandle|MuzzleEffectTimer||
+
+</details>
+
+## Constructors
+<details open>
+<summary></summary>
+
+|prarams|Description|
+|-|-|
+|none|none|
+
+</details>
+
+## Functions
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|void|ServerRpcBuyItem<br/>(<br/>&emsp;TSubclassOf\<[AWeaponBase](./WeaponBase.md)> WeaponBlueprint<br/>)||
+|virtual void|OnAction||
+|void|ClientRPCOnActionFx||
+|AActor*|SpawnBulletTracer<br/>(<br/>&emsp;const FVector SpawnPosition,<br/>&emsp;const FVector ImpactPoint<br/>)||
+
+</details>

@@ -1,33 +1,33 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FpsHud.h"
+#include "FpsCharacterHud.h"
 #include "Engine/Canvas.h"
 #include "Blueprint/UserWidget.h"
 #include "GunShopWidget.h"
 
-AFpsHud::AFpsHud()
+AFpsCharacterHud::AFpsCharacterHud()
 {
 	CrosshairDefaultOffset = 0.f;
 	CrosshairOffset = 0.f;
 }
 
-void AFpsHud::BeginPlay()
+void AFpsCharacterHud::BeginPlay()
 {
 	Super::BeginPlay();
 	InitDefaultWidget();
 	InitGunShopWidget();
-	UE_LOG(LogTemp, Log, TEXT("AFpsHud::BeginPlay"));
+	UE_LOG(LogTemp, Log, TEXT("AFpsCharacterHud::BeginPlay"));
 }
 
-void AFpsHud::DrawHUD()
+void AFpsCharacterHud::DrawHUD()
 {
 	Super::DrawHUD();
 
 	if (CrosshairTexture) DrawCrosshair();
 }
 
-void AFpsHud::InitDefaultWidget()
+void AFpsCharacterHud::InitDefaultWidget()
 {
 	if (DefaultWidgetClass == NULL) return;
 	DefaultWidget = CreateWidget<UUserWidget>(GetOwningPlayerController(), DefaultWidgetClass);
@@ -36,14 +36,14 @@ void AFpsHud::InitDefaultWidget()
 	DefaultWidget->AddToViewport();
 }
 
-void AFpsHud::InitGunShopWidget()
+void AFpsCharacterHud::InitGunShopWidget()
 {
 	if (GunShopWidgetClass == NULL) return;
 	GunShopWidget = CreateWidget<UGunShopWidget>(GetOwningPlayerController(), GunShopWidgetClass);
 	GunShopWidget->SetOwningPlayer(GetOwningPlayerController());
 }
 
-void AFpsHud::DrawCrosshair()
+void AFpsCharacterHud::DrawCrosshair()
 {
 	const FVector2D Center(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
 	const FVector2D TextureOffset(CrosshairTexture->GetSizeX() * 0.5f, CrosshairTexture->GetSizeY() * 0.5f);
@@ -92,12 +92,12 @@ void AFpsHud::DrawCrosshair()
 	Canvas->DrawItem(Bottom);
 }
 
-void AFpsHud::SetCrosshairCenterOffset(float Value)
+void AFpsCharacterHud::SetCrosshairCenterOffset(float Value)
 {
 	CrosshairOffset = Value;
 }
 
-void AFpsHud::OpenGunShop()
+void AFpsCharacterHud::OpenGunShop()
 {
 	if (GunShopWidget == NULL) return;
 	GunShopWidget->AddToViewport();
@@ -107,7 +107,7 @@ void AFpsHud::OpenGunShop()
 	PlayerController->SetInputMode(FInputModeGameAndUI());
 }
 
-void AFpsHud::CloseGunShop()
+void AFpsCharacterHud::CloseGunShop()
 {
 	if (GunShopWidget == NULL) return;
 	GunShopWidget->RemoveFromViewport();
@@ -117,7 +117,7 @@ void AFpsHud::CloseGunShop()
 	PlayerController->SetInputMode(FInputModeGameOnly());
 }
 
-bool AFpsHud::IsOpenGunShop()
+bool AFpsCharacterHud::IsOpenGunShop()
 {
 	return GunShopWidget->IsInViewport();
 }

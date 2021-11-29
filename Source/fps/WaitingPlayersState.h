@@ -16,7 +16,7 @@ class FPS_API AWaitingPlayersState : public AGameStateBase
 	
 public:
 	UPROPERTY(BlueprintReadOnly)
-	int maxTeamSize = 1;
+	int MaxTeamSize = 1;
 	
 public:
 	UFUNCTION(BlueprintCallable)

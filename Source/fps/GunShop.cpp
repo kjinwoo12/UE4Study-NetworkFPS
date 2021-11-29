@@ -4,6 +4,7 @@
 #include "WeaponBase.h"
 #include "FpsCharacter.h"
 #include "WeaponBase.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 AGunShop::AGunShop()
@@ -12,6 +13,7 @@ AGunShop::AGunShop()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
+	RootComponent = CreateDefaultSubobject<USphereComponent>(TEXT("DefaultComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -27,7 +29,13 @@ bool AGunShop::ServerRpcBuyItem_Validate(TSubclassOf<AWeaponBase> WeaponBlueprin
 
 void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSubclass)
 {
-	APlayerController* PlayerController = GetOwner<APlayerController>();
+	AFpsCharacter* OwnerCharacter = Cast<AFpsCharacter>(GetOwner());
+	if (!IsValid(OwnerCharacter))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AGunShop::ServerRpcBuyItem / OwnerCharacter is invalid"));
+		return;
+	}
+	APlayerController* PlayerController = Cast<APlayerController>(OwnerCharacter->GetController());
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Log, TEXT("PlayerController is invalid"));

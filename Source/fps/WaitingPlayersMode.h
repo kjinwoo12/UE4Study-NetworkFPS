@@ -16,13 +16,22 @@ class FPS_API AWaitingPlayersMode : public AGameModeBase
 	
 public:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AGameModeBase> preparedGameModeSubclass;
+	TSubclassOf<AGameModeBase> PreparedGameModeSubclass;
 
 public:
 	virtual void BeginPlay() override;
 
 	virtual void PostLogin(APlayerController* NewPlayer);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void ServerRPCOnPlayerFull();
+	/**************************
+			  OnEvent
+	***************************/
+	void OnPlayerJoinTeam();
+	
+	void OnPlayerFull();
+
+	/**************************
+				etc
+	***************************/
+	bool IsPlayerFullOnTeam();
 };

@@ -259,11 +259,6 @@ int AWeaponBase::GetSubAmmo()
 	return SubAmmo;
 }
 
-APlayerController* AWeaponBase::GetPlayerController()
-{
-	return PlayerController;
-}
-
 FName AWeaponBase::GetAttachingGripPointName()
 {
 	return AttachingGripPointName;
@@ -282,11 +277,6 @@ void AWeaponBase::SetHandsAnimInstance(UAnimInstance* Instance)
 void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
 {
 	BodyAnimInstance = Instance;
-}
-
-void AWeaponBase::SetPlayerController(APlayerController* Instance)
-{
-	PlayerController = Instance;
 }
 
 APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()

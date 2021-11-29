@@ -6,6 +6,8 @@
 #include "FpsGameInstance.h"
 #include "FpsPlayerState.h"
 #include "FpsCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "WaitingPlayersMode.h"
 
 AFpsPlayerController::AFpsPlayerController()
 {
@@ -29,14 +31,17 @@ void AFpsPlayerController::OnPossess(APawn* InPawn)
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(InPawn);
 	if (!IsValid(FpsCharacter)) return;
 
-	FpsCharacter->OnGameReady();
+	FpsCharacter->OnPossessed();
 	ClientSetHUD(FpsCharacter->GetHudSubclass());
 }
 
-void AFpsPlayerController::OnSelectedTeam(EPlayerTeam team, TSubclassOf<class AFpsCharacter> CharacterClass, FTransform SpawnTransform)
+void AFpsPlayerController::OnPlayerFull()
 {
-	ServerRPCSetTeam(team);
-	ServerRPCSpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetPawn());
+	if (IsValid(FpsCharacter))
+	{
+		FpsCharacter->OnPlayerFull();
+	}
 }
 
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
@@ -57,24 +62,29 @@ void AFpsPlayerController::ServerRPCSetName_Implementation(const FString& Name)
 	State->SetPlayerName(Name);
 }
 
-bool AFpsPlayerController::ServerRPCSetTeam_Validate(const EPlayerTeam Team)
+bool AFpsPlayerController::ServerRpcOnSelectedTeam_Validate(EPlayerTeam team, TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
 	return true;
 }
 
-void AFpsPlayerController::ServerRPCSetTeam_Implementation(const EPlayerTeam Team)
+void AFpsPlayerController::ServerRpcOnSelectedTeam_Implementation(EPlayerTeam Team, TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
+{
+	UE_LOG(LogTemp, Log, TEXT("AFpsPlayerController::ServerRPCOnSelectedTeam"));
+	SetTeam(Team);
+	SpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
+	
+	AWaitingPlayersMode* GameMode = Cast<AWaitingPlayersMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!IsValid(GameMode)) return;
+	GameMode->OnPlayerJoinTeam();
+}
+
+void AFpsPlayerController::SetTeam(const EPlayerTeam Team)
 {
 	AFpsPlayerState* playerState = (AFpsPlayerState*)this->PlayerState;
 	playerState->Team = Team;
 }
 
-bool AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Validate(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
-{
-	if (CharacterClass) return true;
-	else return false;
-}
-
-void AFpsPlayerController::ServerRPCSpawnAsPlayableCharacter_Implementation(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
+void AFpsPlayerController::SpawnAsPlayableCharacter(TSubclassOf<AFpsCharacter> CharacterClass, FTransform SpawnTransform)
 {
 	FActorSpawnParameters SpawnParameters;
 	AFpsCharacter *SpawnedCharacter = GetWorld()->SpawnActor<AFpsCharacter>(CharacterClass, SpawnTransform.GetLocation(), SpawnTransform.GetRotation().Rotator(), SpawnParameters);

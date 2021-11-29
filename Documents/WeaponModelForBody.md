@@ -15,3 +15,32 @@ It is used for `AFPSCharacter` body mesh and only other player can see.
 
 
 # Technical_reference
+## Variables
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|USkeletalMeshComponent*|WeaponMesh||
+|USceneComponent*|Muzzle||
+
+</details>
+
+## Constructors
+<details open>
+<summary></summary>
+
+|prarams|Description|
+|-|-|
+|none|none|
+
+</details>
+
+## Functions
+<details open>
+<summary></summary>
+
+||Name|Description|
+|-|-|-|
+|virtual_void|BeginPlay||
+|virtual_void|Tick<br/>(<br/>&emsp;float DeltaTime<br/>)||
