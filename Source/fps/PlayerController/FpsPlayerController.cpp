@@ -3,11 +3,11 @@
 
 #include "FpsPlayerController.h"
 #include "GameFramework/GameModeBase.h"
-#include "FpsGameInstance.h"
-#include "FpsPlayerState.h"
-#include "FpsCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "WaitingPlayersMode.h"
+#include "../FpsGameInstance.h"
+#include "FpsPlayerState.h"
+#include "../Actors/Characters/FpsCharacter.h"
+#include "../GameMode/WaitingPlayersMode.h"
 
 AFpsPlayerController::AFpsPlayerController()
 {

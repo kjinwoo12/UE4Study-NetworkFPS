@@ -2,10 +2,10 @@
 
 
 #include "WaitingPlayersMode.h"
-#include "FpsPlayerController.h"
-#include "FpsPlayerState.h"
+#include "../PlayerController/FpsPlayerController.h"
+#include "../PlayerController/FpsPlayerState.h"
 #include "WaitingPlayersState.h"
-#include "FpsCharacter.h"
+#include "../Actors/Characters/FpsCharacter.h"
 
 void AWaitingPlayersMode::BeginPlay()
 {

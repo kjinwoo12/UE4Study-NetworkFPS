@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GunShop.h"
-#include "WeaponBase.h"
-#include "FpsCharacter.h"
-#include "WeaponBase.h"
+#include "../Weapons/WeaponBase.h"
+#include "Characters/FpsCharacter.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values

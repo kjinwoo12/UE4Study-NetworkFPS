@@ -2,7 +2,7 @@
 
 
 #include "WaitingPlayersState.h"
-#include "FpsPlayerState.h"
+#include "../PlayerController/FpsPlayerState.h"
 
 int AWaitingPlayersState::GetTerrorTeamSize()
 {

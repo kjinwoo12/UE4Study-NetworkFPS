@@ -1,20 +1,19 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FpsCharacter.h"
-#include "Fps.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "WeaponBase.h"
-#include "PickUpWeapon.h"
-#include "WeaponModelForBody.h"
-#include "FpsCharacterHud.h"
+#include "../../Weapons/WeaponBase.h"
+#include "../../Weapons/PickUpWeapon.h"
+#include "../../Weapons/WeaponModelForBody.h"
+#include "../../Ui/FpsCharacterHud.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "FpsPlayerController.h"
-#include "FpsPlayerState.h"
-#include "GunShop.h"
+#include "../../PlayerController/FpsPlayerController.h"
+#include "../../PlayerController/FpsPlayerState.h"
+#include "../GunShop.h"
 
 // Sets default values
 AFpsCharacter::AFpsCharacter()
