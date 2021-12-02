@@ -72,7 +72,7 @@ void AFpsPlayerController::ServerRpcOnSelectedTeam_Implementation(EPlayerTeam Te
 	UE_LOG(LogTemp, Log, TEXT("AFpsPlayerController::ServerRPCOnSelectedTeam"));
 	SetTeam(Team);
 	SpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
-	
+
 	AWaitingPlayersMode* GameMode = Cast<AWaitingPlayersMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!IsValid(GameMode)) return;
 	GameMode->OnPlayerJoinTeam();

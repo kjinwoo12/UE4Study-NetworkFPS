@@ -223,6 +223,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MulticastRPCSetActorRotation(FRotator Rotator);
 
+	UFUNCTION(Client, Reliable, WithValidation)
+	void ClientRpcSetAlertTextOnHud(const FString& Text);
+
 	/**************************
 				OnRep
 	***************************/
@@ -260,6 +263,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void PickUpWeapon();
+
+	/**************************
+			About UI
+	***************************/
+	void SetAlertTextOnHud(FString Text);
 
 	/**************************
 		  Getter & Setter

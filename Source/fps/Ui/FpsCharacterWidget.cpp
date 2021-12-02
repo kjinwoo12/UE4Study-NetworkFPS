@@ -2,8 +2,13 @@
 
 
 #include "FpsCharacterWidget.h"
-
-FString UFpsCharacterWidget::GetAlertMessage()
+#include "Components/TextBlock.h"
+void UFpsCharacterWidget::SetAlertText(FString Text)
 {
-	return "Test Message";
+	if (!IsValid(AlertTextBlock))
+	{
+		UE_LOG(LogTemp, Log, TEXT("UFpsCharacterWidget::SetAlertText / AlertTextBlock is invalid"));
+		return;
+	}
+	AlertTextBlock->SetText(FText::FromString(Text));
 }

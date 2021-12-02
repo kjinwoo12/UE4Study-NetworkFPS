@@ -7,6 +7,7 @@
 #include "../../Weapons/PickUpWeapon.h"
 #include "../../Weapons/WeaponModelForBody.h"
 #include "../../Ui/FpsCharacterHud.h"
+#include "../../Ui/FpsCharacterWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Blueprint/UserWidget.h"
@@ -357,6 +358,7 @@ void AFpsCharacter::OnPossessed()
 {
 	Respawn();
 	InitializeGunShop();
+	
 }
 
 void AFpsCharacter::OnPlayerFull()
@@ -368,6 +370,8 @@ void AFpsCharacter::OnPlayerFull()
 		PrimaryWeapon->StopSubaction();
 	}
 	Status = EFpsCharacterStatus::Freeze;
+
+	ClientRpcSetAlertTextOnHud("Game is going to begin soon.");
 }
 
 void AFpsCharacter::ServerRPCStartAction_Implementation()
@@ -457,6 +461,16 @@ bool AFpsCharacter::MulticastRPCSetActorRotation_Validate(FRotator Rotator)
 void AFpsCharacter::MulticastRPCSetActorRotation_Implementation(FRotator Rotator)
 {
 	SetActorRotation(Rotator);
+}
+
+bool AFpsCharacter::ClientRpcSetAlertTextOnHud_Validate(const FString& Text)
+{
+	return true;
+}
+
+void AFpsCharacter::ClientRpcSetAlertTextOnHud_Implementation(const FString& Text)
+{
+	SetAlertTextOnHud(Text);
 }
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
@@ -578,6 +592,29 @@ void AFpsCharacter::PickUpWeapon()
 {
 	UE_LOG(LogTemp, Log, TEXT("PickUpWeapon()"));
 	ServerRPCPickUpWeapon();
+}
+
+void AFpsCharacter::SetAlertTextOnHud(FString Text)
+{
+	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetAlertTextOnHud / PlayerController is invalid"));
+		return;
+	}
+	AFpsCharacterHud* CharacterHud = Cast<AFpsCharacterHud>(PlayerController->GetHUD());
+	if (!IsValid(CharacterHud))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetAlertTextOnHud / CharacterHud is invalid"));
+		return;
+	}
+	UFpsCharacterWidget* CharacterWidget = Cast<UFpsCharacterWidget>(CharacterHud->GetDefaultWidget());
+	if (!IsValid(CharacterWidget))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetAlertTextOnHud / CharacterWidget is invalid"));
+		return;
+	}
+	CharacterWidget->SetAlertText(Text);
 }
 
 float AFpsCharacter::GetHealth()

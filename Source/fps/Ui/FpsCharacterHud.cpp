@@ -5,6 +5,7 @@
 #include "Engine/Canvas.h"
 #include "Blueprint/UserWidget.h"
 #include "GunShopWidget.h"
+#include "FpsCharacterWidget.h"
 
 AFpsCharacterHud::AFpsCharacterHud()
 {
@@ -18,6 +19,8 @@ void AFpsCharacterHud::BeginPlay()
 	InitDefaultWidget();
 	InitGunShopWidget();
 	UE_LOG(LogTemp, Log, TEXT("AFpsCharacterHud::BeginPlay"));
+
+	UFpsCharacterWidget* a = Cast<UFpsCharacterWidget>(DefaultWidget);
 }
 
 void AFpsCharacterHud::DrawHUD()
@@ -92,11 +95,6 @@ void AFpsCharacterHud::DrawCrosshair()
 	Canvas->DrawItem(Bottom);
 }
 
-void AFpsCharacterHud::SetCrosshairCenterOffset(float Value)
-{
-	CrosshairOffset = Value;
-}
-
 void AFpsCharacterHud::OpenGunShop()
 {
 	if (GunShopWidget == NULL) return;
@@ -120,4 +118,14 @@ void AFpsCharacterHud::CloseGunShop()
 bool AFpsCharacterHud::IsOpenGunShop()
 {
 	return GunShopWidget->IsInViewport();
+}
+
+UUserWidget* AFpsCharacterHud::GetDefaultWidget()
+{
+	return DefaultWidget;
+}
+
+void AFpsCharacterHud::SetCrosshairCenterOffset(float Value)
+{
+	CrosshairOffset = Value;
 }

@@ -13,8 +13,11 @@ UCLASS()
 class FPS_API UFpsCharacterWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+public:
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UTextBlock* AlertTextBlock;
+
 public:
 	UFUNCTION(BlueprintCallable)
-	FString GetAlertMessage();
+	void SetAlertText(FString Text);
 };
