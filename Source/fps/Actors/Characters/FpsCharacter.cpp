@@ -83,7 +83,7 @@ void AFpsCharacter::InitializeBodyMesh()
 
 void AFpsCharacter::InitializeGameplayVariable()
 {
-	Status = EFpsCharacterStatus::Alive;
+	CharacterStatus = EFpsCharacterStatus::Alive;
 	MaxHealth = 100;
 	Health = 100;
 	MaxArmor = 100;
@@ -124,7 +124,7 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, PickableWeapon);
 	DOREPLIFETIME(AFpsCharacter, PrimaryWeapon);
 	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
-	DOREPLIFETIME(AFpsCharacter, Status);
+	DOREPLIFETIME(AFpsCharacter, CharacterStatus);
 	DOREPLIFETIME(AFpsCharacter, AimPitch);
 	DOREPLIFETIME(AFpsCharacter, AimYaw);
 	DOREPLIFETIME(AFpsCharacter, GunShop);
@@ -235,39 +235,39 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AFpsCharacter::MoveForward(float Value)
 {
-	if (Status != EFpsCharacterStatus::Alive) return;
+	if (CharacterStatus != EFpsCharacterStatus::Alive) return;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
 
 void AFpsCharacter::MoveRight(float Value)
 {
-	if (Status != EFpsCharacterStatus::Alive) return;
+	if (CharacterStatus != EFpsCharacterStatus::Alive) return;
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
 void AFpsCharacter::AddControllerPitchInput(float Value)
 {
-	if (Status == EFpsCharacterStatus::Dead ||
-		Status == EFpsCharacterStatus::Freeze) return;
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze) return;
 	Super::AddControllerPitchInput(Value);
 }
 
 void AFpsCharacter::AddControllerYawInput(float Value)
 {
-	if (Status == EFpsCharacterStatus::Dead ||
-		Status == EFpsCharacterStatus::Freeze) return;
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze) return;
 	Super::AddControllerYawInput(Value);
 }
 
 void AFpsCharacter::Jump()
 {
-	if (Status != EFpsCharacterStatus::Alive) return;
+	if (CharacterStatus != EFpsCharacterStatus::Alive) return;
 	Super::Jump();
 }
 
 void AFpsCharacter::CrouchPressed()
 {
-	if (Status != EFpsCharacterStatus::Alive) return;
+	if (CharacterStatus != EFpsCharacterStatus::Alive) return;
 	Crouch();
 }
 
@@ -278,51 +278,51 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (Status != EFpsCharacterStatus::Alive ||
+	if (CharacterStatus != EFpsCharacterStatus::Alive ||
 		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartAction();
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (Status != EFpsCharacterStatus::Alive ||
+	if (CharacterStatus != EFpsCharacterStatus::Alive ||
 		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (Status != EFpsCharacterStatus::Alive ||
+	if (CharacterStatus != EFpsCharacterStatus::Alive ||
 		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartSubaction();
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (Status != EFpsCharacterStatus::Alive ||
+	if (CharacterStatus != EFpsCharacterStatus::Alive ||
 		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopSubaction();
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (Status != EFpsCharacterStatus::Alive ||
+	if (CharacterStatus != EFpsCharacterStatus::Alive ||
 		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStartReload();
 }
 
 void AFpsCharacter::PickUpWeaponPressed()
 {
-	if (Status == EFpsCharacterStatus::Dead ||
-		Status == EFpsCharacterStatus::Freeze ||
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
 		IsValid(PrimaryWeapon)) return;
 	PickUpWeapon();
 }
 
 void AFpsCharacter::DropWeaponPressed()
 {
-	if (Status == EFpsCharacterStatus::Dead ||
-		Status == EFpsCharacterStatus::Freeze ||
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
 		!IsValid(PrimaryWeapon)) return;
 	ServerRPCStopAction();
 	ServerRPCStopSubaction();
@@ -369,9 +369,14 @@ void AFpsCharacter::OnPlayerFull()
 		PrimaryWeapon->StopAction();
 		PrimaryWeapon->StopSubaction();
 	}
-	Status = EFpsCharacterStatus::Freeze;
 
+	SetCharacterStatus(EFpsCharacterStatus::Freeze);
 	ClientRpcSetAlertTextOnHud("Game is going to begin soon.");
+}
+
+void AFpsCharacter::OnRoundReady()
+{
+	SetCharacterStatus(EFpsCharacterStatus::Stopped);
 }
 
 void AFpsCharacter::ServerRPCStartAction_Implementation()
@@ -482,7 +487,7 @@ void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 float AFpsCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Log, TEXT("FPSCharacter TakeDamage"));
-	if (Status == EFpsCharacterStatus::Dead) return 0.f;
+	if (CharacterStatus == EFpsCharacterStatus::Dead) return 0.f;
 
 	float ReducedDamageByArmor = Damage * 0.5f;
 	ReducedDamageByArmor = (ReducedDamageByArmor > Armor) ? Armor : ReducedDamageByArmor;
@@ -509,7 +514,7 @@ void AFpsCharacter::Die()
 	{
 		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Die Client"));
 	}
-	Status = EFpsCharacterStatus::Dead;
+	SetCharacterStatus(EFpsCharacterStatus::Dead);
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);
 
@@ -675,4 +680,9 @@ void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)
 void AFpsCharacter::SetSpawnTransform(FTransform Transform) 
 {
 	SpawnTransform = Transform;
+}
+
+void AFpsCharacter::SetCharacterStatus(EFpsCharacterStatus Status) 
+{
+	CharacterStatus = Status;
 }

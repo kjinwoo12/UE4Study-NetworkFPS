@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WaitingPlayersState.h"
+#include "PlantBombState.h"
 #include "../PlayerController/FpsPlayerState.h"
 
-int AWaitingPlayersState::GetTerrorTeamSize()
+int APlantBombState::GetTerrorTeamSize()
 {
 	int Size = 0;
 	for (APlayerState* State : PlayerArray) 
@@ -18,7 +18,7 @@ int AWaitingPlayersState::GetTerrorTeamSize()
 	return Size;
 }
 
-int AWaitingPlayersState::GetCounterTerrorTeamSize()
+int APlantBombState::GetCounterTerrorTeamSize()
 {
 	int Size = 0;
 	for (APlayerState* State : PlayerArray)

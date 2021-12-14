@@ -83,7 +83,7 @@ class FPS_API AFpsCharacter : public ACharacter
 		  Character Status
 	***************************/
 	UPROPERTY(Replicated)
-	EFpsCharacterStatus Status;
+	EFpsCharacterStatus CharacterStatus;
 
 	FTimerHandle RespawnTimerHandle;
 
@@ -194,7 +194,7 @@ public:
 
 	void OnPlayerFull();
 
-	void OnRoundStart();
+	void OnRoundReady();
 
 	/**************************
 				RPC
@@ -305,4 +305,6 @@ public:
 	void SetPickableWeapon(APickUpWeapon* Instance);
 
 	void SetSpawnTransform(FTransform Transform);
+
+	void SetCharacterStatus(EFpsCharacterStatus Status);
 };
