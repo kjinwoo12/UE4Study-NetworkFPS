@@ -3,7 +3,7 @@
 
 #include "HitScanWeapon.h"
 #include "DrawDebugHelpers.h"
-#include "FPSCharacter.h"
+#include "../Actors/Characters/FpsCharacter.h"
 #include "Camera/CameraComponent.h"
 
 AHitScanWeapon::AHitScanWeapon()

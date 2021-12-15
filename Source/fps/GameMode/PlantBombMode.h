@@ -4,15 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "WaitingPlayersMode.generated.h"
+#include "PlantBombMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FPS_API AWaitingPlayersMode : public AGameModeBase
+class FPS_API APlantBombMode : public AGameModeBase
 {
 	GENERATED_BODY()
+	
+private:
+	FTimerHandle RoundReadyTimer;
 	
 public:
 	UPROPERTY(EditAnywhere)
@@ -29,6 +32,8 @@ public:
 	void OnPlayerJoinTeam();
 	
 	void OnPlayerFull();
+
+	void OnRoundReady();
 
 	/**************************
 				etc

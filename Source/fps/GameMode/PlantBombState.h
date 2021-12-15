@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
-#include "WaitingPlayersState.generated.h"
+#include "PlantBombState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class FPS_API AWaitingPlayersState : public AGameStateBase
+class FPS_API APlantBombState : public AGameStateBase
 {
 	GENERATED_BODY()
 	

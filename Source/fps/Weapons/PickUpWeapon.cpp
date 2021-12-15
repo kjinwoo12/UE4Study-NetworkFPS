@@ -7,7 +7,7 @@
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
 #include "Math/UnrealMathUtility.h"
-#include "FpsCharacter.h"
+#include "../Actors/Characters/FpsCharacter.h"
 #include "WeaponBase.h"
 
 // Sets default values

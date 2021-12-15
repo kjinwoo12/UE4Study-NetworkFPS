@@ -28,6 +28,8 @@ public:
 
 	void OnPlayerFull();
 
+	void OnRoundReady();
+
 	/**************************
 				RPC
 	***************************/

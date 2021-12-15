@@ -60,5 +60,6 @@ public:
 		  Getter & Setter
 	***************************/
 public:
+	UUserWidget* GetDefaultWidget();
 	void SetCrosshairCenterOffset(float Value);
 };

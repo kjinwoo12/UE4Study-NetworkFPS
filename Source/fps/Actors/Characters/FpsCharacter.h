@@ -83,7 +83,7 @@ class FPS_API AFpsCharacter : public ACharacter
 		  Character Status
 	***************************/
 	UPROPERTY(Replicated)
-	EFpsCharacterStatus Status;
+	EFpsCharacterStatus CharacterStatus;
 
 	FTimerHandle RespawnTimerHandle;
 
@@ -194,7 +194,7 @@ public:
 
 	void OnPlayerFull();
 
-	void OnRoundStart();
+	void OnRoundReady();
 
 	/**************************
 				RPC
@@ -222,6 +222,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MulticastRPCSetActorRotation(FRotator Rotator);
+
+	UFUNCTION(Client, Reliable, WithValidation)
+	void ClientRpcSetAlertTextOnHud(const FString& Text);
 
 	/**************************
 				OnRep
@@ -262,6 +265,11 @@ public:
 	void PickUpWeapon();
 
 	/**************************
+			About UI
+	***************************/
+	void SetAlertTextOnHud(FString Text);
+
+	/**************************
 		  Getter & Setter
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Getter")
@@ -297,4 +305,6 @@ public:
 	void SetPickableWeapon(APickUpWeapon* Instance);
 
 	void SetSpawnTransform(FTransform Transform);
+
+	void SetCharacterStatus(EFpsCharacterStatus Status);
 };

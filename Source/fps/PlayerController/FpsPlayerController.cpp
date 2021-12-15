@@ -3,11 +3,11 @@
 
 #include "FpsPlayerController.h"
 #include "GameFramework/GameModeBase.h"
-#include "FpsGameInstance.h"
-#include "FpsPlayerState.h"
-#include "FpsCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "WaitingPlayersMode.h"
+#include "../FpsGameInstance.h"
+#include "FpsPlayerState.h"
+#include "../Actors/Characters/FpsCharacter.h"
+#include "../GameMode/PlantBombMode.h"
 
 AFpsPlayerController::AFpsPlayerController()
 {
@@ -44,6 +44,15 @@ void AFpsPlayerController::OnPlayerFull()
 	}
 }
 
+void AFpsPlayerController::OnRoundReady()
+{
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetPawn());
+	if (IsValid(FpsCharacter))
+	{
+		FpsCharacter->OnRoundReady();
+	}
+}
+
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());
@@ -72,8 +81,8 @@ void AFpsPlayerController::ServerRpcOnSelectedTeam_Implementation(EPlayerTeam Te
 	UE_LOG(LogTemp, Log, TEXT("AFpsPlayerController::ServerRPCOnSelectedTeam"));
 	SetTeam(Team);
 	SpawnAsPlayableCharacter(CharacterClass, SpawnTransform);
-	
-	AWaitingPlayersMode* GameMode = Cast<AWaitingPlayersMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	APlantBombMode* GameMode = Cast<APlantBombMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!IsValid(GameMode)) return;
 	GameMode->OnPlayerJoinTeam();
 }
