@@ -15,9 +15,13 @@ class FPS_API APlantBombMode : public AGameModeBase
 	GENERATED_BODY()
 	
 private:
-	FTimerHandle RoundReadyTimer;
+	FTimerHandle RoundEventTimer;
 	
 public:
+	const float TransitionTimeForOnRoundReady = 3.f;
+	const float TransitionTimeForOnRoundStart = 15.f;
+	const float TimeForRoundRunTime = 160.f;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGameModeBase> PreparedGameModeSubclass;
 
@@ -34,6 +38,10 @@ public:
 	void OnPlayerFull();
 
 	void OnRoundReady();
+
+	void OnRoundStart();
+
+	void OnRoundEnd();
 
 	/**************************
 				etc

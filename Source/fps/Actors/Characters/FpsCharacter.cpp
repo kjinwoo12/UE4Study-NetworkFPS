@@ -376,7 +376,21 @@ void AFpsCharacter::OnPlayerFull()
 
 void AFpsCharacter::OnRoundReady()
 {
+	Respawn();
 	SetCharacterStatus(EFpsCharacterStatus::Stopped);
+	ClientRpcSetAlertTextOnHud("Game Ready");
+}
+
+void AFpsCharacter::OnRoundStart()
+{
+	SetCharacterStatus(EFpsCharacterStatus::Alive);
+	ClientRpcSetAlertTextOnHud("");
+}
+
+void AFpsCharacter::OnRoundEnd()
+{
+	SetCharacterStatus(EFpsCharacterStatus::Freeze);
+	ClientRpcSetAlertTextOnHud("Round End");
 }
 
 void AFpsCharacter::ServerRPCStartAction_Implementation()

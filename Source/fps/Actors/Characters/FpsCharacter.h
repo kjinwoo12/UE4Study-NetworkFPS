@@ -196,6 +196,10 @@ public:
 
 	void OnRoundReady();
 
+	void OnRoundStart();
+
+	void OnRoundEnd();
+
 	/**************************
 				RPC
 	***************************/
