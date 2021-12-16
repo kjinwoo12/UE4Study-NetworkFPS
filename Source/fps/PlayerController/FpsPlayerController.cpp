@@ -53,6 +53,24 @@ void AFpsPlayerController::OnRoundReady()
 	}
 }
 
+void AFpsPlayerController::OnRoundStart()
+{
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetPawn());
+	if (IsValid(FpsCharacter))
+	{
+		FpsCharacter->OnRoundStart();
+	}
+}
+
+void AFpsPlayerController::OnRoundEnd()
+{
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetPawn());
+	if (IsValid(FpsCharacter))
+	{
+		FpsCharacter->OnRoundEnd();
+	}
+}
+
 void AFpsPlayerController::ClientRPCOnLogin_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("Client OnLogin() %s"), *GetName());

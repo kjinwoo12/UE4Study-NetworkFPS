@@ -44,12 +44,12 @@ void APlantBombMode::OnPlayerFull()
 		}
 	}
 
-	GetWorldTimerManager().SetTimer(RoundReadyTimer, this, &APlantBombMode::OnRoundReady, 0, false, 5.f);
+	GetWorldTimerManager().SetTimer(RoundEventTimer, this, &APlantBombMode::OnRoundReady, TransitionTimeForOnRoundReady, false);
 }
 
 void APlantBombMode::OnRoundReady()
 {
-	GetWorldTimerManager().ClearTimer(RoundReadyTimer);
+	GetWorldTimerManager().ClearTimer(RoundEventTimer);
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
@@ -59,6 +59,37 @@ void APlantBombMode::OnRoundReady()
 		}
 	}
 
+	GetWorldTimerManager().SetTimer(RoundEventTimer, this, &APlantBombMode::OnRoundStart, TransitionTimeForOnRoundStart, false);
+}
+
+void APlantBombMode::OnRoundStart()
+{
+	GetWorldTimerManager().ClearTimer(RoundEventTimer);
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
+		if (IsValid(FpsPlayerController))
+		{
+			FpsPlayerController->OnRoundStart();
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(RoundEventTimer, this, &APlantBombMode::OnRoundEnd, TimeForRoundRunTime, false);
+}
+
+void APlantBombMode::OnRoundEnd()
+{
+	GetWorldTimerManager().ClearTimer(RoundEventTimer);
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
+		if (IsValid(FpsPlayerController))
+		{
+			FpsPlayerController->OnRoundEnd();
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(RoundEventTimer, this, &APlantBombMode::OnRoundEnd, TransitionTimeForOnRoundReady, false);
 }
 
 bool APlantBombMode::IsPlayerFullOnTeam() 
