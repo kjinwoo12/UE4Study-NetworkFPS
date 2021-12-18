@@ -141,6 +141,7 @@ If you need other actions or want to change actions, You can also change actions
 |void|OnPossessed||
 |void|OnPlayerFull||
 |void|OnRoundStart||
+|void|OnRoundEnd||
 |void|ServerRPCStartAction||
 |void|ServerRPCStopAction||
 |void|ServerRPCStartSubaction||
