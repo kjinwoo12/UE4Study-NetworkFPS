@@ -384,7 +384,7 @@ void AFpsCharacter::OnRoundReady()
 void AFpsCharacter::OnRoundStart()
 {
 	SetCharacterStatus(EFpsCharacterStatus::Alive);
-	ClientRpcSetAlertTextOnHud("");
+	ClientRpcSetAlertTextOnHud("Round Start");
 }
 
 void AFpsCharacter::OnRoundEnd()

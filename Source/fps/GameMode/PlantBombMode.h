@@ -18,10 +18,6 @@ private:
 	FTimerHandle RoundEventTimer;
 	
 public:
-	const float TransitionTimeForOnRoundReady = 3.f;
-	const float TransitionTimeForOnRoundStart = 15.f;
-	const float TimeForRoundRunTime = 160.f;
-
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGameModeBase> PreparedGameModeSubclass;
 
@@ -40,6 +36,8 @@ public:
 	void OnRoundReady();
 
 	void OnRoundStart();
+
+	void OnRoundSecondTick();
 
 	void OnRoundEnd();
 

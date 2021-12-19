@@ -3,6 +3,18 @@
 
 #include "PlantBombState.h"
 #include "../PlayerController/FpsPlayerState.h"
+#include "Net/UnrealNetwork.h"
+
+const int APlantBombState::MaxTeamSize = 1;
+const float APlantBombState::TransitionTimeForOnRoundReady = 2.f;
+const float APlantBombState::TransitionTimeForOnRoundStart = 3.f;
+const float APlantBombState::MaximumTimeForRound = 160.f;
+
+void APlantBombState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APlantBombState, RoundProgressTime);
+}
 
 int APlantBombState::GetTerrorTeamSize()
 {
@@ -30,4 +42,14 @@ int APlantBombState::GetCounterTerrorTeamSize()
 		}
 	}
 	return Size;
+}
+
+int APlantBombState::GetMaxTeamSize()
+{
+	return MaxTeamSize;
+}
+
+float APlantBombState::GetMaximumTimeForRound()
+{
+	return MaximumTimeForRound;
 }
