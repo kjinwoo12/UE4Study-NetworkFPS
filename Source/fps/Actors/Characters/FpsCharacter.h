@@ -145,10 +145,10 @@ public:
 	void TickCrosshair();
 
 	UFUNCTION(Client, Reliable)
-	void ClientRPCUpdateCameraToServer();
+	void ClientRpcUpdateCameraToServer();
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRPCSetCameraRotation(FQuat CameraRotation);
+	void ServerRpcSetCameraRotation(FQuat CameraRotation);
 
 	void UpdateActorDirectionByAim(float DeltaTime);
 
@@ -201,34 +201,37 @@ public:
 	void OnRoundEnd();
 
 	/**************************
-				RPC
+				Rpc
 	***************************/
 	UFUNCTION(Server, Reliable)
-	void ServerRPCStartAction();
+	void ServerRpcStartAction();
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPCStopAction();
+	void ServerRpcStopAction();
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPCStartSubaction();
+	void ServerRpcStartSubaction();
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPCStopSubaction();
+	void ServerRpcStopSubaction();
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPCStartReload();
+	void ServerRpcStartReload();
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPCPickUpWeapon();
+	void ServerRpcPickUpWeapon();
 
 	UFUNCTION(Server, Reliable)
-	void ServerRPCDropWeapon();
+	void ServerRpcDropWeapon();
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
-	void MulticastRPCSetActorRotation(FRotator Rotator);
+	void MulticastRpcSetActorRotation(FRotator Rotator);
 
 	UFUNCTION(Client, Reliable, WithValidation)
 	void ClientRpcSetAlertTextOnHud(const FString& Text);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRpcKnockOutBodyMesh();
 
 	/**************************
 				OnRep
@@ -248,7 +251,7 @@ public:
 	void Respawn();
 
 	UFUNCTION(BlueprintCallable, Category = "Character")
-	void KnockoutBodyMesh();
+	void KnockOutBodyMesh();
 
 	UFUNCTION(BlueprintCallable, Category = "Character")
 	void WakeUpBodyMesh();

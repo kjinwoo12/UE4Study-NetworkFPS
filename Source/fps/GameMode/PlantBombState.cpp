@@ -5,7 +5,7 @@
 #include "../PlayerController/FpsPlayerState.h"
 #include "Net/UnrealNetwork.h"
 
-const int APlantBombState::MaxTeamSize = 1;
+const int APlantBombState::MaxTeamSize = 2;
 const float APlantBombState::TransitionTimeForOnRoundReady = 2.f;
 const float APlantBombState::TransitionTimeForOnRoundStart = 3.f;
 const float APlantBombState::MaximumTimeForRound = 160.f;
