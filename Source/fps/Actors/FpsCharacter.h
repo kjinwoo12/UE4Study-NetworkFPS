@@ -7,6 +7,7 @@
 #include "FpsCharacter.generated.h"
 
 class AGunShop;
+class AInteractiveActor;
 
 UENUM(BlueprintType)
 enum class EFpsCharacterStatus : uint8
@@ -34,6 +35,8 @@ class FPS_API AFpsCharacter : public ACharacter
 	const FRotator DefaultRotatorOfBodyMeshComponent = FRotator(0.f, -90.f, 0.f);
 
 	const FName NamePelvis = FName("pelvis");
+
+	const float InteractionReach = 1.5f;
 
 	/**************************
 			Components
@@ -101,6 +104,12 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 				etc
 	***************************/
+	// CollisionParams for LineTrace
+	FCollisionQueryParams LineTraceCollisionQueryParams;
+
+	UPROPERTY(Replicated)
+	AInteractiveActor* InteractiveTarget;
+
 	UPROPERTY(Replicated)
 	AGunShop* GunShop;
 
@@ -142,15 +151,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void TickCrosshair();
-
-	UFUNCTION(Client, Reliable)
-	void ClientRpcUpdateCameraToServer();
+	void UpdateCrosshair();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRpcSetCameraRotation(FQuat CameraRotation);
 
-	void UpdateActorDirectionByAim(float DeltaTime);
+	void UpdateAim(float DeltaTime);
+
+	void UpdateActorDirection(float DeltaTime);
+
+	void UpdateCameraRotation();
+
+	void UpdateInteractiveActor(float DeltaTime);
 
 	/**************************
 			Bind keys
@@ -185,6 +197,10 @@ public:
 
 	void DropWeaponPressed();
 
+	void InteractionPressed();
+
+	void InteractionReleased();
+
 	void GunShopPressed();
 
 	/**************************
@@ -203,6 +219,9 @@ public:
 	/**************************
 				Rpc
 	***************************/
+	UFUNCTION(Client, Reliable)
+	void ClientRpcUpdateCameraRotationToServer();
+
 	UFUNCTION(Server, Reliable)
 	void ServerRpcStartAction();
 

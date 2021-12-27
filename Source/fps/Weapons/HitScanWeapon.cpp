@@ -3,7 +3,7 @@
 
 #include "HitScanWeapon.h"
 #include "DrawDebugHelpers.h"
-#include "../Actors/Characters/FpsCharacter.h"
+#include "../Actors/FpsCharacter.h"
 #include "Camera/CameraComponent.h"
 
 AHitScanWeapon::AHitScanWeapon()
@@ -76,18 +76,6 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 
 	// Get end point
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
-
-	//It is for checking line. Player view point to end point
-	/*DrawDebugLine(
-		GetWorld(),
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		FColor(255, 0, 0),
-		false,
-		5.f,
-		0.f,
-		1.f
-	);*/
 
 	bool IsHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult,

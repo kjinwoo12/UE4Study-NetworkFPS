@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "../Actors/InteractiveActor.h"
 #include "PickUpWeapon.generated.h"
 
 class AWeaponBase;
 
 UCLASS()
-class FPS_API APickUpWeapon : public AActor
+class FPS_API APickUpWeapon : public AInteractiveActor
 {
 	GENERATED_BODY()
 
@@ -36,24 +36,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	/**************************
+			  On Events
+	***************************/
+	virtual void OnTartgetedBy(AActor* actor);
 
-	UFUNCTION()
-	void OnOverlapBegin(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult
-	);
+	virtual void OnUntargeted();
 
-	UFUNCTION()
-	void OnOverlapEnd(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex
-	);
+	virtual void OnInteractWith(AActor* actor);
+
+	virtual void OnInteractionStop(AActor* actor);
 
 	UFUNCTION()
 	void OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,

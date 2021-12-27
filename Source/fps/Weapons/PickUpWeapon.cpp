@@ -7,7 +7,7 @@
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
 #include "Math/UnrealMathUtility.h"
-#include "../Actors/Characters/FpsCharacter.h"
+#include "../Actors/FpsCharacter.h"
 #include "WeaponBase.h"
 
 // Sets default values
@@ -46,32 +46,6 @@ APickUpWeapon::APickUpWeapon()
 void APickUpWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-void APickUpWeapon::OnOverlapBegin(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
-	if (!IsValid(FpsCharacter)) return;
-
-	FpsCharacter->SetPickableWeapon(this);
-}
-
-void APickUpWeapon::OnOverlapEnd(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent,
-	int32 OtherBodyIndex)
-{
-	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
-	if (!IsValid(FpsCharacter)) return;
-
-	FpsCharacter->SetPickableWeapon(NULL);
 }
 
 void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,

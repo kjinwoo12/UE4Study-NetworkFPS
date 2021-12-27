@@ -2,7 +2,7 @@
 
 #include "GunShop.h"
 #include "../Weapons/WeaponBase.h"
-#include "Characters/FpsCharacter.h"
+#include "FpsCharacter.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values

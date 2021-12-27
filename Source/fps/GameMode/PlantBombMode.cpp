@@ -5,7 +5,7 @@
 #include "PlantBombState.h"
 #include "../PlayerController/FpsPlayerController.h"
 #include "../PlayerController/FpsPlayerState.h"
-#include "../Actors/Characters/FpsCharacter.h"
+#include "../Actors/FpsCharacter.h"
 
 void APlantBombMode::BeginPlay()
 {

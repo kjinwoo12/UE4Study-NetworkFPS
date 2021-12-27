@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "../FpsGameInstance.h"
 #include "FpsPlayerState.h"
-#include "../Actors/Characters/FpsCharacter.h"
+#include "../Actors/FpsCharacter.h"
 #include "../GameMode/PlantBombMode.h"
 
 AFpsPlayerController::AFpsPlayerController()
