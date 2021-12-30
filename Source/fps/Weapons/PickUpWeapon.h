@@ -16,9 +16,6 @@ class FPS_API APickUpWeapon : public AInteractiveActor
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly)
-	class USphereComponent* PickUpRange;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AWeaponBase> WeaponBaseSubclass;
 
@@ -39,13 +36,13 @@ public:
 	/**************************
 			  On Events
 	***************************/
-	virtual void OnTartgetedBy(AActor* actor);
+	virtual void OnTargetedBy(AActor* actor) override;
 
-	virtual void OnUntargeted();
+	virtual void OnUntargeted(AActor* actor) override;
 
-	virtual void OnInteractWith(AActor* actor);
+	virtual void OnInteractWith(AActor* actor) override;
 
-	virtual void OnInteractionStop(AActor* actor);
+	virtual void OnInteractionStop(AActor* actor) override;
 
 	UFUNCTION()
 	void OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,

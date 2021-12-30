@@ -15,7 +15,6 @@ AInteractiveActor::AInteractiveActor()
 void AInteractiveActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -24,14 +23,22 @@ void AInteractiveActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AInteractiveActor::OnTartgetedBy(AActor* actor)
+void AInteractiveActor::OnTargetedBy(AActor* actor)
 {
+	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnTargetedBy"));
 }
 
-void AInteractiveActor::OnUntargeted()
+void AInteractiveActor::OnUntargeted(AActor* actor)
 {
+	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnUntargeted"));
 }
 
 void AInteractiveActor::OnInteractWith(AActor* actor)
 {
+	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnInteractWith"));
+}
+
+void AInteractiveActor::OnInteractionStop(AActor* actor)
+{
+	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnInteractionStop"));
 }

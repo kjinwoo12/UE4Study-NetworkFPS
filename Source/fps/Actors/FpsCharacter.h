@@ -13,7 +13,7 @@ UENUM(BlueprintType)
 enum class EFpsCharacterStatus : uint8
 {
 	Alive UMETA(DisplayName = "Alive"), // Controllable all
-	Stopped UMETA(DisplayName = "Stopped"), // Controllable only Mouse
+	Stopped UMETA(DisplayName = "Stopped"), // Controllable only Aim
 	Freeze UMETA(DisplayName = "Freeze"), // Controllable nothing
 	Dead UMETA(DisplayName = "Dead"), // Same with Freeze but the character is dead.
 };
@@ -36,7 +36,7 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	const FName NamePelvis = FName("pelvis");
 
-	const float InteractionReach = 1.5f;
+	const float InteractionReach = 200.f;
 
 	/**************************
 			Components
@@ -55,9 +55,6 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	class AWeaponModelForBody* WeaponModelForBody;
-	
-	UPROPERTY(Replicated)
-	class APickUpWeapon* PickableWeapon;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -162,7 +159,7 @@ public:
 
 	void UpdateCameraRotation();
 
-	void UpdateInteractiveActor(float DeltaTime);
+	void UpdateInteractiveTarget(float DeltaTime);
 
 	/**************************
 			Bind keys
@@ -192,8 +189,6 @@ public:
 	void SubactionReleased();
 
 	void ReloadPressed();
-
-	void PickUpWeaponPressed();
 
 	void DropWeaponPressed();
 
@@ -237,8 +232,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRpcStartReload();
 
-	UFUNCTION(Server, Reliable)
-	void ServerRpcPickUpWeapon();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRpcPickUpWeapon(APickUpWeapon* PickUpWeapon);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRpcDropWeapon();
@@ -251,6 +246,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRpcKnockOutBodyMesh();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRpcSetInteractiveTarget(AInteractiveActor *Actor);
 
 	/**************************
 				OnRep
@@ -286,9 +284,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void PickUpWeapon();
 
 	/**************************
 			About UI
@@ -327,10 +322,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AGunShop* GetGunShop();
 
-	UFUNCTION(BlueprintCallable, Category = "Setter")
-	void SetPickableWeapon(APickUpWeapon* Instance);
-
 	void SetSpawnTransform(FTransform Transform);
 
 	void SetCharacterStatus(EFpsCharacterStatus Status);
+
+	void SetInteractiveTarget(AInteractiveActor* Actor);
 };

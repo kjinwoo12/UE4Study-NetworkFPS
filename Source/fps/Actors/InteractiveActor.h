@@ -26,9 +26,9 @@ public:
 	/**************************
 			  On Events
 	***************************/
-	virtual void OnTartgetedBy(AActor* actor);
+	virtual void OnTargetedBy(AActor* actor);
 
-	virtual void OnUntargeted();
+	virtual void OnUntargeted(AActor* actor);
 
 	virtual void OnInteractWith(AActor* actor);
 

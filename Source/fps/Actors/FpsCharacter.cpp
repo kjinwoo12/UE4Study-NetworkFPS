@@ -38,6 +38,8 @@ void AFpsCharacter::InitializeCollisionComponent()
 	UCapsuleComponent* CharacterCapsuleComponent = GetCapsuleComponent();
 	CharacterCapsuleComponent->SetCapsuleHalfHeight(94.0f);
 	CharacterCapsuleComponent->SetCapsuleRadius(42.0f);
+	CharacterCapsuleComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	CharacterCapsuleComponent->SetCollisionProfileName("Pawn");
 }
 
 void AFpsCharacter::InitializeMovementComponent()
@@ -81,6 +83,7 @@ void AFpsCharacter::InitializeBodyMesh()
 	BodyMeshComponent->SetOwnerNoSee(true);
 	BodyMeshComponent->SetRelativeLocation(DefaultLocationOfBodyMeshComponent);
 	BodyMeshComponent->SetRelativeRotation(DefaultRotatorOfBodyMeshComponent);
+	BodyMeshComponent->SetCollisionProfileName("Ragdoll");
 }
 
 void AFpsCharacter::InitializeGameplayVariable()
@@ -123,7 +126,7 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 
 	DOREPLIFETIME(AFpsCharacter, Health);
 	DOREPLIFETIME(AFpsCharacter, Armor);
-	DOREPLIFETIME(AFpsCharacter, PickableWeapon);
+	DOREPLIFETIME(AFpsCharacter, InteractiveTarget);
 	DOREPLIFETIME(AFpsCharacter, PrimaryWeapon);
 	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
 	DOREPLIFETIME(AFpsCharacter, CharacterStatus);
@@ -140,6 +143,7 @@ void AFpsCharacter::Tick(float DeltaTime)
 	UpdateActorDirection(DeltaTime);
 	UpdateCameraRotation();
 	UpdateCrosshair();
+	UpdateInteractiveTarget(DeltaTime);
 }
 
 void AFpsCharacter::UpdateCrosshair()
@@ -218,8 +222,9 @@ void AFpsCharacter::UpdateCameraRotation()
 	ClientRpcUpdateCameraRotationToServer();
 }
 
-void AFpsCharacter::UpdateInteractiveActor(float DeltaTime) 
+void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime) 
 {
+	if (GetNetMode() == NM_DedicatedServer) return;
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (!IsValid(PlayerController))
 	{
@@ -241,16 +246,32 @@ void AFpsCharacter::UpdateInteractiveActor(float DeltaTime)
 		HitResult,
 		PlayerViewPointLocation,
 		LineTraceEnd,
-		ECollisionChannel::ECC_GameTraceChannel1,
+		ECollisionChannel::ECC_Visibility,
 		LineTraceCollisionQueryParams
 	);
-	if (!IsHit)	return;
+	if (!IsHit)
+	{
+		if (IsValid(InteractiveTarget))
+			InteractiveTarget->OnUntargeted(this);
+		InteractiveTarget = nullptr;
+		return;
+	}
 
-	AInteractiveActor *InteractiveActor = Cast<AInteractiveActor>(HitResult.Actor);
-	if (!IsValid(InteractiveActor)) return;
+	AInteractiveActor *InteractiveActor = Cast<AInteractiveActor>(HitResult.GetActor());
+	if (!IsValid(InteractiveActor))
+	{
+		if (IsValid(InteractiveTarget))
+			InteractiveTarget->OnUntargeted(this);
+		InteractiveTarget = nullptr;
+		return;
+	}
 
+	if (InteractiveTarget == InteractiveActor)
+	{
+		return;
+	}
 	InteractiveTarget = InteractiveActor;
-	InteractiveTarget->OnTartgetedBy(this);
+	InteractiveTarget->OnTargetedBy(this);
 }
 
 // Called to bind functionality to input
@@ -273,7 +294,6 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFpsCharacter::SubactionPressed);
 	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFpsCharacter::SubactionReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFpsCharacter::ReloadPressed);
-	PlayerInputComponent->BindAction("PickUpWeapon", IE_Pressed, this, &AFpsCharacter::PickUpWeaponPressed);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFpsCharacter::DropWeaponPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AFpsCharacter::InteractionPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AFpsCharacter::InteractionReleased);
@@ -360,14 +380,6 @@ void AFpsCharacter::ReloadPressed()
 	ServerRpcStartReload();
 }
 
-void AFpsCharacter::PickUpWeaponPressed()
-{
-	if (CharacterStatus == EFpsCharacterStatus::Dead ||
-		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		IsValid(PrimaryWeapon)) return;
-	PickUpWeapon();
-}
-
 void AFpsCharacter::DropWeaponPressed()
 {
 	if (CharacterStatus == EFpsCharacterStatus::Dead ||
@@ -375,7 +387,7 @@ void AFpsCharacter::DropWeaponPressed()
 		!IsValid(PrimaryWeapon)) return;
 	ServerRpcStopAction();
 	ServerRpcStopSubaction();
-	DropWeapon();
+	ServerRpcDropWeapon();
 }
 
 void AFpsCharacter::InteractionPressed()
@@ -391,7 +403,7 @@ void AFpsCharacter::InteractionReleased()
 	if (CharacterStatus == EFpsCharacterStatus::Dead ||
 		!IsValid(InteractiveTarget))
 		return;
-	InteractiveTarget->OnInteractWith(this);
+	InteractiveTarget->OnInteractionStop(this);
 }
 
 void AFpsCharacter::GunShopPressed()
@@ -492,22 +504,25 @@ void AFpsCharacter::ServerRpcStartReload_Implementation()
 	PrimaryWeapon->StartReload();
 }
 
-void AFpsCharacter::ServerRpcPickUpWeapon_Implementation()
+bool AFpsCharacter::ServerRpcPickUpWeapon_Validate(APickUpWeapon* PickUpWeapon)
 {
-	if (IsValid(PrimaryWeapon) || !IsValid(PickableWeapon)) return;
+	if (IsValid(PrimaryWeapon) || PickUpWeapon == nullptr) return false;
+	return true;
+}
 
-	AWeaponBase* WeaponInstance = PickableWeapon->GetWeaponInstance();
+void AFpsCharacter::ServerRpcPickUpWeapon_Implementation(APickUpWeapon* PickUpWeapon)
+{
+	AWeaponBase* WeaponInstance = PickUpWeapon->GetWeaponInstance();
 	if (!IsValid(WeaponInstance))
 	{
-		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickableWeapon->GetWeaponBaseSubclass();
+		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickUpWeapon->GetWeaponBaseSubclass();
 		if (WeaponBaseSubclass == nullptr) return;
 
 		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
 	}
 	EquipWeapon(WeaponInstance);
 
-	PickableWeapon->Destroy();
-	PickableWeapon = NULL;
+	PickUpWeapon->Destroy();
 }
 
 void AFpsCharacter::ServerRpcDropWeapon_Implementation()
@@ -540,6 +555,16 @@ void AFpsCharacter::MulticastRpcKnockOutBodyMesh_Implementation()
 	KnockOutBodyMesh();
 }
 
+bool AFpsCharacter::ServerRpcSetInteractiveTarget_Validate(AInteractiveActor* Actor)
+{
+	return true;
+}
+
+void AFpsCharacter::ServerRpcSetInteractiveTarget_Implementation(AInteractiveActor* Actor)
+{
+	SetInteractiveTarget(Actor);
+}
+
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 {
 	if (!IsValid(PrimaryWeapon)) return;
@@ -569,9 +594,7 @@ float AFpsCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
 void AFpsCharacter::Die()
 {
 	SetCharacterStatus(EFpsCharacterStatus::Dead);
-	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Visibility);
 	HandsMeshComponent->SetOwnerNoSee(true);
-
 	MulticastRpcKnockOutBodyMesh();
 	ServerRpcDropWeapon();
 }
@@ -579,10 +602,7 @@ void AFpsCharacter::Die()
 void AFpsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Log, TEXT("Respawn"));
-
-	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	HandsMeshComponent->SetOwnerNoSee(false);
-
 	WakeUpBodyMesh();
 	InitializeGameplayVariable();
 	SetActorTransform(SpawnTransform);
@@ -668,12 +688,6 @@ void AFpsCharacter::DropWeapon()
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
 }
 
-void AFpsCharacter::PickUpWeapon()
-{
-	UE_LOG(LogTemp, Log, TEXT("PickUpWeapon()"));
-	ServerRpcPickUpWeapon();
-}
-
 void AFpsCharacter::SetAlertTextOnHud(FString Text)
 {
 	AFpsPlayerController* PlayerController = Cast<AFpsPlayerController>(GetController());
@@ -747,11 +761,6 @@ AGunShop* AFpsCharacter::GetGunShop()
 	return GunShop;
 }
 
-void AFpsCharacter::SetPickableWeapon(APickUpWeapon* Instance)
-{
-	PickableWeapon = Instance;
-}
-
 void AFpsCharacter::SetSpawnTransform(FTransform Transform) 
 {
 	SpawnTransform = Transform;
@@ -760,4 +769,9 @@ void AFpsCharacter::SetSpawnTransform(FTransform Transform)
 void AFpsCharacter::SetCharacterStatus(EFpsCharacterStatus Status) 
 {
 	CharacterStatus = Status;
+}
+
+void AFpsCharacter::SetInteractiveTarget(AInteractiveActor* Actor)
+{
+	InteractiveTarget = Actor;
 }
