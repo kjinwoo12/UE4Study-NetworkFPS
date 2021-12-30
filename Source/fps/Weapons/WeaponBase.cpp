@@ -3,7 +3,7 @@
 
 #include "WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "../Actors/Characters/FPSCharacter.h"
+#include "../Actors/FPSCharacter.h"
 #include "PickUpWeapon.h"
 #include "WeaponModelForBody.h"
 #include "Net/UnrealNetwork.h"

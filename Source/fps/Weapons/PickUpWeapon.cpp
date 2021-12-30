@@ -7,7 +7,7 @@
 #include "Components/AudioComponent.h"
 #include "Sound/SoundCue.h"
 #include "Math/UnrealMathUtility.h"
-#include "../Actors/Characters/FpsCharacter.h"
+#include "../Actors/FpsCharacter.h"
 #include "WeaponBase.h"
 
 // Sets default values
@@ -27,19 +27,11 @@ APickUpWeapon::APickUpWeapon()
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	WeaponMesh->SetCollisionObjectType(ECC_WorldDynamic);
 	WeaponMesh->SetCollisionResponseToChannels(ECR_Block);
-	WeaponMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	WeaponMesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
 	WeaponMesh->SetGenerateOverlapEvents(false);
 	WeaponMesh->SetNotifyRigidBodyCollision(true);
 	WeaponMesh->OnComponentHit.AddDynamic(this, &APickUpWeapon::OnWeaponMeshComponentHit);
-
-	PickUpRange = CreateDefaultSubobject<USphereComponent>(TEXT("USphereComponent"));
-	PickUpRange->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	PickUpRange->SetupAttachment(WeaponMesh);
-	PickUpRange->SetGenerateOverlapEvents(true);
-	PickUpRange->OnComponentBeginOverlap.AddDynamic(this, &APickUpWeapon::OnOverlapBegin);
-	PickUpRange->OnComponentEndOverlap.AddDynamic(this, &APickUpWeapon::OnOverlapEnd);
 }
 
 // Called when the game starts or when spawned
@@ -48,30 +40,33 @@ void APickUpWeapon::BeginPlay()
 	Super::BeginPlay();
 }
 
-void APickUpWeapon::OnOverlapBegin(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
-	if (!IsValid(FpsCharacter)) return;
 
-	FpsCharacter->SetPickableWeapon(this);
+void APickUpWeapon::OnTargetedBy(AActor* actor)
+{
+	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnTargetedBy"));
+	AFpsCharacter* Character = Cast<AFpsCharacter>(actor);
+	if (!IsValid(Character)) 
+		return;
 }
 
-void APickUpWeapon::OnOverlapEnd(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComponent,
-	int32 OtherBodyIndex)
+void APickUpWeapon::OnUntargeted(AActor* actor)
 {
-	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(OtherActor);
-	if (!IsValid(FpsCharacter)) return;
+	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnUntargeted"));
+	AFpsCharacter* Character = Cast<AFpsCharacter>(actor);
+	if (!IsValid(Character)) return;
+}
 
-	FpsCharacter->SetPickableWeapon(NULL);
+void APickUpWeapon::OnInteractWith(AActor* actor)
+{
+	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnInteractWith"));
+	AFpsCharacter* Character = Cast<AFpsCharacter>(actor);
+	if (!IsValid(Character)) return;
+	Character->ServerRpcPickUpWeapon(this);
+}
+
+void APickUpWeapon::OnInteractionStop(AActor* actor)
+{
+	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnInteractionStop"));
 }
 
 void APickUpWeapon::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,

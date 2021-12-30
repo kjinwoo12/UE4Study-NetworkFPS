@@ -7,12 +7,13 @@
 #include "FpsCharacter.generated.h"
 
 class AGunShop;
+class AInteractiveActor;
 
 UENUM(BlueprintType)
 enum class EFpsCharacterStatus : uint8
 {
 	Alive UMETA(DisplayName = "Alive"), // Controllable all
-	Stopped UMETA(DisplayName = "Stopped"), // Controllable only Mouse
+	Stopped UMETA(DisplayName = "Stopped"), // Controllable only Aim
 	Freeze UMETA(DisplayName = "Freeze"), // Controllable nothing
 	Dead UMETA(DisplayName = "Dead"), // Same with Freeze but the character is dead.
 };
@@ -35,6 +36,8 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	const FName NamePelvis = FName("pelvis");
 
+	const float InteractionReach = 200.f;
+
 	/**************************
 			Components
 	***************************/
@@ -52,9 +55,6 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	class AWeaponModelForBody* WeaponModelForBody;
-	
-	UPROPERTY(Replicated)
-	class APickUpWeapon* PickableWeapon;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -101,6 +101,12 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 				etc
 	***************************/
+	// CollisionParams for LineTrace
+	FCollisionQueryParams LineTraceCollisionQueryParams;
+
+	UPROPERTY(Replicated)
+	AInteractiveActor* InteractiveTarget;
+
 	UPROPERTY(Replicated)
 	AGunShop* GunShop;
 
@@ -142,15 +148,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void TickCrosshair();
-
-	UFUNCTION(Client, Reliable)
-	void ClientRpcUpdateCameraToServer();
+	void UpdateCrosshair();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRpcSetCameraRotation(FQuat CameraRotation);
 
-	void UpdateActorDirectionByAim(float DeltaTime);
+	void UpdateAim(float DeltaTime);
+
+	void UpdateActorDirection(float DeltaTime);
+
+	void UpdateCameraRotation();
+
+	void UpdateInteractiveTarget(float DeltaTime);
 
 	/**************************
 			Bind keys
@@ -181,9 +190,11 @@ public:
 
 	void ReloadPressed();
 
-	void PickUpWeaponPressed();
-
 	void DropWeaponPressed();
+
+	void InteractionPressed();
+
+	void InteractionReleased();
 
 	void GunShopPressed();
 
@@ -203,6 +214,9 @@ public:
 	/**************************
 				Rpc
 	***************************/
+	UFUNCTION(Client, Reliable)
+	void ClientRpcUpdateCameraRotationToServer();
+
 	UFUNCTION(Server, Reliable)
 	void ServerRpcStartAction();
 
@@ -218,8 +232,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRpcStartReload();
 
-	UFUNCTION(Server, Reliable)
-	void ServerRpcPickUpWeapon();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRpcPickUpWeapon(APickUpWeapon* PickUpWeapon);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRpcDropWeapon();
@@ -232,6 +246,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRpcKnockOutBodyMesh();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRpcSetInteractiveTarget(AInteractiveActor *Actor);
 
 	/**************************
 				OnRep
@@ -267,9 +284,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void PickUpWeapon();
 
 	/**************************
 			About UI
@@ -308,10 +322,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AGunShop* GetGunShop();
 
-	UFUNCTION(BlueprintCallable, Category = "Setter")
-	void SetPickableWeapon(APickUpWeapon* Instance);
-
 	void SetSpawnTransform(FTransform Transform);
 
 	void SetCharacterStatus(EFpsCharacterStatus Status);
+
+	void SetInteractiveTarget(AInteractiveActor* Actor);
 };

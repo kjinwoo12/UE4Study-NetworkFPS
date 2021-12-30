@@ -3,21 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "../Actors/InteractiveActor.h"
 #include "PickUpWeapon.generated.h"
 
 class AWeaponBase;
 
 UCLASS()
-class FPS_API APickUpWeapon : public AActor
+class FPS_API APickUpWeapon : public AInteractiveActor
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* WeaponMesh;
-
-	UPROPERTY(EditDefaultsOnly)
-	class USphereComponent* PickUpRange;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AWeaponBase> WeaponBaseSubclass;
@@ -36,24 +33,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	/**************************
+			  On Events
+	***************************/
+	virtual void OnTargetedBy(AActor* actor) override;
 
-	UFUNCTION()
-	void OnOverlapBegin(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult
-	);
+	virtual void OnUntargeted(AActor* actor) override;
 
-	UFUNCTION()
-	void OnOverlapEnd(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComponent,
-		int32 OtherBodyIndex
-	);
+	virtual void OnInteractWith(AActor* actor) override;
+
+	virtual void OnInteractionStop(AActor* actor) override;
 
 	UFUNCTION()
 	void OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
