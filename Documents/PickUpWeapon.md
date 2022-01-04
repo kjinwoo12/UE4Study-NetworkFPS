@@ -1,5 +1,5 @@
 # PickUpWeapon
-PickUpWeapon is the base class of pickable actor. It makes WeaponBase actor can be picked by FPSCharacter. All of the actors
+PickUpWeapon is the base class for pickable actor. It makes for WeaponBase actor can be picked by FPSCharacter. All of the actors
 
 # Index
 - [Tutorial](#_Tutorial)
