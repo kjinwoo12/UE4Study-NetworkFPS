@@ -41,30 +41,30 @@ void APickUpWeapon::BeginPlay()
 }
 
 
-void APickUpWeapon::OnTargetedBy(AActor* actor)
+void APickUpWeapon::OnTargetedBy(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnTargetedBy"));
-	AFpsCharacter* Character = Cast<AFpsCharacter>(actor);
+	AFpsCharacter* Character = Cast<AFpsCharacter>(character);
 	if (!IsValid(Character)) 
 		return;
 }
 
-void APickUpWeapon::OnUntargeted(AActor* actor)
+void APickUpWeapon::OnUntargeted(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnUntargeted"));
-	AFpsCharacter* Character = Cast<AFpsCharacter>(actor);
+	AFpsCharacter* Character = Cast<AFpsCharacter>(character);
 	if (!IsValid(Character)) return;
 }
 
-void APickUpWeapon::OnInteractWith(AActor* actor)
+void APickUpWeapon::OnInteractWith(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnInteractWith"));
-	AFpsCharacter* Character = Cast<AFpsCharacter>(actor);
+	AFpsCharacter* Character = Cast<AFpsCharacter>(character);
 	if (!IsValid(Character)) return;
 	Character->ServerRpcPickUpWeapon(this);
 }
 
-void APickUpWeapon::OnInteractionStop(AActor* actor)
+void APickUpWeapon::OnInteractionStop(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("APickUpWeapon::OnInteractionStop"));
 }

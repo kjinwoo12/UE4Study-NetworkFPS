@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "InteractiveActor.generated.h"
 
 UCLASS()
@@ -26,11 +26,11 @@ public:
 	/**************************
 			  On Events
 	***************************/
-	virtual void OnTargetedBy(AActor* actor);
+	virtual void OnTargetedBy(ACharacter* character);
 
-	virtual void OnUntargeted(AActor* actor);
+	virtual void OnUntargeted(ACharacter* character);
 
-	virtual void OnInteractWith(AActor* actor);
+	virtual void OnInteractWith(ACharacter* character);
 
-	virtual void OnInteractionStop(AActor* actor);
+	virtual void OnInteractionStop(ACharacter* character);
 };

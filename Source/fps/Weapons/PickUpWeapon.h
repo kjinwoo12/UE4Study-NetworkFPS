@@ -36,13 +36,13 @@ public:
 	/**************************
 			  On Events
 	***************************/
-	virtual void OnTargetedBy(AActor* actor) override;
+	virtual void OnTargetedBy(ACharacter* character) override;
 
-	virtual void OnUntargeted(AActor* actor) override;
+	virtual void OnUntargeted(ACharacter* character) override;
 
-	virtual void OnInteractWith(AActor* actor) override;
+	virtual void OnInteractWith(ACharacter* character) override;
 
-	virtual void OnInteractionStop(AActor* actor) override;
+	virtual void OnInteractionStop(ACharacter* character) override;
 
 	UFUNCTION()
 	void OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,

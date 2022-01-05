@@ -34,7 +34,7 @@ It is general playable character class.
         - Space
     - Reload
         - R
-    - PickUpWeapon
+    - Interaction
         - F
     - DropWeapon 
         - G
@@ -75,7 +75,7 @@ If you need other actions or want to change actions, You can also change actions
 |USkeletalMeshComponent*|BodyMeshComponent|Body mesh for players. But owner can't see|
 |[AWeaponBase](./WeaponBase.md)*|PrimaryWeapon|Weapon that player equipped|
 |[AWeaponModelForBody](./WeaponModelForBody.md)*|WeaponModelForBody|Weapon Model for other players can see with `BodyMeshComponent`|
-|[APickUpWeapon](./PickUpWeapon.md)*|PickableWeapon|Default is null. When the character is able to pickup the weapon actor, It is changed as the weapon instance.|
+|[AInteractiveActor](./InteractiveActor.md)*|InteractiveTarget|Default is null. When the PlayerController of the Character get InteractiveActor from Line trace|
 |UCharacterMovementComponent*|MovementComponent||
 |TSubclassOf\<[AHUD]>|HudSubclass|HUD blueprint. HUD will be added when the player possesses on the character.|
 |float|MaxHealth||
