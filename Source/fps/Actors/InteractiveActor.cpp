@@ -23,22 +23,22 @@ void AInteractiveActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AInteractiveActor::OnTargetedBy(AActor* actor)
+void AInteractiveActor::OnTargetedBy(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnTargetedBy"));
 }
 
-void AInteractiveActor::OnUntargeted(AActor* actor)
+void AInteractiveActor::OnUntargeted(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnUntargeted"));
 }
 
-void AInteractiveActor::OnInteractWith(AActor* actor)
+void AInteractiveActor::OnInteractWith(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnInteractWith"));
 }
 
-void AInteractiveActor::OnInteractionStop(AActor* actor)
+void AInteractiveActor::OnInteractionStop(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnInteractionStop"));
 }
