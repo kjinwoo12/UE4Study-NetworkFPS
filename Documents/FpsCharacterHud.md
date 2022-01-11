@@ -1,4 +1,4 @@
-# AFPSHUD
+# AFpsCharacterHud
 HUD with dynamic crosshair. It is used by [FpsCharacter](./FpsCharacter.md).
 
 # Index
@@ -7,7 +7,7 @@ HUD with dynamic crosshair. It is used by [FpsCharacter](./FpsCharacter.md).
 - [Technical reference](#_Technical_reference)
 
 # Tutorial
-## Step 1. Create a new `FpsHud` BP
+## Step 1. Create a new `AFpsCharacterHud` BP
 1. Create a new Blueprint inherits FPSHUD at `C++ class/FPS`.
 2. Set `Corsshair texture`.
     - Crosshair is composed of 4 items. The texture is for those items. Please upload bottom texture only. FPSHUD makes them attaching your texture and rotate automatically.

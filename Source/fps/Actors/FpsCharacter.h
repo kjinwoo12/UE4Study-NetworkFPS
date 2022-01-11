@@ -34,8 +34,6 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	const FRotator DefaultRotatorOfBodyMeshComponent = FRotator(0.f, -90.f, 0.f);
 
-	const FName NamePelvis = FName("pelvis");
-
 	const float InteractionReach = 200.f;
 
 	/**************************

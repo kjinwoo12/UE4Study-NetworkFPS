@@ -13,7 +13,7 @@ PickUpWeapon is the base class for pickable actor. It makes for WeaponBase actor
 3. Set size of PickUpRange. It will be trigger of if is player's character near by.
 4. Set Drop Sound. Default value is `MyContent/Weapon/A_Drop`. It is a SoundCue. You have to set switch parameter name is `Power`. The range of `Power` is 0(Powerful) to 5(weakness).
 
-## Step 2. Set `PickUpWeaponBlueprint` of your `WeaponBase` BP to `PickUpWeapon` BP what you had make at step 1
+## Step 2. Set `PickUpWeaponBlueprint` of your `WeaponBase` BP
 Set your `PickUpWeapon` BP at `PickUpWeaponBlueprint` in `WeaponBase` BP. It makes possible to spawn the actor made using your `PickUPWeapon` BP. Check out the function `WeaponBase::SpawnPickUpWeaponActor`. It is a preparing for [How to drop weapon](##_Drop_weapon)
 
 ## Step 3. Use AWeaponBase::SpawnPickUpWeaponActor and initialize variables.
@@ -38,7 +38,6 @@ Set your `PickUpWeapon` BP at `PickUpWeaponBlueprint` in `WeaponBase` BP. It mak
 ||Name|Description|
 |-|-|-|
 |UStaticMeshComponent*|WeaponMesh||
-|USphereComponent*|PickUpRange||
 |TSubclassOf\<AWeaponBase>|WeaponBaseSubclass||
 |AWeaponBase*|WeaponInstance||
 |USoundCue*|DropSound||
