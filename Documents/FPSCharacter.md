@@ -69,13 +69,12 @@ If you need other actions or want to change actions, You can also change actions
 |const FRotator|DefaultRotatorOfHandsMeshComponent|Rotator of `HandsMeshComponent` for initializing|
 |const FVector|DefaultLocationOfBodyMeshComponent|Location of `BodyMeshComponent` for initializing|
 |const FRotator|DefaultRotatorOfBodyMeshComponent|Rotator of `BodyMeshComponent` for initializing|
-|const FName|NamePelvis|The name of pelvis of `BodyMeshComponent`|
+|const float|InteractionReach||
 |UCameraComponent*|CameraComponent||
 |USkeletalMeshComponent*|HandsMeshComponent|Hands mesh for owner can only see|
 |USkeletalMeshComponent*|BodyMeshComponent|Body mesh for players. But owner can't see|
 |[AWeaponBase](./WeaponBase.md)*|PrimaryWeapon|Weapon that player equipped|
 |[AWeaponModelForBody](./WeaponModelForBody.md)*|WeaponModelForBody|Weapon Model for other players can see with `BodyMeshComponent`|
-|[AInteractiveActor](./InteractiveActor.md)*|InteractiveTarget|Default is null. When the PlayerController of the Character get InteractiveActor from Line trace|
 |UCharacterMovementComponent*|MovementComponent||
 |TSubclassOf\<[AHUD]>|HudSubclass|HUD blueprint. HUD will be added when the player possesses on the character.|
 |float|MaxHealth||
@@ -87,6 +86,8 @@ If you need other actions or want to change actions, You can also change actions
 |FTransform|SpawnTransform|Transform for spawning character|
 |float|AimPitch||
 |float|AimYaw||
+|FCollisionQueryParams|LineTraceCollisionQUeryParams|It is for detecting `InteractiveTarget` using Line Trace.|
+|[AInteractiveActor](./InteractiveActor.md)*|InteractiveTarget|Default is null. When the PlayerController of the Character get InteractiveActor from Line trace|=
 |[AGunShop](./GunShop.md)*|GunShop||
 
 
@@ -118,10 +119,11 @@ If you need other actions or want to change actions, You can also change actions
 |virtual void|BeginPlay||
 |void|GetLifetimeReplicatedProps<br/>(<br/>&emsp;TArray\<FLifetimeProperty>& OutLifetimeProps<br/>)||
 |virtual void|Tick<br/>(<br/>&emsp;float DeltaTime<br/>)|| 
-|void|TickCrosshair||
-|void|ClientRPCUpdateCameraToServer||
-|void|ServerRPCSetCameraRotation<br/>(<br/>&emsp;FQuat CameraRotation<br/>)||
-|void|UpdateActorDirectionByAim<br/>(<br/>&emsp;float DeltaTime<br/>)||
+|void|UpdateCrosshair||
+|void|ServerRpcSetCameraRotation<br/>(<br/>&emsp;FQuat CameraRotation<br/>)||
+|void|UpdateActorDirection<br/>(<br/>&emsp;float DeltaTime<br/>)||
+|void|UpdateCameraRotation()||
+|void|UpdateInteractiveTarget<br/>(<br/>&emsp;float DeltaTime<br/>)|Update `InteractiveTarget` as detected actor from Line Trace|
 |virtual void|SetupPlayerInputComponentTick<br/>(<br/>&emsp;UInputComponent* PlayerInputComponent<br/>)||
 |void|MoveForwardTick<br/>(<br/>&emsp;float Value<br/>)||
 |void|MoveRightTick<br/>(<br/>&emsp;float Value<br/>)||
@@ -142,14 +144,14 @@ If you need other actions or want to change actions, You can also change actions
 |void|OnPlayerFull||
 |void|OnRoundStart||
 |void|OnRoundEnd||
-|void|ServerRPCStartAction||
-|void|ServerRPCStopAction||
-|void|ServerRPCStartSubaction||
-|void|ServerRPCStopSubaction||
-|void|ServerRPCStartReload||
-|void|ServerRPCPickUpWeapon||
-|void|ServerRPCDropWeapon||
-|void|MulticastRPCSetActorRotation<br/>(<br/>&emsp;FRotator<br/>)||
+|void|ServerRpcStartAction||
+|void|ServerRpcStopAction||
+|void|ServerRpcStartSubaction||
+|void|ServerRpcStopSubaction||
+|void|ServerRpcStartReload||
+|void|ServerRpcPickUpWeapon||
+|void|ServerRpcDropWeapon||
+|void|MulticastRpcSetActorRotation<br/>(<br/>&emsp;FRotator<br/>)||
 |void|OnRep_InitializePrimaryWeapon||
 |virtual float|TakeDamage<br/>(<br/>&emsp;float Damage,<br/>&emsp;FDamageEvent const& DamageEvent,<br/>&emsp;AController* EventInstigator,<br/>&emsp;AActor* DamageCauser<br/>)||
 |void|Die||
@@ -171,6 +173,6 @@ If you need other actions or want to change actions, You can also change actions
 |TSubclassOf\<AHUD>|GetHudSubclass||
 |[AGunShop](./GunShop.md)*|GetGunShop||
 |void|SetPickableWeapon<br/>(<br/>&emsp;[APickUpWeapon](./PickUpWeapon.md)* Instance<br/>)||
-|void|SetSpawnTransform<br/>(<br/>&emsp;FTransform Transform<br/>)||
+|void|SetSpawnTransform<br/>(<br/>&emsp;FTransform Transform<br/>)|Player is going to teleport at `Transfrom` when `Respawn` is called|
 
 </details>
