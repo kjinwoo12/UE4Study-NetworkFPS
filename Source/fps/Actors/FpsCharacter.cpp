@@ -228,6 +228,7 @@ void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime)
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (!IsValid(PlayerController))
 	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UpdateInteractiveTarget PlayerController is invalid"));
 		return;
 	}
 
@@ -251,6 +252,7 @@ void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime)
 	);
 	if (!IsHit)
 	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UpdateInteractiveTarget isHit false"));
 		if (IsValid(InteractiveTarget))
 			InteractiveTarget->OnUntargeted(this);
 		InteractiveTarget = nullptr;
