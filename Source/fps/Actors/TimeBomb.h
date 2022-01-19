@@ -45,13 +45,13 @@ public:
 	/**************************
 			  On Events
 	***************************/
-	virtual void OnTargetedBy(ACharacter* character);
+	virtual void OnTargetedBy(ACharacter* character) override;
 
-	virtual void OnUntargeted(ACharacter* character);
+	virtual void OnUntargeted(ACharacter* character) override;
 
-	virtual void OnInteractWith(ACharacter* character);
+	virtual void OnInteractWith(ACharacter* character) override;
 
-	virtual void OnInteractionStop(ACharacter* character);
+	virtual void OnInteractionStop(ACharacter* character) override;
 
 	/**************************
 		  Getter & Setter

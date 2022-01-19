@@ -60,7 +60,7 @@ void ATimeBomb::OnInteractWith(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("ATimeBomb::OnInteractWith"));
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(character);
-	if (!IsValid(FpsCharcter))
+	if (!IsValid(FpsCharacter))
 	{
 		return;
 	}
@@ -72,7 +72,7 @@ void ATimeBomb::OnInteractionStop(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("ATimeBomb::OnInteractionStop"));
 	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(character);
-	if (!IsValid(FpsCharcter))
+	if (!IsValid(FpsCharacter))
 	{
 		return;
 	}

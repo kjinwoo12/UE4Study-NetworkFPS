@@ -11,12 +11,6 @@ AInteractiveActor::AInteractiveActor()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
-void AInteractiveActor::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AInteractiveActor::OnTargetedBy(ACharacter* character)
 {
 	UE_LOG(LogTemp, Log, TEXT("AInteractiveActor::OnTargetedBy"));

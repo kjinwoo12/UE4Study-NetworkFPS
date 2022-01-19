@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "FpsCharacter.generated.h"
 
+#define WEAPON_INDEX_SIZE 5
+
 class AGunShop;
 class AInteractiveActor;
 
@@ -95,6 +97,15 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	UPROPERTY(Replicated)
 	float AimYaw;
+
+	/**************************
+		   Weapon Switch
+	***************************/
+	UPROPERTY(Replicated);
+	int WeaponOnHandIndex = 0;
+
+	UPROPERTY(Replicated);
+	AWeaponBase* WeaponInventory[WEAPON_INDEX_SIZE] = { nullptr, };
 	 
 	/**************************
 				etc
@@ -193,6 +204,9 @@ public:
 	void InteractionPressed();
 
 	void InteractionReleased();
+
+	void WeaponSwitch(int Index);
+	DECLARE_DELEGATE_OneParam(FWeaponSwitchDelegate, int32);
 
 	void GunShopPressed();
 
@@ -325,4 +339,6 @@ public:
 	void SetCharacterStatus(EFpsCharacterStatus Status);
 
 	void SetInteractiveTarget(AInteractiveActor* Actor);
+
+	void SetWeaponInstanceAtInventory(int Index, AWeaponBase* WeaponInstance);
 };

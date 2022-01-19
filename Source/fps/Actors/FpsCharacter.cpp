@@ -133,6 +133,8 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, AimPitch);
 	DOREPLIFETIME(AFpsCharacter, AimYaw);
 	DOREPLIFETIME(AFpsCharacter, GunShop);
+	DOREPLIFETIME(AFpsCharacter, WeaponOnHandIndex);
+	DOREPLIFETIME(AFpsCharacter, WeaponInventory);
 }
 
 // Called every frame
@@ -299,9 +301,16 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFpsCharacter::DropWeaponPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AFpsCharacter::InteractionPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AFpsCharacter::InteractionReleased);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch1", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 0);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch2", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 1);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch3", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 2);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch4", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 3);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch5", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 4);
+
 
 	// UI
 	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFpsCharacter::GunShopPressed);
+
 }
 
 void AFpsCharacter::MoveForward(float Value)
@@ -408,6 +417,14 @@ void AFpsCharacter::InteractionReleased()
 	InteractiveTarget->OnInteractionStop(this);
 }
 
+void AFpsCharacter::WeaponSwitch(int Index)
+{
+	if (Index < WEAPON_INDEX_SIZE || WeaponInventory[Index] == nullptr) return;
+	WeaponOnHandIndex = Index;
+	UnEquipWeapon();
+	EquipWeapon(WeaponInventory[Index]);
+}
+
 void AFpsCharacter::GunShopPressed()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -508,22 +525,39 @@ void AFpsCharacter::ServerRpcStartReload_Implementation()
 
 bool AFpsCharacter::ServerRpcPickUpWeapon_Validate(APickUpWeapon* PickUpWeapon)
 {
-	if (IsValid(PrimaryWeapon) || PickUpWeapon == nullptr) return false;
+	if (PickUpWeapon == nullptr) return false;
 	return true;
 }
 
 void AFpsCharacter::ServerRpcPickUpWeapon_Implementation(APickUpWeapon* PickUpWeapon)
 {
-	AWeaponBase* WeaponInstance = PickUpWeapon->GetWeaponInstance();
-	if (!IsValid(WeaponInstance))
+	AWeaponBase* PickedWeaponInstance = PickUpWeapon->GetWeaponInstance();
+	if (!IsValid(PickedWeaponInstance))
 	{
 		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickUpWeapon->GetWeaponBaseSubclass();
 		if (WeaponBaseSubclass == nullptr) return;
 
-		WeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
+		PickedWeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
 	}
-	EquipWeapon(WeaponInstance);
 
+	int PickedWeaponHandIndex = PickedWeaponInstance->GetHandIndex();
+	if (PickedWeaponHandIndex == WeaponOnHandIndex) 
+	{
+		DropWeapon();
+		EquipWeapon(PickedWeaponInstance);
+		SetWeaponInstanceAtInventory(PickedWeaponHandIndex, PickedWeaponInstance);
+	}
+	else
+	{
+		UnEquipWeapon();
+		EquipWeapon(PickedWeaponInstance);
+		SetWeaponInstanceAtInventory(PickedWeaponHandIndex, PickedWeaponInstance);
+		WeaponOnHandIndex = PickedWeaponHandIndex;
+	}
+
+	EquipWeapon(PickedWeaponInstance);
+	SetWeaponInstanceAtInventory(PickedWeaponHandIndex, PickedWeaponInstance);
+	
 	PickUpWeapon->Destroy();
 }
 
@@ -776,4 +810,9 @@ void AFpsCharacter::SetCharacterStatus(EFpsCharacterStatus Status)
 void AFpsCharacter::SetInteractiveTarget(AInteractiveActor* Actor)
 {
 	InteractiveTarget = Actor;
+}
+
+void AFpsCharacter::SetWeaponInstanceAtInventory(int Index, AWeaponBase* WeaponInstance)
+{
+	WeaponInventory[Index] = WeaponInstance;
 }

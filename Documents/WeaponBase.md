@@ -23,6 +23,7 @@ WeaponBase is the base class for a gun and knife.
         - `Current Ammo` : Left ammo of magazine
         - `Sub Ammo` : Total ammo player has.
         - `Is Ammo Infinite` : The title says it all.
+    - Set `HandIndex`. It is for switch weapon number key(1~5).
 3. Set skeletal mesh at `WeaponMesh`. 
 4. Set `Muzzle` location. It's not necessary work. `Muzzle` is just for effects. You can handle it.
 5. Set Animations at `Animation - Hands` and `Animation - Body`. There are played when each function is run.
