@@ -86,6 +86,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Damage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	int HandIndex;
 
 	/**************************
 		  About animation
@@ -219,6 +221,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetBodyAnimInstance(UAnimInstance* AnimInstance);
+
+	int GetHandIndex();
 
 	/**************************
 				etc

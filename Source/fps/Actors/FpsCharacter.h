@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "FpsCharacter.generated.h"
 
+#define WEAPON_INDEX_SIZE 5
+
 class AGunShop;
 class AInteractiveActor;
 
@@ -95,6 +97,15 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	UPROPERTY(Replicated)
 	float AimYaw;
+
+	/**************************
+		   Weapon Switch
+	***************************/
+	UPROPERTY(Replicated)
+	int WeaponOnHandIndex = 0;
+
+	UPROPERTY(Replicated)
+	TArray<AWeaponBase*> WeaponInventory;
 	 
 	/**************************
 				etc
@@ -194,6 +205,9 @@ public:
 
 	void InteractionReleased();
 
+	void WeaponSwitchPressed(int Index);
+	DECLARE_DELEGATE_OneParam(FWeaponSwitchDelegate, int32);
+
 	void GunShopPressed();
 
 	/**************************
@@ -248,6 +262,9 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRpcSetInteractiveTarget(AInteractiveActor *Actor);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRpcWeaponSwitch(int Index);
+
 	/**************************
 				OnRep
 	***************************/
@@ -282,6 +299,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void AcquireWeapon(AWeaponBase* WeaponBase);
+
+	UFUNCTION(BlueprintCallable, Category ="Weapon")
+	void WeaponSwitch(int Index);
 
 	/**************************
 			About UI
@@ -325,4 +348,6 @@ public:
 	void SetCharacterStatus(EFpsCharacterStatus Status);
 
 	void SetInteractiveTarget(AInteractiveActor* Actor);
+
+	void SetWeaponInstanceAtInventory(AWeaponBase* WeaponInstance, int Index);
 };

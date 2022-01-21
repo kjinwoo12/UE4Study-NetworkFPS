@@ -47,6 +47,5 @@ void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSu
 		return;
 	}
 	AWeaponBase* Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponSubclass);
-	FpsCharacter->DropWeapon();
-	FpsCharacter->EquipWeapon(Weapon);
+	FpsCharacter->AcquireWeapon(Weapon);
 }

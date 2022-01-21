@@ -39,6 +39,7 @@ AWeaponBase::AWeaponBase()
 	Accuracy = 1.f;
 	MovementStability = 40;
 	Damage = 40;
+	HandIndex = 0;
 
 	// Animation instance
 	HandsAnimInstance = NULL;
@@ -277,6 +278,11 @@ void AWeaponBase::SetHandsAnimInstance(UAnimInstance* Instance)
 void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
 {
 	BodyAnimInstance = Instance;
+}
+
+int AWeaponBase::GetHandIndex()
+{
+	return HandIndex;
 }
 
 APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
