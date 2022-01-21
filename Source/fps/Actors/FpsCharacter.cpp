@@ -116,8 +116,9 @@ void AFpsCharacter::InitializeGunShop()
 void AFpsCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	UE_LOG(LogTemp, Log, TEXT("FpsCharacterIsSpawned"));
+
+	WeaponInventory.Init(nullptr, 5);
 }
 
 void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -171,7 +172,7 @@ void AFpsCharacter::ClientRpcUpdateCameraRotationToServer_Implementation()
 
 bool AFpsCharacter::ServerRpcSetCameraRotation_Validate(FQuat CameraRotation)
 {
-	return true; 
+	return true;
 }
 
 void AFpsCharacter::ServerRpcSetCameraRotation_Implementation(FQuat CameraRotation)
@@ -254,7 +255,6 @@ void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime)
 	);
 	if (!IsHit)
 	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UpdateInteractiveTarget isHit false"));
 		if (IsValid(InteractiveTarget))
 			InteractiveTarget->OnUntargeted(this);
 		InteractiveTarget = nullptr;
@@ -301,11 +301,11 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFpsCharacter::DropWeaponPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AFpsCharacter::InteractionPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AFpsCharacter::InteractionReleased);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch1", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 0);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch2", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 1);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch3", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 2);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch4", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 3);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch5", IE_Pressed, this, &AFpsCharacter::WeaponSwitch, 4);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch1", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 0);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch2", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 1);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch3", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 2);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch4", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 3);
+	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch5", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 4);
 
 
 	// UI
@@ -417,12 +417,9 @@ void AFpsCharacter::InteractionReleased()
 	InteractiveTarget->OnInteractionStop(this);
 }
 
-void AFpsCharacter::WeaponSwitch(int Index)
+void AFpsCharacter::WeaponSwitchPressed(int Index)
 {
-	if (Index < WEAPON_INDEX_SIZE || WeaponInventory[Index] == nullptr) return;
-	WeaponOnHandIndex = Index;
-	UnEquipWeapon();
-	EquipWeapon(WeaponInventory[Index]);
+	ServerRpcWeaponSwitch(Index);
 }
 
 void AFpsCharacter::GunShopPressed()
@@ -535,29 +532,12 @@ void AFpsCharacter::ServerRpcPickUpWeapon_Implementation(APickUpWeapon* PickUpWe
 	if (!IsValid(PickedWeaponInstance))
 	{
 		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickUpWeapon->GetWeaponBaseSubclass();
-		if (WeaponBaseSubclass == nullptr) return;
+		if (!IsValid(WeaponBaseSubclass)) return;
 
 		PickedWeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
 	}
 
-	int PickedWeaponHandIndex = PickedWeaponInstance->GetHandIndex();
-	if (PickedWeaponHandIndex == WeaponOnHandIndex) 
-	{
-		DropWeapon();
-		EquipWeapon(PickedWeaponInstance);
-		SetWeaponInstanceAtInventory(PickedWeaponHandIndex, PickedWeaponInstance);
-	}
-	else
-	{
-		UnEquipWeapon();
-		EquipWeapon(PickedWeaponInstance);
-		SetWeaponInstanceAtInventory(PickedWeaponHandIndex, PickedWeaponInstance);
-		WeaponOnHandIndex = PickedWeaponHandIndex;
-	}
-
-	EquipWeapon(PickedWeaponInstance);
-	SetWeaponInstanceAtInventory(PickedWeaponHandIndex, PickedWeaponInstance);
-	
+	AcquireWeapon(PickedWeaponInstance);
 	PickUpWeapon->Destroy();
 }
 
@@ -599,6 +579,17 @@ bool AFpsCharacter::ServerRpcSetInteractiveTarget_Validate(AInteractiveActor* Ac
 void AFpsCharacter::ServerRpcSetInteractiveTarget_Implementation(AInteractiveActor* Actor)
 {
 	SetInteractiveTarget(Actor);
+}
+
+bool AFpsCharacter::ServerRpcWeaponSwitch_Validate(int Index)
+{
+	if (Index < 0 || 5 < Index) return false;
+	return true;
+}
+
+void AFpsCharacter::ServerRpcWeaponSwitch_Implementation(int Index)
+{
+	WeaponSwitch(Index);
 }
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
@@ -679,7 +670,6 @@ AWeaponBase* AFpsCharacter::UnEquipWeapon()
 	AWeaponBase* WeaponInstance = PrimaryWeapon;
 	PrimaryWeapon = nullptr;
 	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-	WeaponInstance->SetOwner(NULL);
 	WeaponInstance->OnUnEquipped();
 
 	// UnEquip WeaponModelForThirdPerson
@@ -722,6 +712,39 @@ void AFpsCharacter::DropWeapon()
 	UStaticMeshComponent* WeaponMesh = PickUpWeapon->GetWeaponMesh();
 	const float ImpulsePower = 300.f;
 	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
+}
+
+void AFpsCharacter::AcquireWeapon(AWeaponBase* WeaponBase)
+{
+	int AcquiredWeaponHandIndex = WeaponBase->GetHandIndex();
+	if (WeaponInventory[AcquiredWeaponHandIndex] == nullptr)
+	{
+		UnEquipWeapon();
+	}
+	else
+	{
+		if (AcquiredWeaponHandIndex != WeaponOnHandIndex)
+		{
+			UnEquipWeapon();
+			EquipWeapon(WeaponInventory[AcquiredWeaponHandIndex]);
+			WeaponOnHandIndex = AcquiredWeaponHandIndex;
+		}
+		DropWeapon();
+	}
+	EquipWeapon(WeaponBase);
+	SetWeaponInstanceAtInventory(WeaponBase, AcquiredWeaponHandIndex);
+}
+
+void AFpsCharacter::WeaponSwitch(int Index)
+{
+	if (WeaponInventory[Index] == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("WeaponInventory[%d] is Invalidm"), Index);
+		return;
+	}
+	WeaponOnHandIndex = Index;
+	UnEquipWeapon();
+	EquipWeapon(WeaponInventory[Index]);
 }
 
 void AFpsCharacter::SetAlertTextOnHud(FString Text)
@@ -812,7 +835,9 @@ void AFpsCharacter::SetInteractiveTarget(AInteractiveActor* Actor)
 	InteractiveTarget = Actor;
 }
 
-void AFpsCharacter::SetWeaponInstanceAtInventory(int Index, AWeaponBase* WeaponInstance)
+void AFpsCharacter::SetWeaponInstanceAtInventory(AWeaponBase* WeaponInstance, int Index)
 {
+	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetWeaponInstanceAtInventory : %d, %s"), Index, *WeaponInstance->GetName());
 	WeaponInventory[Index] = WeaponInstance;
+	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetWeaponInstanceAtInventory : WeaponInventory[%d] = %s"), Index, *WeaponInventory[Index]->GetName());
 }
