@@ -739,7 +739,7 @@ void AFpsCharacter::WeaponSwitch(int Index)
 {
 	if (WeaponInventory[Index] == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("WeaponInventory[%d] is Invalidm"), Index);
+		UE_LOG(LogTemp, Log, TEXT("WeaponInventory[%d] is Invalid"), Index);
 		return;
 	}
 	WeaponOnHandIndex = Index;
