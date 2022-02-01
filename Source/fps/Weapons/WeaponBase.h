@@ -22,9 +22,13 @@ UCLASS()
 class FPS_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
+	
+	/**************************
+			   const
+	***************************/
+	const FVector DefaultLocationOfWeaponMeshComponent = FVector(0, 0, -150.f);
 
 protected:
-
 	/**************************
 			Components
 	***************************/
@@ -92,9 +96,6 @@ protected:
 	/**************************
 		  About animation
 	***************************/
-	// AnimInstance for play animation from parent component
-	UAnimInstance* HandsAnimInstance;
-
 	UAnimInstance* BodyAnimInstance;
 
 	// AnimationMontage to play each time do action
@@ -170,6 +171,13 @@ protected:
 public:
 
 	/**************************
+			Initialize
+	***************************/
+	void InitializeProperties();
+
+	void InitializeWeaponMesh();
+
+	/**************************
 			 on Events
 	***************************/
 	virtual void Initialize(AFpsCharacter* FPSCharacter);
@@ -215,9 +223,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	EWeaponType GetWeaponType();
-
-	UFUNCTION(BlueprintCallable, Category = "Setter")
-	void SetHandsAnimInstance(UAnimInstance* AnimInstance);
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetBodyAnimInstance(UAnimInstance* AnimInstance);

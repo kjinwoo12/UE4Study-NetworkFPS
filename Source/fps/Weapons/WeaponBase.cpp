@@ -19,30 +19,16 @@ AWeaponBase::AWeaponBase()
 
  	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;	
-	// Components
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
-	WeaponMesh->SetOnlyOwnerSee(true);
-	RootComponent = WeaponMesh;
 
 	// properties
-	AttachingGripPointName = "GripPoint";
-	WeaponType = EWeaponType::Rifle;
-	ActionDelay = 0.125f;
-	ActionLoopEnable = true;
-	SubactionDelay = 1.f;
-	SubactionLoopEnable = true;
-	ReloadDelay = 2.5f;
-	MagazineSize = 30;
-	CurrentAmmo = 30;
-	SubAmmo = 90;
-	IsAmmoInfinite = false;
-	Accuracy = 1.f;
-	MovementStability = 40;
-	Damage = 40;
-	HandIndex = 0;
+	InitializeProperties();
+
+	// Components
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	InitializeWeaponMesh();
+	
 
 	// Animation instance
-	HandsAnimInstance = NULL;
 	BodyAnimInstance = NULL;
 
 	// Animations
@@ -65,6 +51,33 @@ void AWeaponBase::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AWeaponBase::InitializeProperties()
+{
+	AttachingGripPointName = "GripPoint";
+	WeaponType = EWeaponType::Rifle;
+	ActionDelay = 0.125f;
+	ActionLoopEnable = true;
+	SubactionDelay = 1.f;
+	SubactionLoopEnable = true;
+	ReloadDelay = 2.5f;
+	MagazineSize = 30;
+	CurrentAmmo = 30;
+	SubAmmo = 90;
+	IsAmmoInfinite = false;
+	Accuracy = 1.f;
+	MovementStability = 40;
+	Damage = 40;
+	HandIndex = 0;
+}
+
+void AWeaponBase::InitializeWeaponMesh()
+{
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
+	WeaponMesh->SetOnlyOwnerSee(true);
+	WeaponMesh->SetRelativeLocation(DefaultLocationOfWeaponMeshComponent);
+	WeaponMesh->SetupAttachment(RootComponent);
+}
+
 void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -76,14 +89,12 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 void AWeaponBase::Initialize(AFpsCharacter* FPSCharacter)
 {
 	SetOwner(FPSCharacter);
-	SetHandsAnimInstance(FPSCharacter->GetHandsMeshComponent()->GetAnimInstance());
 	SetBodyAnimInstance(FPSCharacter->GetBodyMeshComponent()->GetAnimInstance());
 }
 
 void AWeaponBase::OnUnEquipped()
 {
 	SetOwner(NULL);
-	SetHandsAnimInstance(NULL);
 	SetBodyAnimInstance(NULL);
 }
 
@@ -135,8 +146,6 @@ void AWeaponBase::StartReload()
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
 
 	// Play reloading animation
-	if (HandsReloadAnimation != NULL && HandsAnimInstance != NULL) HandsAnimInstance->Montage_Play(HandsReloadAnimation);
-	else UE_LOG(LogTemp, Log, TEXT("HandsReloadAnimation or HandsAnimInstance is NULL"));
 	if (BodyReloadAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodyReloadAnimation);
 	else UE_LOG(LogTemp, Log, TEXT("BodyReloadAnimation or BodyAnimInstance is NULL"));
 
@@ -200,10 +209,14 @@ void AWeaponBase::OnAction()
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
 	// Play animations
-	if (HandsActionAnimation != NULL && HandsAnimInstance != NULL)
-		HandsAnimInstance->Montage_Play(HandsActionAnimation);
-	else
-		UE_LOG(LogTemp, Log, TEXT("HandsActionAnimation or HandsAnimInstance is NULL"));
+	UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+	if (IsValid(WeaponAnimInstance))
+	{
+		UE_LOG(LogTemp, Log, TEXT("WeaponAnimInstance play HandsActionAnimation"));
+		WeaponAnimInstance->Montage_Play(HandsActionAnimation);
+	}
+	else UE_LOG(LogTemp, Log, TEXT("WeaponAnimInstance is Invalid"));
+
 	if (BodyActionAnimation != NULL && BodyAnimInstance != NULL)
 		BodyAnimInstance->Montage_Play(BodyActionAnimation);
 	else UE_LOG(LogTemp, Log, TEXT("BodyActionAnimation or BodyAnimInstance is NULL"));
@@ -220,8 +233,6 @@ void AWeaponBase::OnSubaction()
 	UE_LOG(LogTemp, Log, TEXT("OnSubaction()"));
 
 	// Play animation
-	if (HandsSubactionAnimation != NULL && HandsAnimInstance != NULL) HandsAnimInstance->Montage_Play(HandsSubactionAnimation);
-	else UE_LOG(LogTemp, Log, TEXT("HandsSubactionAnimation or HandsAnimInstance is NULL"));
 	if (BodySubactionAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodySubactionAnimation);
 	else UE_LOG(LogTemp, Log, TEXT("BodySubactionAnimation or BodyAnimInstance is NULL"));
 
@@ -268,11 +279,6 @@ FName AWeaponBase::GetAttachingGripPointName()
 EWeaponType AWeaponBase::GetWeaponType()
 {
 	return WeaponType;
-}
-
-void AWeaponBase::SetHandsAnimInstance(UAnimInstance* Instance)
-{
-	HandsAnimInstance = Instance;
 }
 
 void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)

@@ -4,19 +4,19 @@
 #include "HitScanGun.h"
 #include "Components/PointLightComponent.h"
 
-AHitScanGun::AHitScanGun()
+AHitScanGun::AHitScanGun() : AHitScanWeapon()
 {
 	//Components
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
-	Muzzle->SetupAttachment(RootComponent);
+	Muzzle->SetupAttachment(WeaponMesh);
 	MuzzleFlashLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("MuzzleFlashLight"));
 	MuzzleFlashLight->SetIntensity(20000.f);
 	MuzzleFlashLight->SetVisibility(false);
-	MuzzleFlashLight->SetupAttachment(RootComponent);
+	MuzzleFlashLight->SetupAttachment(WeaponMesh);
 	MuzzleFlashTextureEffect = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MuzzleFlashTextureEffect"));
 	MuzzleFlashTextureEffect->SetVisibility(false);
 	MuzzleFlashTextureEffect->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MuzzleFlashTextureEffect->SetupAttachment(RootComponent);
+	MuzzleFlashTextureEffect->SetupAttachment(WeaponMesh);
 }
 
 void AHitScanGun::OnAction()

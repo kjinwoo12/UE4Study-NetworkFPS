@@ -6,7 +6,7 @@
 #include "../Actors/FpsCharacter.h"
 #include "Camera/CameraComponent.h"
 
-AHitScanWeapon::AHitScanWeapon()
+AHitScanWeapon::AHitScanWeapon() : AWeaponBase()
 {
 	Reach = 6000.f;
 }

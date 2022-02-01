@@ -28,7 +28,6 @@ AFpsCharacter::AFpsCharacter()
 	InitializeCollisionComponent();
 	InitializeMovementComponent();
 	InitializeCamera();
-	InitializeHandsMesh();
 	InitializeBodyMesh();
 	InitializeGameplayVariable();
 }
@@ -58,22 +57,6 @@ void AFpsCharacter::InitializeCamera()
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->SetRelativeLocation(FVector(0.f, 0.f, BaseEyeHeight));
 	CameraComponent->bUsePawnControlRotation = true;
-}
-
-void AFpsCharacter::InitializeHandsMesh()
-{
-	if (!IsValid(CameraComponent))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Failed initializeHandsMesh() : No CameraComponent"));
-		return;
-	}
-	HandsMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandsMesh"));
-	HandsMeshComponent->SetOnlyOwnerSee(true);
-	HandsMeshComponent->SetupAttachment(CameraComponent);
-	HandsMeshComponent->bCastDynamicShadow = false;
-	HandsMeshComponent->CastShadow = false;
-	HandsMeshComponent->SetRelativeLocation(DefaultLocationOfHandsMeshComponent);
-	HandsMeshComponent->SetRelativeRotation(DefaultRotatorOfHandsMeshComponent);
 }
 
 void AFpsCharacter::InitializeBodyMesh()
@@ -621,7 +604,6 @@ float AFpsCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, A
 void AFpsCharacter::Die()
 {
 	SetCharacterStatus(EFpsCharacterStatus::Dead);
-	HandsMeshComponent->SetOwnerNoSee(true);
 	MulticastRpcKnockOutBodyMesh();
 	ServerRpcDropWeapon();
 }
@@ -629,7 +611,6 @@ void AFpsCharacter::Die()
 void AFpsCharacter::Respawn()
 {
 	UE_LOG(LogTemp, Log, TEXT("Respawn"));
-	HandsMeshComponent->SetOwnerNoSee(false);
 	WakeUpBodyMesh();
 	InitializeGameplayVariable();
 	SetActorTransform(SpawnTransform);
@@ -652,7 +633,7 @@ void AFpsCharacter::EquipWeapon(AWeaponBase* WeaponBase)
 	// Attach AWeaponBase Actor for first-person view
 	PrimaryWeapon = WeaponBase;
 	FName AttachingGripPointName = PrimaryWeapon->GetAttachingGripPointName();
-	PrimaryWeapon->AttachToComponent(HandsMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
+	PrimaryWeapon->AttachToComponent(CameraComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true));
 	PrimaryWeapon->Initialize(this);
 
 	// Attach AWeaponModelForBody for third-person view
@@ -788,11 +769,6 @@ UCameraComponent* AFpsCharacter::GetCameraComponent()
 AWeaponBase* AFpsCharacter::GetPrimaryWeapon()
 {
 	return PrimaryWeapon;
-}
-
-USkeletalMeshComponent* AFpsCharacter::GetHandsMeshComponent()
-{
-	return HandsMeshComponent;
 }
 
 USkeletalMeshComponent* AFpsCharacter::GetBodyMeshComponent()
