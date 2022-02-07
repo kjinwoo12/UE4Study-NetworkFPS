@@ -28,10 +28,6 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 			   const
 	***************************/
-	const FVector DefaultLocationOfHandsMeshComponent = FVector(-25, 15, -150.f);
-
-	const FRotator DefaultRotatorOfHandsMeshComponent = FRotator(-7.f, -15.f, 0.f);
-
 	const FVector DefaultLocationOfBodyMeshComponent = FVector(0.f, 0.f, -94.f);
 
 	const FRotator DefaultRotatorOfBodyMeshComponent = FRotator(0.f, -90.f, 0.f);
@@ -43,9 +39,6 @@ class FPS_API AFpsCharacter : public ACharacter
 	***************************/
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* CameraComponent;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* HandsMeshComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
@@ -132,8 +125,6 @@ private:
 	void InitializeMovementComponent();
 
 	void InitializeCamera();
-
-	void InitializeHandsMesh();
 
 	void InitializeBodyMesh();
 
@@ -325,9 +316,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AWeaponBase* GetPrimaryWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Getter")
-	USkeletalMeshComponent* GetHandsMeshComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	USkeletalMeshComponent* GetBodyMeshComponent();
