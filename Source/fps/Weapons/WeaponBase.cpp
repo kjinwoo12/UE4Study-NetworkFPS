@@ -4,8 +4,8 @@
 #include "WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "../Actors/FPSCharacter.h"
-#include "PickUpWeapon.h"
-#include "WeaponModelForBody.h"
+#include "PickupableActor.h"
+#include "HandsModelForBody.h"
 #include "Net/UnrealNetwork.h"
 
 /*
@@ -13,7 +13,7 @@
  */
 
 // Sets default values
-AWeaponBase::AWeaponBase()
+AWeaponBase::AWeaponBase() : AHands()
 {
 	bReplicates = true;
 
@@ -21,12 +21,19 @@ AWeaponBase::AWeaponBase()
 	PrimaryActorTick.bCanEverTick = false;	
 
 	// properties
-	InitializeProperties();
-
-	// Components
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	InitializeWeaponMesh();
-	
+	WeaponType = EWeaponType::Rifle;
+	ActionDelay = 0.125f;
+	ActionLoopEnable = true;
+	SubactionDelay = 1.f;
+	SubactionLoopEnable = true;
+	ReloadDelay = 2.5f;
+	MagazineSize = 30;
+	CurrentAmmo = 30;
+	SubAmmo = 90;
+	IsAmmoInfinite = false;
+	Accuracy = 1.f;
+	MovementStability = 40;
+	Damage = 40;
 
 	// Animation instance
 	BodyAnimInstance = NULL;
@@ -51,33 +58,6 @@ void AWeaponBase::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AWeaponBase::InitializeProperties()
-{
-	AttachingGripPointName = "GripPoint";
-	WeaponType = EWeaponType::Rifle;
-	ActionDelay = 0.125f;
-	ActionLoopEnable = true;
-	SubactionDelay = 1.f;
-	SubactionLoopEnable = true;
-	ReloadDelay = 2.5f;
-	MagazineSize = 30;
-	CurrentAmmo = 30;
-	SubAmmo = 90;
-	IsAmmoInfinite = false;
-	Accuracy = 1.f;
-	MovementStability = 40;
-	Damage = 40;
-	HandIndex = 0;
-}
-
-void AWeaponBase::InitializeWeaponMesh()
-{
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
-	WeaponMesh->SetOnlyOwnerSee(true);
-	WeaponMesh->SetRelativeLocation(DefaultLocationOfWeaponMeshComponent);
-	WeaponMesh->SetupAttachment(RootComponent);
-}
-
 void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -86,10 +66,12 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
-void AWeaponBase::Initialize(AFpsCharacter* FPSCharacter)
+void AWeaponBase::Initialize(AActor* Parent)
 {
-	SetOwner(FPSCharacter);
-	SetBodyAnimInstance(FPSCharacter->GetBodyMeshComponent()->GetAnimInstance());
+	Super::Initialize(Parent);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
+	if (!IsValid(FpsCharacter)) return;
+	SetBodyAnimInstance(FpsCharacter->GetBodyMeshComponent()->GetAnimInstance());
 }
 
 void AWeaponBase::OnUnEquipped()
@@ -209,7 +191,7 @@ void AWeaponBase::OnAction()
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
 	// Play animations
-	UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+	UAnimInstance* WeaponAnimInstance = HandsMesh->GetAnimInstance();
 	if (IsValid(WeaponAnimInstance))
 	{
 		UE_LOG(LogTemp, Log, TEXT("WeaponAnimInstance play HandsActionAnimation"));
@@ -271,11 +253,6 @@ int AWeaponBase::GetSubAmmo()
 	return SubAmmo;
 }
 
-FName AWeaponBase::GetAttachingGripPointName()
-{
-	return AttachingGripPointName;
-}
-
 EWeaponType AWeaponBase::GetWeaponType()
 {
 	return WeaponType;
@@ -286,20 +263,15 @@ void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
 	BodyAnimInstance = Instance;
 }
 
-int AWeaponBase::GetHandIndex()
-{
-	return HandIndex;
-}
-
-APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
+APickupableActor* AWeaponBase::SpawnPickUpWeaponActor()
 {
 	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+	return GetWorld()->SpawnActor<APickupableActor>(PickUpWeaponSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
-AWeaponModelForBody* AWeaponBase::SpawnWeaponModelForBodyActor()
+AHandsModelForBody* AWeaponBase::SpawnModelForBodyActor()
 {
-	return GetWorld()->SpawnActor<AWeaponModelForBody>(WeaponModelForBodySubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
+	return GetWorld()->SpawnActor<AHandsModelForBody>(ModelForBodySubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
 }
 
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, UClass* GeneratedBP)

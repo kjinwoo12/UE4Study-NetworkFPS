@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Hands.h"
 #include "WeaponBase.generated.h"
 
 class AFpsCharacter;
-class APickUpWeapon;
-class AWeaponModelForBody;
+class APickupableActor;
+class AHandsModelForBody;
 
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
@@ -19,28 +19,15 @@ enum class EWeaponType : uint8
 };
 
 UCLASS()
-class FPS_API AWeaponBase : public AActor
+class FPS_API AWeaponBase : public AHands
 {
 	GENERATED_BODY()
 	
-	/**************************
-			   const
-	***************************/
-	const FVector DefaultLocationOfWeaponMeshComponent = FVector(0, 0, -150.f);
-
 protected:
-	/**************************
-			Components
-	***************************/
-	UPROPERTY(EditAnywhere, Category = "Component")
-	USkeletalMeshComponent* WeaponMesh;
 
 	/**************************
 			 Properties
 	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	FName AttachingGripPointName;
-
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	EWeaponType WeaponType;
 
@@ -90,9 +77,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Damage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	int HandIndex;
-
 	/**************************
 		  About animation
 	***************************/
@@ -135,15 +119,6 @@ protected:
 	class USoundBase* ReloadSound;
 
 	/**************************
-			  Gameplay
-	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	TSubclassOf<APickUpWeapon> PickUpWeaponSubclass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	TSubclassOf<AWeaponModelForBody> WeaponModelForBodySubclass;
-
-	/**************************
 				etc
 	***************************/
 private:
@@ -169,18 +144,10 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-
-	/**************************
-			Initialize
-	***************************/
-	void InitializeProperties();
-
-	void InitializeWeaponMesh();
-
 	/**************************
 			 on Events
 	***************************/
-	virtual void Initialize(AFpsCharacter* FPSCharacter);
+	virtual void Initialize(AActor* Parent) override;
 
 	virtual void OnUnEquipped();
 
@@ -219,24 +186,19 @@ public:
 	int GetSubAmmo();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
-	FName GetAttachingGripPointName();
-
-	UFUNCTION(BlueprintCallable, Category = "Getter")
 	EWeaponType GetWeaponType();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetBodyAnimInstance(UAnimInstance* AnimInstance);
 
-	int GetHandIndex();
-
 	/**************************
 				etc
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	APickUpWeapon* SpawnPickUpWeaponActor();
+	APickupableActor* SpawnPickUpWeaponActor();
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	AWeaponModelForBody* SpawnWeaponModelForBodyActor();
+	AHandsModelForBody* SpawnModelForBodyActor();
 
 public:
 	static AWeaponBase* SpawnWeapon(UWorld* World, UClass* GeneratedBP); 

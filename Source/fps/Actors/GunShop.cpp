@@ -28,6 +28,7 @@ bool AGunShop::ServerRpcBuyItem_Validate(TSubclassOf<AWeaponBase> WeaponBlueprin
 
 void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSubclass)
 {
+	UE_LOG(LogTemp, Log, TEXT("AGunShop::ServerRpcBuyItem"));
 	AFpsCharacter* OwnerCharacter = Cast<AFpsCharacter>(GetOwner());
 	if (!IsValid(OwnerCharacter))
 	{
@@ -47,5 +48,10 @@ void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSu
 		return;
 	}
 	AWeaponBase* Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponSubclass);
-	FpsCharacter->AcquireWeapon(Weapon);
+	if (!IsValid(Weapon))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Failed to spawn weapon"));
+		return;
+	}
+	FpsCharacter->Acquire(Weapon, Weapon->GetHandsIndex());
 }
