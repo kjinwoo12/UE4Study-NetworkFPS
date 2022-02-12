@@ -175,9 +175,12 @@ public:
 	void CrouchPressed();
 	void CrouchReleased();
 
-	// Hands Actions
-	DECLARE_DELEGATE_TwoParams(FHandsActionDelegate, FName, EInputEvent);
-	void OnActionEvent(FName ActionName, EInputEvent KeyEvent);
+	// Hands
+	void ActionPressed();
+	void ActionReleased();
+	void SubactionPressed();
+	void SubactionReleased();
+	void ReloadPressed();
 
 	// Interaction
 	void DropWeaponPressed();
@@ -209,21 +212,6 @@ public:
 	***************************/
 	UFUNCTION(Client, Reliable)
 	void ClientRpcUpdateCameraRotationToServer();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStartAction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStopAction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStartSubaction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStopSubaction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStartReload();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRpcPickUp(APickupableActor* PickupableActor);

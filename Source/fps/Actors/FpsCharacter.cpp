@@ -283,11 +283,11 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFpsCharacter::CrouchReleased);
 
 	// Hands actions
-	PlayerInputComponent->BindAction<FHandsActionDelegate>("Action", IE_Pressed, this, &AFpsCharacter::OnActionEvent, FName("Action"), IE_Pressed);
-	PlayerInputComponent->BindAction<FHandsActionDelegate>("Action", IE_Released, this, &AFpsCharacter::OnActionEvent, FName("Action"), IE_Released);
-	PlayerInputComponent->BindAction<FHandsActionDelegate>("Subaction", IE_Pressed, this, &AFpsCharacter::OnActionEvent, FName("Subaction"), IE_Pressed);
-	PlayerInputComponent->BindAction<FHandsActionDelegate>("Subaction", IE_Released, this, &AFpsCharacter::OnActionEvent, FName("Subaction"), IE_Released);
-	PlayerInputComponent->BindAction<FHandsActionDelegate>("Reload", IE_Pressed, this, &AFpsCharacter::OnActionEvent, FName("Reload"), IE_Pressed);
+	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFpsCharacter::ActionPressed);
+	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFpsCharacter::ActionReleased);
+	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFpsCharacter::SubactionPressed);
+	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFpsCharacter::SubactionReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFpsCharacter::ReloadPressed);
 	
 	// Interaction
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFpsCharacter::DropWeaponPressed);
@@ -349,11 +349,49 @@ void AFpsCharacter::CrouchReleased()
 	UnCrouch();
 }
 
-void AFpsCharacter::OnActionEvent(FName ActionName, EInputEvent KeyEvent)
+void AFpsCharacter::ActionPressed()
 {
-	if (CharacterStatus != EFpsCharacterStatus::Alive ||
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
 		!IsValid(Hands)) return;
-	Hands->OnActionEvent(ActionName, KeyEvent);
+
+	Hands->StartAction();
+}
+
+void AFpsCharacter::ActionReleased()
+{
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StopAction();
+}
+
+void AFpsCharacter::SubactionPressed()
+{
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StartSubaction();
+}
+
+void AFpsCharacter::SubactionReleased()
+{
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StopSubaction();
+}
+
+void AFpsCharacter::ReloadPressed()
+{
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StartReload();
 }
 
 void AFpsCharacter::DropWeaponPressed()
@@ -361,8 +399,6 @@ void AFpsCharacter::DropWeaponPressed()
 	if (CharacterStatus == EFpsCharacterStatus::Dead ||
 		CharacterStatus == EFpsCharacterStatus::Freeze ||
 		!IsValid(Hands)) return;
-	ServerRpcStopAction();
-	ServerRpcStopSubaction();
 	ServerRpcDropWeapon();
 }
 
@@ -451,45 +487,6 @@ void AFpsCharacter::OnRoundEnd()
 {
 	SetCharacterStatus(EFpsCharacterStatus::Freeze);
 	ClientRpcSetAlertTextOnHud("Round End");
-}
-
-void AFpsCharacter::ServerRpcStartAction_Implementation()
-{
-	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
-	if (!IsValid(PrimaryWeapon))
-	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRpcStartAction_Implementation = PrimaryWeapon NULL"));
-		return;
-	}
-	PrimaryWeapon->StartAction();
-}
-
-void AFpsCharacter::ServerRpcStopAction_Implementation()
-{
-	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StopAction();
-}
-
-void AFpsCharacter::ServerRpcStartSubaction_Implementation()
-{
-	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StartSubaction();
-}
-
-void AFpsCharacter::ServerRpcStopSubaction_Implementation()
-{
-	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StopSubaction();
-}
-
-void AFpsCharacter::ServerRpcStartReload_Implementation()
-{
-	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StartReload();
 }
 
 bool AFpsCharacter::ServerRpcPickUp_Validate(APickupableActor* PickupableActor)
@@ -657,6 +654,9 @@ void AFpsCharacter::DropWeapon()
 		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : Hands is invalid"));
 		return;
 	}
+	Hands->StopAction();
+	Hands->StopSubaction();
+
 	UE_LOG(LogTemp, Log, TEXT("DropWeapon() : dropped!"));
 
 	//Get Player direction for adding impulse to PickUpWeapon.

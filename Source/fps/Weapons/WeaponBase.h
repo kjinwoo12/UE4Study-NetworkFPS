@@ -134,7 +134,6 @@ private:
 	// Pointer of the function for TimerHandleForExtraInput
 	void (AWeaponBase::* FunctionAfterDelayForExtraInput)();
 
-
 public:	
 	// Sets default values for this actor's properties
 	AWeaponBase();
@@ -152,13 +151,13 @@ public:
 	virtual void OnUnEquipped();
 
 	/**************************
-		   Weapon Action 
+			Action 
 	***************************/
-	void StartAction();
-	void StopAction();
-	void StartSubaction();
-	void StopSubaction();
-	void StartReload();
+	virtual void StartAction() override;
+	virtual void StopAction() override;
+	virtual void StartSubaction() override;
+	virtual void StopSubaction() override;
+	virtual void StartReload() override;
 
 	/**************************
 			about Actions

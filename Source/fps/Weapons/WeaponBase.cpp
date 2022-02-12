@@ -97,45 +97,6 @@ void AWeaponBase::StartAction()
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ActionDelay, ActionLoopEnable, 0.f);
 }
 
-void AWeaponBase::StartSubaction()
-{
-	if (SubAmmo <= 0) return;
-
-	//Retry StartAction() after delay.
-	float Delay = GetDelay();
-	if (0.f < Delay)
-	{
-		FunctionAfterDelayForExtraInput = &AWeaponBase::StartSubaction;
-		GetWorldTimerManager().SetTimer(TimerHandleForExtraInput, this, FunctionAfterDelayForExtraInput, Delay, false);
-		return;
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("StartSubaction()"));
-
-	FunctionAfterDelay = &AWeaponBase::OnSubaction;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, SubactionDelay, SubactionLoopEnable, 0.f);
-}
-
-void AWeaponBase::StartReload()
-{
-	UE_LOG(LogTemp, Log, TEXT("StartReload()"));
-
-	// return if is on delay or ammo is full
-	if (FunctionAfterDelay == &AWeaponBase::OnReload 
-		|| CurrentAmmo == MagazineSize) return;
-
-	FunctionAfterDelay = &AWeaponBase::OnReload;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
-
-	// Play reloading animation
-	if (BodyReloadAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodyReloadAnimation);
-	else UE_LOG(LogTemp, Log, TEXT("BodyReloadAnimation or BodyAnimInstance is NULL"));
-
-	// Play reloading sound
-	if(ReloadSound) 
-		UGameplayStatics::PlaySoundAtLocation(this, ReloadSound, GetActorLocation());
-}
-
 void AWeaponBase::StopAction()
 {
 	if (FunctionAfterDelayForExtraInput == &AWeaponBase::StartAction)
@@ -155,6 +116,25 @@ void AWeaponBase::StopAction()
 			//Do nothing. It is just waiting for delay.
 		}
 	), Remaining, false);
+}
+
+void AWeaponBase::StartSubaction()
+{
+	if (SubAmmo <= 0) return;
+
+	//Retry StartAction() after delay.
+	float Delay = GetDelay();
+	if (0.f < Delay)
+	{
+		FunctionAfterDelayForExtraInput = &AWeaponBase::StartSubaction;
+		GetWorldTimerManager().SetTimer(TimerHandleForExtraInput, this, FunctionAfterDelayForExtraInput, Delay, false);
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("StartSubaction()"));
+
+	FunctionAfterDelay = &AWeaponBase::OnSubaction;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, SubactionDelay, SubactionLoopEnable, 0.f);
 }
 
 void AWeaponBase::StopSubaction()
@@ -177,6 +157,26 @@ void AWeaponBase::StopSubaction()
 			//Do nothing. just wait for delay.
 		}
 	), Remaining, false);
+}
+
+void AWeaponBase::StartReload()
+{
+	UE_LOG(LogTemp, Log, TEXT("StartReload()"));
+
+	// return if is on delay or ammo is full
+	if (FunctionAfterDelay == &AWeaponBase::OnReload 
+		|| CurrentAmmo == MagazineSize) return;
+
+	FunctionAfterDelay = &AWeaponBase::OnReload;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
+
+	// Play reloading animation
+	if (BodyReloadAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodyReloadAnimation);
+	else UE_LOG(LogTemp, Log, TEXT("BodyReloadAnimation or BodyAnimInstance is NULL"));
+
+	// Play reloading sound
+	if(ReloadSound) 
+		UGameplayStatics::PlaySoundAtLocation(this, ReloadSound, GetActorLocation());
 }
 
 void AWeaponBase::OnAction()

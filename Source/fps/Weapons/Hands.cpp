@@ -42,8 +42,30 @@ void AHands::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AHands::OnActionEvent(const FName ActionName, const EInputEvent KeyEvent)
+
+void AHands::StartAction()
 {
+
+}
+
+void AHands::StopAction()
+{
+
+}
+
+void AHands::StartSubaction()
+{
+
+}
+
+void AHands::StopSubaction()
+{
+
+}
+
+void AHands::StartReload()
+{
+
 }
 
 AHandsModelForBody* AHands::CreateHandsModelForBody()
@@ -54,7 +76,7 @@ AHandsModelForBody* AHands::CreateHandsModelForBody()
 APickupableActor* AHands::CreatePickupableActor()
 {
 	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickupableActor>(PickUpWeaponSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+	return GetWorld()->SpawnActor<APickupableActor>(PickableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
 int AHands::GetHandsIndex()

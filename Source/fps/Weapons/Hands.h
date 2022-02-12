@@ -40,7 +40,7 @@ protected:
 			  Gameplay
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	TSubclassOf<APickupableActor> PickUpWeaponSubclass;
+	TSubclassOf<APickupableActor> PickableActorSubclass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AHandsModelForBody> ModelForBodySubclass;
@@ -63,9 +63,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/**************************
-			  On Event
+			  Actions
 	***************************/
-	virtual void OnActionEvent(const FName ActionName, const EInputEvent KeyEvent);
+	virtual void StartAction();
+	virtual void StopAction();
+	virtual void StartSubaction();
+	virtual void StopSubaction();
+	virtual void StartReload();
 
 	/**************************
 			Game Play
