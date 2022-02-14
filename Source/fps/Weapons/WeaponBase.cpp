@@ -266,7 +266,7 @@ void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
 APickupableActor* AWeaponBase::SpawnPickUpWeaponActor()
 {
 	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickupableActor>(PickUpWeaponSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+	return GetWorld()->SpawnActor<APickupableActor>(PickableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
 AHandsModelForBody* AWeaponBase::SpawnModelForBodyActor()

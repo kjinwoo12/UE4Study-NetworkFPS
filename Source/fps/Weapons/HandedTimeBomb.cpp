@@ -2,6 +2,7 @@
 
 
 #include "HandedTimeBomb.h"
+#include "../Actors/TimeBomb.h"
 
 
 AHandedTimeBomb::AHandedTimeBomb()

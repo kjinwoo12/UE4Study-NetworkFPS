@@ -27,6 +27,11 @@ public:
 	float ExplosionTimer;
 
 public:
+	AHandedTimeBomb(); 
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 	/**************************
 			  Actions
 	***************************/
