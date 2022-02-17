@@ -108,9 +108,9 @@ AHands* APickupableActor::GetHandsInstance()
 	return HandsInstance;
 }
 
-TSubclassOf<AWeaponBase> APickupableActor::GetWeaponBaseSubclass()
+TSubclassOf<AHands> APickupableActor::GetHandsSubclass()
 {
-	return WeaponBaseSubclass;
+	return HandsSubclass;
 }
 
 void APickupableActor::SetHandsInstance(AHands* Instance)

@@ -78,7 +78,7 @@ protected:
 	float Damage;
 
 	/**************************
-		  About animation
+			 Animation
 	***************************/
 	UAnimInstance* BodyAnimInstance;
 

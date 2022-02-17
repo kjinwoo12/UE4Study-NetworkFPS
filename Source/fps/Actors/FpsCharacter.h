@@ -98,6 +98,9 @@ class FPS_API AFpsCharacter : public ACharacter
 	int CurrentHandsIndex = 0;
 
 	UPROPERTY(Replicated)
+	int PreviousHandsIndex = 0;
+
+	UPROPERTY(Replicated)
 	TArray<AHands*> Inventory;
 	 
 	/**************************
@@ -189,7 +192,7 @@ public:
 
 	// Switch weapons
 	DECLARE_DELEGATE_OneParam(FHandsSwitchDelegate, int32);
-	void WeaponSwitchPressed(int Index);
+	void SwapHandsPressed(int Index);
 
 	// UI
 	void GunShopPressed();
@@ -232,7 +235,7 @@ public:
 	void ServerRpcSetInteractiveTarget(AInteractiveActor *Actor);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRpcWeaponSwitch(int Index);
+	void ServerRpcSwapHandsTo(int Index);
 
 	/**************************
 				OnRep
@@ -272,8 +275,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void Acquire(AHands* HandsInstance, int HandsIndex);
 
-	UFUNCTION(BlueprintCallable, Category ="Weapon")
-	void WeaponSwitch(int Index);
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SwapHandsTo(int Index);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SwapHandsToPrevious();
 
 	/**************************
 			About UI

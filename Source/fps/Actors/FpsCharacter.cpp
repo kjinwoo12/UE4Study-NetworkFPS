@@ -295,11 +295,11 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AFpsCharacter::InteractionReleased);
 
 	// Switch weapons
-	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("WeaponSwitch1", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 0);
-	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("WeaponSwitch2", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 1);
-	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("WeaponSwitch3", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 2);
-	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("WeaponSwitch4", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 3);
-	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("WeaponSwitch5", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 4);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands1", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 0);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands2", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 1);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands3", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 2);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands4", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 3);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands5", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 4);
 
 	// UI
 	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFpsCharacter::GunShopPressed);
@@ -418,9 +418,9 @@ void AFpsCharacter::InteractionReleased()
 	InteractiveTarget->OnInteractionStop(this);
 }
 
-void AFpsCharacter::WeaponSwitchPressed(int Index)
+void AFpsCharacter::SwapHandsPressed(int Index)
 {
-	ServerRpcWeaponSwitch(Index);
+	ServerRpcSwapHandsTo(Index);
 }
 
 void AFpsCharacter::GunShopPressed()
@@ -500,10 +500,10 @@ void AFpsCharacter::ServerRpcPickUp_Implementation(APickupableActor* PickupableA
 	AHands* HandsInstance = PickupableActor->GetHandsInstance();
 	if (!IsValid(HandsInstance))
 	{
-		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickupableActor->GetWeaponBaseSubclass();
-		if (!IsValid(WeaponBaseSubclass)) return;
+		TSubclassOf<AHands> HandsSubclass = PickupableActor->GetHandsSubclass();
+		if (!IsValid(HandsSubclass)) return;
 
-		HandsInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
+		HandsInstance = AWeaponBase::SpawnWeapon(GetWorld(), HandsSubclass);
 	}
 
 	Acquire(HandsInstance, HandsInstance->GetHandsIndex());
@@ -550,15 +550,15 @@ void AFpsCharacter::ServerRpcSetInteractiveTarget_Implementation(AInteractiveAct
 	SetInteractiveTarget(Actor);
 }
 
-bool AFpsCharacter::ServerRpcWeaponSwitch_Validate(int Index)
+bool AFpsCharacter::ServerRpcSwapHandsTo_Validate(int Index)
 {
 	if (Index < 0 || 5 < Index) return false;
 	return true;
 }
 
-void AFpsCharacter::ServerRpcWeaponSwitch_Implementation(int Index)
+void AFpsCharacter::ServerRpcSwapHandsTo_Implementation(int Index)
 {
-	WeaponSwitch(Index);
+	SwapHandsTo(Index);
 }
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
@@ -710,16 +710,29 @@ void AFpsCharacter::Acquire(AHands* HandsInstance, int HandsIndex)
 	SetHandsAtInventory(HandsInstance, HandsIndex);
 }
 
-void AFpsCharacter::WeaponSwitch(int Index)
+void AFpsCharacter::SwapHandsTo(int Index)
 {
-	if (Inventory[Index] == nullptr)
+	if (!IsValid(Inventory[Index]))
 	{
-		UE_LOG(LogTemp, Log, TEXT("WeaponInventory[%d] is Invalid"), Index);
+		UE_LOG(LogTemp, Log, TEXT("Inventory[%d] is invalid"), Index);
 		return;
 	}
+	PreviousHandsIndex = CurrentHandsIndex;
 	CurrentHandsIndex = Index;
 	UnEquip();
 	Equip(Inventory[Index]);
+}
+
+void AFpsCharacter::SwapHandsToPrevious()
+{
+	if (!IsValid(Inventory[PreviousHandsIndex])) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("Inventory[PreviousHandsIndex] is invalid"));
+		UnEquip();
+		return;
+	}
+
+	SwapHandsTo(PreviousHandsIndex);
 }
 
 void AFpsCharacter::SetAlertTextOnHud(FString Text)

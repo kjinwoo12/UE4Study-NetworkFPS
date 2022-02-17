@@ -19,16 +19,30 @@ class FPS_API AHandedTimeBomb : public AHands
 	***************************/
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	float PlantingTimer;
+	float ExplosionTime;
 
-	float CurrentPlantingTime = 0;
+	/**************************
+			 Animation
+	***************************/
+	// AnimationMontage to play each time do action
+	UPROPERTY(EditDefaultsOnly, Category = "Animation - Hands")
+	UAnimMontage* PlantingAnimation;
 
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	float ExplosionTimer;
+	/**************************
+			 Planting
+	***************************/
+	TSubclassOf<class ATimeBomb> TimeBombSubclass;
+
+	FTimerHandle PlantingTimer;
 
 public:
-	AHandedTimeBomb(); 
+	AHandedTimeBomb();
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -37,9 +51,15 @@ public:
 	***************************/
 	virtual void StartAction() override;
 	virtual void StopAction() override;
-	virtual void StartSubaction() override;
-	virtual void StopSubaction() override;
-	virtual void StartReload() override;
+
+	void PlayHandsAnimation();
+	void StopHandsAnimation();
 
 	void Plant();
+
+
+
+	/**************************
+				RPC
+	***************************/
 };

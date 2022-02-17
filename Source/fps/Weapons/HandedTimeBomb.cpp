@@ -3,57 +3,97 @@
 
 #include "HandedTimeBomb.h"
 #include "../Actors/TimeBomb.h"
+#include "../Actors/FpsCharacter.h"
+
+#include "Net/UnrealNetwork.h"
 
 
-AHandedTimeBomb::AHandedTimeBomb()
+AHandedTimeBomb::AHandedTimeBomb() : AHands()
 {
-	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+}
 
-	
+void AHandedTimeBomb::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 void AHandedTimeBomb::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (CurrentPlantingTime < PlantingTimer)
-	{
-		CurrentPlantingTime += DeltaTime;
-		return;
-	}
-	else
-	{
-		Plant();
-	}
 }
 
 void AHandedTimeBomb::StartAction()
 {
-	SetActorTickEnabled(true);
+	UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StartAction"));
+	PlayHandsAnimation();
+	
+	float PlantingTime = PlantingAnimation->GetPlayLength();
+	GetWorldTimerManager().SetTimer(PlantingTimer, &AHandedTimeBomb::Plant, PlantingTime, false, PlantingTime);
 }
 
 void AHandedTimeBomb::StopAction()
 {
-	SetActorTickEnabled(false);
+	UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StopAction"));
+	StopHandsAnimation();
+
+	GetWorldTimerManager().ClearTimer(PlantingTimer);
 }
 
-void AHandedTimeBomb::StartSubaction()
+void AHandedTimeBomb::PlayHandsAnimation()
 {
+	if (GetNetMode() == ENetMode::NM_Client)
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::MulticastRpcPlayHandsAnimation Client"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::MulticastRpcPlayHandsAnimation Server"));
+	}
 
+	if (!IsValid(PlantingAnimation))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StartAction Planting Animation is invalid"));
+		return;
+	}
+
+	UAnimInstance* HandsAnimInstance = HandsMesh->GetAnimInstance();
+	if (!IsValid(HandsAnimInstance))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StartAction HandsAnimInstance is invalid"));
+		return;
+	}
+	HandsAnimInstance->Montage_Play(PlantingAnimation);
 }
 
-void AHandedTimeBomb::StopSubaction()
+void AHandedTimeBomb::StopHandsAnimation()
 {
-
-}
-
-void AHandedTimeBomb::StartReload()
-{
-
+	UAnimInstance* HandsAnimInstance = HandsMesh->GetAnimInstance();
+	if (!IsValid(HandsAnimInstance))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StopHandsAnimation HandsAnimInstance is invalid"));
+		return;
+	}
+	HandsAnimInstance->Montage_Stop(0.f);
 }
 
 void AHandedTimeBomb::Plant()
 {
+	UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::Plant"));
+	AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
+	if (!IsValid(Character))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::Plant Character is invalid"));
+		return;
+	}
 
+	if (!IsValid(TimeBombSubclass))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::Plant TimeBombSubclass is invalid"));
+		return;
+	}
+
+	FActorSpawnParameters SpawnParameters;
+	GetWorld()->SpawnActor<ATimeBomb>(TimeBombSubclass, Character->GetActorLocation(), FRotator(0, 0, Character->GetActorRotation().Yaw), SpawnParameters);
+
+	Character->SwapHandsToPrevious();
 }

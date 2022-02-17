@@ -6,7 +6,7 @@
 #include "../Actors/InteractiveActor.h"
 #include "PickupableActor.generated.h"
 
-class AWeaponBase;
+class AHands;
 
 UCLASS()
 class FPS_API APickupableActor : public AInteractiveActor
@@ -17,7 +17,7 @@ class FPS_API APickupableActor : public AInteractiveActor
 	UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	TSubclassOf<AWeaponBase> WeaponBaseSubclass;
+	TSubclassOf<AHands> HandsSubclass;
 
 	class AHands* HandsInstance;
 
@@ -61,7 +61,7 @@ public:
 	AHands* GetHandsInstance();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
-	TSubclassOf<AWeaponBase> GetWeaponBaseSubclass();
+	TSubclassOf<AHands> GetHandsSubclass();
 
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetHandsInstance(AHands* Instance);
