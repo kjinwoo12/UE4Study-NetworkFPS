@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "GunShop.generated.h"
 
-class AWeaponBase;
+class AHands;
 
 UCLASS()
 class FPS_API AGunShop : public AActor
@@ -23,5 +23,5 @@ protected:
 
 public:	
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-	void ServerRpcBuyItem(TSubclassOf<AWeaponBase> WeaponBlueprint);
+	void ServerRpcBuyItem(TSubclassOf<AHands> HandsSubclass);
 };

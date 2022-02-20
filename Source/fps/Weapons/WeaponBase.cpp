@@ -4,8 +4,8 @@
 #include "WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "../Actors/FPSCharacter.h"
-#include "PickUpWeapon.h"
-#include "WeaponModelForBody.h"
+#include "PickupableActor.h"
+#include "HandsModelForBody.h"
 #include "Net/UnrealNetwork.h"
 
 /*
@@ -13,20 +13,22 @@
  */
 
 // Sets default values
-AWeaponBase::AWeaponBase()
+AWeaponBase::AWeaponBase() : AHands()
 {
-	bReplicates = true;
-
- 	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;	
-
 	// properties
-	InitializeProperties();
-
-	// Components
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	InitializeWeaponMesh();
-	
+	WeaponType = EWeaponType::Rifle;
+	ActionDelay = 0.125f;
+	ActionLoopEnable = true;
+	SubactionDelay = 1.f;
+	SubactionLoopEnable = true;
+	ReloadDelay = 2.5f;
+	MagazineSize = 30;
+	CurrentAmmo = 30;
+	SubAmmo = 90;
+	IsAmmoInfinite = false;
+	Accuracy = 1.f;
+	MovementStability = 40;
+	Damage = 40;
 
 	// Animation instance
 	BodyAnimInstance = NULL;
@@ -45,37 +47,18 @@ AWeaponBase::AWeaponBase()
 	ReloadSound = NULL;
 }
 
+void AWeaponBase::Initialize(AActor* Parent)
+{
+	Super::Initialize(Parent);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
+	if (!IsValid(FpsCharacter)) return;
+	SetBodyAnimInstance(FpsCharacter->GetBodyMeshComponent()->GetAnimInstance());
+}
+
 // Called when the game starts or when spawned
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-void AWeaponBase::InitializeProperties()
-{
-	AttachingGripPointName = "GripPoint";
-	WeaponType = EWeaponType::Rifle;
-	ActionDelay = 0.125f;
-	ActionLoopEnable = true;
-	SubactionDelay = 1.f;
-	SubactionLoopEnable = true;
-	ReloadDelay = 2.5f;
-	MagazineSize = 30;
-	CurrentAmmo = 30;
-	SubAmmo = 90;
-	IsAmmoInfinite = false;
-	Accuracy = 1.f;
-	MovementStability = 40;
-	Damage = 40;
-	HandIndex = 0;
-}
-
-void AWeaponBase::InitializeWeaponMesh()
-{
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshComponent"));
-	WeaponMesh->SetOnlyOwnerSee(true);
-	WeaponMesh->SetRelativeLocation(DefaultLocationOfWeaponMeshComponent);
-	WeaponMesh->SetupAttachment(RootComponent);
 }
 
 void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -86,15 +69,8 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
-void AWeaponBase::Initialize(AFpsCharacter* FPSCharacter)
-{
-	SetOwner(FPSCharacter);
-	SetBodyAnimInstance(FPSCharacter->GetBodyMeshComponent()->GetAnimInstance());
-}
-
 void AWeaponBase::OnUnEquipped()
 {
-	SetOwner(NULL);
 	SetBodyAnimInstance(NULL);
 }
 
@@ -113,45 +89,6 @@ void AWeaponBase::StartAction()
 
 	FunctionAfterDelay = &AWeaponBase::OnAction;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ActionDelay, ActionLoopEnable, 0.f);
-}
-
-void AWeaponBase::StartSubaction()
-{
-	if (SubAmmo <= 0) return;
-
-	//Retry StartAction() after delay.
-	float Delay = GetDelay();
-	if (0.f < Delay)
-	{
-		FunctionAfterDelayForExtraInput = &AWeaponBase::StartSubaction;
-		GetWorldTimerManager().SetTimer(TimerHandleForExtraInput, this, FunctionAfterDelayForExtraInput, Delay, false);
-		return;
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("StartSubaction()"));
-
-	FunctionAfterDelay = &AWeaponBase::OnSubaction;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, SubactionDelay, SubactionLoopEnable, 0.f);
-}
-
-void AWeaponBase::StartReload()
-{
-	UE_LOG(LogTemp, Log, TEXT("StartReload()"));
-
-	// return if is on delay or ammo is full
-	if (FunctionAfterDelay == &AWeaponBase::OnReload 
-		|| CurrentAmmo == MagazineSize) return;
-
-	FunctionAfterDelay = &AWeaponBase::OnReload;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
-
-	// Play reloading animation
-	if (BodyReloadAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodyReloadAnimation);
-	else UE_LOG(LogTemp, Log, TEXT("BodyReloadAnimation or BodyAnimInstance is NULL"));
-
-	// Play reloading sound
-	if(ReloadSound) 
-		UGameplayStatics::PlaySoundAtLocation(this, ReloadSound, GetActorLocation());
 }
 
 void AWeaponBase::StopAction()
@@ -173,6 +110,25 @@ void AWeaponBase::StopAction()
 			//Do nothing. It is just waiting for delay.
 		}
 	), Remaining, false);
+}
+
+void AWeaponBase::StartSubaction()
+{
+	if (SubAmmo <= 0) return;
+
+	//Retry StartAction() after delay.
+	float Delay = GetDelay();
+	if (0.f < Delay)
+	{
+		FunctionAfterDelayForExtraInput = &AWeaponBase::StartSubaction;
+		GetWorldTimerManager().SetTimer(TimerHandleForExtraInput, this, FunctionAfterDelayForExtraInput, Delay, false);
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("StartSubaction()"));
+
+	FunctionAfterDelay = &AWeaponBase::OnSubaction;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, SubactionDelay, SubactionLoopEnable, 0.f);
 }
 
 void AWeaponBase::StopSubaction()
@@ -197,6 +153,26 @@ void AWeaponBase::StopSubaction()
 	), Remaining, false);
 }
 
+void AWeaponBase::StartReload()
+{
+	UE_LOG(LogTemp, Log, TEXT("StartReload()"));
+
+	// return if is on delay or ammo is full
+	if (FunctionAfterDelay == &AWeaponBase::OnReload 
+		|| CurrentAmmo == MagazineSize) return;
+
+	FunctionAfterDelay = &AWeaponBase::OnReload;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ReloadDelay, false);
+
+	// Play reloading animation
+	if (BodyReloadAnimation != NULL && BodyAnimInstance != NULL) BodyAnimInstance->Montage_Play(BodyReloadAnimation);
+	else UE_LOG(LogTemp, Log, TEXT("BodyReloadAnimation or BodyAnimInstance is NULL"));
+
+	// Play reloading sound
+	if(ReloadSound) 
+		UGameplayStatics::PlaySoundAtLocation(this, ReloadSound, GetActorLocation());
+}
+
 void AWeaponBase::OnAction()
 {
 	UE_LOG(LogTemp, Log, TEXT("AWeaponBase::OnAction()"));
@@ -209,7 +185,7 @@ void AWeaponBase::OnAction()
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
 	// Play animations
-	UAnimInstance* WeaponAnimInstance = WeaponMesh->GetAnimInstance();
+	UAnimInstance* WeaponAnimInstance = HandsMesh->GetAnimInstance();
 	if (IsValid(WeaponAnimInstance))
 	{
 		UE_LOG(LogTemp, Log, TEXT("WeaponAnimInstance play HandsActionAnimation"));
@@ -271,11 +247,6 @@ int AWeaponBase::GetSubAmmo()
 	return SubAmmo;
 }
 
-FName AWeaponBase::GetAttachingGripPointName()
-{
-	return AttachingGripPointName;
-}
-
 EWeaponType AWeaponBase::GetWeaponType()
 {
 	return WeaponType;
@@ -286,20 +257,15 @@ void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
 	BodyAnimInstance = Instance;
 }
 
-int AWeaponBase::GetHandIndex()
-{
-	return HandIndex;
-}
-
-APickUpWeapon* AWeaponBase::SpawnPickUpWeaponActor()
+APickupableActor* AWeaponBase::SpawnPickUpWeaponActor()
 {
 	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickUpWeapon>(PickUpWeaponSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+	return GetWorld()->SpawnActor<APickupableActor>(PickableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
-AWeaponModelForBody* AWeaponBase::SpawnWeaponModelForBodyActor()
+AHandsModelForBody* AWeaponBase::SpawnModelForBodyActor()
 {
-	return GetWorld()->SpawnActor<AWeaponModelForBody>(WeaponModelForBodySubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
+	return GetWorld()->SpawnActor<AHandsModelForBody>(ModelForBodySubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
 }
 
 AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, UClass* GeneratedBP)

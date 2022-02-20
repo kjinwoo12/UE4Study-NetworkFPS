@@ -32,7 +32,7 @@ public:
 	AHitScanWeapon();
 
 public:
-	virtual void Initialize(AFpsCharacter* FPSCharacter) override;
+	virtual void Initialize(AActor* Parent) override;
 
 	/**************************
 			 on Events

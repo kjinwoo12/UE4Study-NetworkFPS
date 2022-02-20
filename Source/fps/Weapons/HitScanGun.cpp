@@ -8,15 +8,15 @@ AHitScanGun::AHitScanGun() : AHitScanWeapon()
 {
 	//Components
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
-	Muzzle->SetupAttachment(WeaponMesh);
+	Muzzle->SetupAttachment(HandsMesh);
 	MuzzleFlashLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("MuzzleFlashLight"));
 	MuzzleFlashLight->SetIntensity(20000.f);
 	MuzzleFlashLight->SetVisibility(false);
-	MuzzleFlashLight->SetupAttachment(WeaponMesh);
+	MuzzleFlashLight->SetupAttachment(Muzzle);
 	MuzzleFlashTextureEffect = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MuzzleFlashTextureEffect"));
 	MuzzleFlashTextureEffect->SetVisibility(false);
 	MuzzleFlashTextureEffect->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MuzzleFlashTextureEffect->SetupAttachment(WeaponMesh);
+	MuzzleFlashTextureEffect->SetupAttachment(Muzzle);
 }
 
 void AHitScanGun::OnAction()

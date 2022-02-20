@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GunShop.h"
-#include "../Weapons/WeaponBase.h"
+#include "../Weapons/Hands.h"
 #include "FpsCharacter.h"
 #include "Components/SphereComponent.h"
 
@@ -21,13 +21,14 @@ void AGunShop::BeginPlay()
 	Super::BeginPlay();	
 }
 
-bool AGunShop::ServerRpcBuyItem_Validate(TSubclassOf<AWeaponBase> WeaponBlueprint)
+bool AGunShop::ServerRpcBuyItem_Validate(TSubclassOf<AHands> HandsSubclass)
 {
 	return true;
 }
 
-void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSubclass)
+void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AHands> HandsSubclass)
 {
+	UE_LOG(LogTemp, Log, TEXT("AGunShop::ServerRpcBuyItem"));
 	AFpsCharacter* OwnerCharacter = Cast<AFpsCharacter>(GetOwner());
 	if (!IsValid(OwnerCharacter))
 	{
@@ -46,6 +47,11 @@ void AGunShop::ServerRpcBuyItem_Implementation(TSubclassOf<AWeaponBase> WeaponSu
 		UE_LOG(LogTemp, Log, TEXT("FpsCharacter is invalid"));
 		return;
 	}
-	AWeaponBase* Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponSubclass);
-	FpsCharacter->AcquireWeapon(Weapon);
+	AHands* Hands = GetWorld()->SpawnActor<AHands>(HandsSubclass);
+	if (!IsValid(Hands))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Failed to spawn weapon"));
+		return;
+	}
+	FpsCharacter->Acquire(Hands, Hands->GetHandsIndex());
 }

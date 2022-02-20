@@ -44,10 +44,10 @@ class FPS_API AFpsCharacter : public ACharacter
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing = OnRep_InitializePrimaryWeapon)
-	class AWeaponBase* PrimaryWeapon;
+	class AHands* Hands;
 
 	UPROPERTY(EditDefaultsOnly, Replicated)
-	class AWeaponModelForBody* WeaponModelForBody;
+	class AHandsModelForBody* HandsModelForBody;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -95,10 +95,13 @@ class FPS_API AFpsCharacter : public ACharacter
 		   Weapon Switch
 	***************************/
 	UPROPERTY(Replicated)
-	int WeaponOnHandIndex = 0;
+	int CurrentHandsIndex = 0;
 
 	UPROPERTY(Replicated)
-	TArray<AWeaponBase*> WeaponInventory;
+	int PreviousHandsIndex = 0;
+
+	UPROPERTY(Replicated)
+	TArray<AHands*> Inventory;
 	 
 	/**************************
 				etc
@@ -166,39 +169,32 @@ public:
 	***************************/
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Movement
 	void MoveForward(float Value);
-
 	void MoveRight(float Value);
-
 	void AddControllerPitchInput(float Value) override;
-
 	void AddControllerYawInput(float Value) override;
-
 	void Jump();
-
 	void CrouchPressed();
-
 	void CrouchReleased();
 
+	// Hands
 	void ActionPressed();
-
 	void ActionReleased();
-
 	void SubactionPressed();
-
 	void SubactionReleased();
-
 	void ReloadPressed();
 
+	// Interaction
 	void DropWeaponPressed();
-
 	void InteractionPressed();
-
 	void InteractionReleased();
 
-	void WeaponSwitchPressed(int Index);
-	DECLARE_DELEGATE_OneParam(FWeaponSwitchDelegate, int32);
+	// Switch weapons
+	DECLARE_DELEGATE_OneParam(FHandsSwitchDelegate, int32);
+	void SwapHandsPressed(int Index);
 
+	// UI
 	void GunShopPressed();
 
 	/**************************
@@ -220,23 +216,8 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientRpcUpdateCameraRotationToServer();
 
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStartAction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStopAction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStartSubaction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStopSubaction();
-
-	UFUNCTION(Server, Reliable)
-	void ServerRpcStartReload();
-
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRpcPickUpWeapon(APickUpWeapon* PickUpWeapon);
+	void ServerRpcPickUp(APickupableActor* PickupableActor);
 
 	UFUNCTION(Server, Reliable)
 	void ServerRpcDropWeapon();
@@ -254,7 +235,7 @@ public:
 	void ServerRpcSetInteractiveTarget(AInteractiveActor *Actor);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRpcWeaponSwitch(int Index);
+	void ServerRpcSwapHandsTo(int Index);
 
 	/**************************
 				OnRep
@@ -283,19 +264,22 @@ public:
 		   About weapon
 	***************************/
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(AWeaponBase* WeaponBase);
+	void Equip(AHands* HandsInstance);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AWeaponBase* UnEquipWeapon();
+	AHands* UnEquip();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void AcquireWeapon(AWeaponBase* WeaponBase);
+	void Acquire(AHands* HandsInstance, int HandsIndex);
 
-	UFUNCTION(BlueprintCallable, Category ="Weapon")
-	void WeaponSwitch(int Index);
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SwapHandsTo(int Index);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SwapHandsToPrevious();
 
 	/**************************
 			About UI
@@ -315,7 +299,7 @@ public:
 	UCameraComponent* GetCameraComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
-	AWeaponBase* GetPrimaryWeapon();
+	AHands* GetHands();
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	USkeletalMeshComponent* GetBodyMeshComponent();
@@ -337,5 +321,5 @@ public:
 
 	void SetInteractiveTarget(AInteractiveActor* Actor);
 
-	void SetWeaponInstanceAtInventory(AWeaponBase* WeaponInstance, int Index);
+	void SetHandsAtInventory(AHands* HandsInstance, int Index);
 };

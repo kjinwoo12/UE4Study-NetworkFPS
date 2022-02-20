@@ -3,9 +3,10 @@
 #include "FpsCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "../Weapons/Hands.h"
 #include "../Weapons/WeaponBase.h"
-#include "../Weapons/PickUpWeapon.h"
-#include "../Weapons/WeaponModelForBody.h"
+#include "../Weapons/PickupableActor.h"
+#include "../Weapons/HandsModelForBody.h"
 #include "../Ui/FpsCharacterHud.h"
 #include "../Ui/FpsCharacterWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -101,7 +102,7 @@ void AFpsCharacter::BeginPlay()
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("FpsCharacterIsSpawned"));
 
-	WeaponInventory.Init(nullptr, 5);
+	Inventory.Init(nullptr, 5);
 }
 
 void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -111,14 +112,14 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, Health);
 	DOREPLIFETIME(AFpsCharacter, Armor);
 	DOREPLIFETIME(AFpsCharacter, InteractiveTarget);
-	DOREPLIFETIME(AFpsCharacter, PrimaryWeapon);
-	DOREPLIFETIME(AFpsCharacter, WeaponModelForBody);
+	DOREPLIFETIME(AFpsCharacter, Hands);
+	DOREPLIFETIME(AFpsCharacter, HandsModelForBody);
 	DOREPLIFETIME(AFpsCharacter, CharacterStatus);
 	DOREPLIFETIME(AFpsCharacter, AimPitch);
 	DOREPLIFETIME(AFpsCharacter, AimYaw);
 	DOREPLIFETIME(AFpsCharacter, GunShop);
-	DOREPLIFETIME(AFpsCharacter, WeaponOnHandIndex);
-	DOREPLIFETIME(AFpsCharacter, WeaponInventory);
+	DOREPLIFETIME(AFpsCharacter, CurrentHandsIndex);
+	DOREPLIFETIME(AFpsCharacter, Inventory);
 }
 
 // Called every frame
@@ -137,10 +138,16 @@ void AFpsCharacter::UpdateCrosshair()
 	if (GetNetMode() == NM_DedicatedServer) return;
 
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if (!IsValid(PlayerController) || !IsValid(PrimaryWeapon)) return;
+	if (!IsValid(PlayerController) || !IsValid(Hands)) return;
 
 	AFpsCharacterHud* FpsHud = Cast<AFpsCharacterHud>(PlayerController->GetHUD());
 	if (!IsValid(FpsHud)) return;
+
+	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
+	if (!IsValid(PrimaryWeapon)) {
+		FpsHud->SetCrosshairCenterOffset(0.f);
+		return;
+	}
 
 	const float CharacterSpeedOffset = GetVelocity().Size() / PrimaryWeapon->GetMovementStability();
 	const int JumpingOffset = (MovementComponent->IsFalling()) ? 30 : 0;
@@ -275,21 +282,24 @@ void AFpsCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFpsCharacter::CrouchPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFpsCharacter::CrouchReleased);
 
-	// Actions
+	// Hands actions
 	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &AFpsCharacter::ActionPressed);
 	PlayerInputComponent->BindAction("Action", IE_Released, this, &AFpsCharacter::ActionReleased);
 	PlayerInputComponent->BindAction("Subaction", IE_Pressed, this, &AFpsCharacter::SubactionPressed);
 	PlayerInputComponent->BindAction("Subaction", IE_Released, this, &AFpsCharacter::SubactionReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFpsCharacter::ReloadPressed);
+	
+	// Interaction
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AFpsCharacter::DropWeaponPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AFpsCharacter::InteractionPressed);
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &AFpsCharacter::InteractionReleased);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch1", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 0);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch2", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 1);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch3", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 2);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch4", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 3);
-	PlayerInputComponent->BindAction<FWeaponSwitchDelegate>("WeaponSwitch5", IE_Pressed, this, &AFpsCharacter::WeaponSwitchPressed, 4);
 
+	// Switch weapons
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands1", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 0);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands2", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 1);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands3", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 2);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands4", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 3);
+	PlayerInputComponent->BindAction<FHandsSwitchDelegate>("SwapHands5", IE_Pressed, this, &AFpsCharacter::SwapHandsPressed, 4);
 
 	// UI
 	PlayerInputComponent->BindAction("GunShop", IE_Pressed, this, &AFpsCharacter::GunShopPressed);
@@ -341,46 +351,54 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (CharacterStatus != EFpsCharacterStatus::Alive ||
-		!IsValid(PrimaryWeapon)) return;
-	ServerRpcStartAction();
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StartAction();
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (CharacterStatus != EFpsCharacterStatus::Alive ||
-		!IsValid(PrimaryWeapon)) return;
-	ServerRpcStopAction();
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StopAction();
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (CharacterStatus != EFpsCharacterStatus::Alive ||
-		!IsValid(PrimaryWeapon)) return;
-	ServerRpcStartSubaction();
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StartSubaction();
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (CharacterStatus != EFpsCharacterStatus::Alive ||
-		!IsValid(PrimaryWeapon)) return;
-	ServerRpcStopSubaction();
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StopSubaction();
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (CharacterStatus != EFpsCharacterStatus::Alive ||
-		!IsValid(PrimaryWeapon)) return;
-	ServerRpcStartReload();
+	if (CharacterStatus == EFpsCharacterStatus::Dead ||
+		CharacterStatus == EFpsCharacterStatus::Freeze ||
+		!IsValid(Hands)) return;
+
+	Hands->StartReload();
 }
 
 void AFpsCharacter::DropWeaponPressed()
 {
 	if (CharacterStatus == EFpsCharacterStatus::Dead ||
 		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		!IsValid(PrimaryWeapon)) return;
-	ServerRpcStopAction();
-	ServerRpcStopSubaction();
+		!IsValid(Hands)) return;
 	ServerRpcDropWeapon();
 }
 
@@ -400,9 +418,9 @@ void AFpsCharacter::InteractionReleased()
 	InteractiveTarget->OnInteractionStop(this);
 }
 
-void AFpsCharacter::WeaponSwitchPressed(int Index)
+void AFpsCharacter::SwapHandsPressed(int Index)
 {
-	ServerRpcWeaponSwitch(Index);
+	ServerRpcSwapHandsTo(Index);
 }
 
 void AFpsCharacter::GunShopPressed()
@@ -440,6 +458,8 @@ void AFpsCharacter::OnPossessed()
 void AFpsCharacter::OnPlayerFull()
 {
 	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::OnPlayerFull"));
+
+	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
 	if (IsValid(PrimaryWeapon))
 	{
 		PrimaryWeapon->StopAction();
@@ -469,59 +489,25 @@ void AFpsCharacter::OnRoundEnd()
 	ClientRpcSetAlertTextOnHud("Round End");
 }
 
-void AFpsCharacter::ServerRpcStartAction_Implementation()
+bool AFpsCharacter::ServerRpcPickUp_Validate(APickupableActor* PickupableActor)
 {
-	if (!IsValid(PrimaryWeapon))
-	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::ServerRpcStartAction_Implementation = PrimaryWeapon NULL"));
-		return;
-	}
-	PrimaryWeapon->StartAction();
-}
-
-void AFpsCharacter::ServerRpcStopAction_Implementation()
-{
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StopAction();
-}
-
-void AFpsCharacter::ServerRpcStartSubaction_Implementation()
-{
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StartSubaction();
-}
-
-void AFpsCharacter::ServerRpcStopSubaction_Implementation()
-{
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StopSubaction();
-}
-
-void AFpsCharacter::ServerRpcStartReload_Implementation()
-{
-	if (!IsValid(PrimaryWeapon)) return;
-	PrimaryWeapon->StartReload();
-}
-
-bool AFpsCharacter::ServerRpcPickUpWeapon_Validate(APickUpWeapon* PickUpWeapon)
-{
-	if (PickUpWeapon == nullptr) return false;
+	if (PickupableActor == nullptr) return false;
 	return true;
 }
 
-void AFpsCharacter::ServerRpcPickUpWeapon_Implementation(APickUpWeapon* PickUpWeapon)
+void AFpsCharacter::ServerRpcPickUp_Implementation(APickupableActor* PickupableActor)
 {
-	AWeaponBase* PickedWeaponInstance = PickUpWeapon->GetWeaponInstance();
-	if (!IsValid(PickedWeaponInstance))
+	AHands* HandsInstance = PickupableActor->GetHandsInstance();
+	if (!IsValid(HandsInstance))
 	{
-		TSubclassOf<AWeaponBase> WeaponBaseSubclass = PickUpWeapon->GetWeaponBaseSubclass();
-		if (!IsValid(WeaponBaseSubclass)) return;
+		TSubclassOf<AHands> HandsSubclass = PickupableActor->GetHandsSubclass();
+		if (!IsValid(HandsSubclass)) return;
 
-		PickedWeaponInstance = AWeaponBase::SpawnWeapon(GetWorld(), WeaponBaseSubclass);
+		HandsInstance = AWeaponBase::SpawnWeapon(GetWorld(), HandsSubclass);
 	}
 
-	AcquireWeapon(PickedWeaponInstance);
-	PickUpWeapon->Destroy();
+	Acquire(HandsInstance, HandsInstance->GetHandsIndex());
+	PickupableActor->Destroy();
 }
 
 void AFpsCharacter::ServerRpcDropWeapon_Implementation()
@@ -564,19 +550,20 @@ void AFpsCharacter::ServerRpcSetInteractiveTarget_Implementation(AInteractiveAct
 	SetInteractiveTarget(Actor);
 }
 
-bool AFpsCharacter::ServerRpcWeaponSwitch_Validate(int Index)
+bool AFpsCharacter::ServerRpcSwapHandsTo_Validate(int Index)
 {
 	if (Index < 0 || 5 < Index) return false;
 	return true;
 }
 
-void AFpsCharacter::ServerRpcWeaponSwitch_Implementation(int Index)
+void AFpsCharacter::ServerRpcSwapHandsTo_Implementation(int Index)
 {
-	WeaponSwitch(Index);
+	SwapHandsTo(Index);
 }
 
 void AFpsCharacter::OnRep_InitializePrimaryWeapon()
 {
+	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
 	if (!IsValid(PrimaryWeapon)) return;
 	PrimaryWeapon->Initialize(this);
 }
@@ -628,46 +615,44 @@ void AFpsCharacter::WakeUpBodyMesh()
 	BodyMeshComponent->SetRelativeRotation(DefaultRotatorOfBodyMeshComponent);
 }
 
-void AFpsCharacter::EquipWeapon(AWeaponBase* WeaponBase)
+void AFpsCharacter::Equip(AHands* HandsInstance)
 {
-	// Attach AWeaponBase Actor for first-person view
-	PrimaryWeapon = WeaponBase;
-	FName AttachingGripPointName = PrimaryWeapon->GetAttachingGripPointName();
-	PrimaryWeapon->AttachToComponent(CameraComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true));
-	PrimaryWeapon->Initialize(this);
+	Hands = HandsInstance;
+	Hands->AttachToComponent(CameraComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true));
+	Hands->Initialize(this);
 
-	// Attach AWeaponModelForBody for third-person view
-	WeaponModelForBody = PrimaryWeapon->SpawnWeaponModelForBodyActor();
-	if (!IsValid(WeaponModelForBody)) return;
-	WeaponModelForBody->SetOwner(this);
-	WeaponModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), AttachingGripPointName);
+	HandsModelForBody = Hands->CreateHandsModelForBody();
+	if (!IsValid(HandsModelForBody)) return;
+	HandsModelForBody->SetOwner(this);
+	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), Hands->GetAttachingGripPointName());
 }
 
-AWeaponBase* AFpsCharacter::UnEquipWeapon()
+AHands* AFpsCharacter::UnEquip()
 {
-	if (!IsValid(PrimaryWeapon)) return NULL;
+	if (!IsValid(Hands)) return nullptr;
 
-	// UnEquip PrimaryWeapon
-	AWeaponBase* WeaponInstance = PrimaryWeapon;
-	PrimaryWeapon = nullptr;
-	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-	WeaponInstance->OnUnEquipped();
+	Hands->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	Hands->OnUnEquipped();
+	Hands = nullptr;
 
 	// UnEquip WeaponModelForThirdPerson
-	if (!IsValid(WeaponModelForBody)) return WeaponInstance;
-	WeaponModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-	WeaponModelForBody->Destroy();
+	if (!IsValid(HandsModelForBody)) return Hands;
+	HandsModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	HandsModelForBody->Destroy();
 
-	return WeaponInstance;
+	return Hands;
 }
 
 void AFpsCharacter::DropWeapon()
 {
-	if (!IsValid(PrimaryWeapon))
+	if (!IsValid(Hands))
 	{
-		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : PrimaryWeapon is invalid"));
+		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : Hands is invalid"));
 		return;
 	}
+	Hands->StopAction();
+	Hands->StopSubaction();
+
 	UE_LOG(LogTemp, Log, TEXT("DropWeapon() : dropped!"));
 
 	//Get Player direction for adding impulse to PickUpWeapon.
@@ -684,48 +669,66 @@ void AFpsCharacter::DropWeapon()
 		PlayerViewPointRotation
 	);
 
-	//Unequip and Spawn APickUpWeapon
-	AWeaponBase* WeaponInstance = UnEquipWeapon();
-	APickUpWeapon* PickUpWeapon = WeaponInstance->SpawnPickUpWeaponActor();
-	PickUpWeapon->SetWeaponInstance(WeaponInstance);
+	//Unequip and Spawn APickupableActor
+	AHands* HandsInstance = UnEquip();
+	APickupableActor* PickupableActor = HandsInstance->CreatePickupableActor();
+	if (!IsValid(PickupableActor))
+	{
+		UE_LOG(LogTemp, Log, TEXT("PickupableActor is invalid"));
+		return;
+	}
+	PickupableActor->SetHandsInstance(HandsInstance);
 
 	//Add impulse to viewpoint direction
-	UStaticMeshComponent* WeaponMesh = PickUpWeapon->GetWeaponMesh();
+	UStaticMeshComponent* PickupableActorMesh = PickupableActor->GetMesh();
 	const float ImpulsePower = 300.f;
-	WeaponMesh->AddImpulse(PlayerViewPointRotation.Vector() * WeaponMesh->GetMass() * ImpulsePower);
+	PickupableActorMesh->AddImpulse(PlayerViewPointRotation.Vector() * PickupableActorMesh->GetMass() * ImpulsePower);
 }
 
-void AFpsCharacter::AcquireWeapon(AWeaponBase* WeaponBase)
+void AFpsCharacter::Acquire(AHands* HandsInstance, int HandsIndex)
 {
-	int AcquiredWeaponHandIndex = WeaponBase->GetHandIndex();
-	if (WeaponInventory[AcquiredWeaponHandIndex] == nullptr)
+	UE_LOG(LogTemp, Log, TEXT("AFpsChar7acter::Acquire(%s, %d)"), *HandsInstance->GetName(), HandsIndex);
+	if (!IsValid(Inventory[HandsIndex]))
 	{
-		UnEquipWeapon();
+		UnEquip();
 	}
 	else
 	{
-		if (AcquiredWeaponHandIndex != WeaponOnHandIndex)
+		if (HandsIndex != CurrentHandsIndex)
 		{
-			UnEquipWeapon();
-			EquipWeapon(WeaponInventory[AcquiredWeaponHandIndex]);
-			WeaponOnHandIndex = AcquiredWeaponHandIndex;
+			UnEquip();
+			Equip(Inventory[HandsIndex]);
+			CurrentHandsIndex = HandsIndex;
 		}
 		DropWeapon();
 	}
-	EquipWeapon(WeaponBase);
-	SetWeaponInstanceAtInventory(WeaponBase, AcquiredWeaponHandIndex);
+	Equip(HandsInstance);
+	SetHandsAtInventory(HandsInstance, HandsIndex);
 }
 
-void AFpsCharacter::WeaponSwitch(int Index)
+void AFpsCharacter::SwapHandsTo(int Index)
 {
-	if (WeaponInventory[Index] == nullptr)
+	if (!IsValid(Inventory[Index]))
 	{
-		UE_LOG(LogTemp, Log, TEXT("WeaponInventory[%d] is Invalid"), Index);
+		UE_LOG(LogTemp, Log, TEXT("Inventory[%d] is invalid"), Index);
 		return;
 	}
-	WeaponOnHandIndex = Index;
-	UnEquipWeapon();
-	EquipWeapon(WeaponInventory[Index]);
+	PreviousHandsIndex = CurrentHandsIndex;
+	CurrentHandsIndex = Index;
+	UnEquip();
+	Equip(Inventory[Index]);
+}
+
+void AFpsCharacter::SwapHandsToPrevious()
+{
+	if (!IsValid(Inventory[PreviousHandsIndex]) || PreviousHandsIndex == CurrentHandsIndex) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("Inventory[PreviousHandsIndex] is invalid or PerviousHandsIndex is same with CurrnetHandsIndex"));
+		UnEquip();
+		return;
+	}
+
+	SwapHandsTo(PreviousHandsIndex);
 }
 
 void AFpsCharacter::SetAlertTextOnHud(FString Text)
@@ -766,9 +769,9 @@ UCameraComponent* AFpsCharacter::GetCameraComponent()
 	return CameraComponent;
 }
 
-AWeaponBase* AFpsCharacter::GetPrimaryWeapon()
+AHands* AFpsCharacter::GetHands()
 {
-	return PrimaryWeapon;
+	return Hands;
 }
 
 USkeletalMeshComponent* AFpsCharacter::GetBodyMeshComponent()
@@ -811,9 +814,7 @@ void AFpsCharacter::SetInteractiveTarget(AInteractiveActor* Actor)
 	InteractiveTarget = Actor;
 }
 
-void AFpsCharacter::SetWeaponInstanceAtInventory(AWeaponBase* WeaponInstance, int Index)
+void AFpsCharacter::SetHandsAtInventory(AHands* HandsInstance, int Index)
 {
-	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetWeaponInstanceAtInventory : %d, %s"), Index, *WeaponInstance->GetName());
-	WeaponInventory[Index] = WeaponInstance;
-	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::SetWeaponInstanceAtInventory : WeaponInventory[%d] = %s"), Index, *WeaponInventory[Index]->GetName());
+	Inventory[Index] = HandsInstance;
 }

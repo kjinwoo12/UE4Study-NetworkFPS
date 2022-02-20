@@ -11,10 +11,10 @@ AHitScanWeapon::AHitScanWeapon() : AWeaponBase()
 	Reach = 6000.f;
 }
 
-void AHitScanWeapon::Initialize(AFpsCharacter* FPSCharacter)
+void AHitScanWeapon::Initialize(AActor* Parent)
 {
-	AWeaponBase::Initialize(FPSCharacter);
-	LineTraceCollisionQueryParams.AddIgnoredActor(FPSCharacter);
+	AWeaponBase::Initialize(Parent);
+	LineTraceCollisionQueryParams.AddIgnoredActor(Parent);
 }
 
 void AHitScanWeapon::OnUnEquipped()
