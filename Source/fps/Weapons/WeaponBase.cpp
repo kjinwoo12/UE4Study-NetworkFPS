@@ -47,6 +47,14 @@ AWeaponBase::AWeaponBase() : AHands()
 	ReloadSound = NULL;
 }
 
+void AWeaponBase::Initialize(AActor* Parent)
+{
+	Super::Initialize(Parent);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
+	if (!IsValid(FpsCharacter)) return;
+	SetBodyAnimInstance(FpsCharacter->GetBodyMeshComponent()->GetAnimInstance());
+}
+
 // Called when the game starts or when spawned
 void AWeaponBase::BeginPlay()
 {
@@ -61,17 +69,8 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
-void AWeaponBase::Initialize(AActor* Parent)
-{
-	Super::Initialize(Parent);
-	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
-	if (!IsValid(FpsCharacter)) return;
-	SetBodyAnimInstance(FpsCharacter->GetBodyMeshComponent()->GetAnimInstance());
-}
-
 void AWeaponBase::OnUnEquipped()
 {
-	SetOwner(NULL);
 	SetBodyAnimInstance(NULL);
 }
 

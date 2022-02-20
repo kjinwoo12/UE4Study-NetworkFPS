@@ -28,7 +28,7 @@ void AHandedTimeBomb::StartAction()
 	PlayHandsAnimation();
 	
 	float PlantingTime = PlantingAnimation->GetPlayLength();
-	GetWorldTimerManager().SetTimer(PlantingTimer, &AHandedTimeBomb::Plant, PlantingTime, false, PlantingTime);
+	GetWorldTimerManager().SetTimer(PlantingTimer, this, &AHandedTimeBomb::Plant, PlantingTime, false);
 }
 
 void AHandedTimeBomb::StopAction()
@@ -41,15 +41,6 @@ void AHandedTimeBomb::StopAction()
 
 void AHandedTimeBomb::PlayHandsAnimation()
 {
-	if (GetNetMode() == ENetMode::NM_Client)
-	{
-		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::MulticastRpcPlayHandsAnimation Client"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::MulticastRpcPlayHandsAnimation Server"));
-	}
-
 	if (!IsValid(PlantingAnimation))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StartAction Planting Animation is invalid"));
@@ -93,7 +84,7 @@ void AHandedTimeBomb::Plant()
 	}
 
 	FActorSpawnParameters SpawnParameters;
-	GetWorld()->SpawnActor<ATimeBomb>(TimeBombSubclass, Character->GetActorLocation(), FRotator(0, 0, Character->GetActorRotation().Yaw), SpawnParameters);
+	GetWorld()->SpawnActor<ATimeBomb>(TimeBombSubclass, Character->GetActorLocation(), FRotator(0, 180, Character->GetActorRotation().Yaw), SpawnParameters);
 
 	Character->SwapHandsToPrevious();
 }

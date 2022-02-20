@@ -631,20 +631,16 @@ AHands* AFpsCharacter::UnEquip()
 {
 	if (!IsValid(Hands)) return nullptr;
 
-	// UnEquip PrimaryWeapon
-	AWeaponBase* WeaponInstance = Cast<AWeaponBase>(Hands);
-	if (!IsValid(Hands)) return nullptr;
-
+	Hands->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
+	Hands->OnUnEquipped();
 	Hands = nullptr;
-	WeaponInstance->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-	WeaponInstance->OnUnEquipped();
 
 	// UnEquip WeaponModelForThirdPerson
-	if (!IsValid(HandsModelForBody)) return WeaponInstance;
+	if (!IsValid(HandsModelForBody)) return Hands;
 	HandsModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	HandsModelForBody->Destroy();
 
-	return WeaponInstance;
+	return Hands;
 }
 
 void AFpsCharacter::DropWeapon()
@@ -725,9 +721,9 @@ void AFpsCharacter::SwapHandsTo(int Index)
 
 void AFpsCharacter::SwapHandsToPrevious()
 {
-	if (!IsValid(Inventory[PreviousHandsIndex])) 
+	if (!IsValid(Inventory[PreviousHandsIndex]) || PreviousHandsIndex == CurrentHandsIndex) 
 	{
-		UE_LOG(LogTemp, Log, TEXT("Inventory[PreviousHandsIndex] is invalid"));
+		UE_LOG(LogTemp, Log, TEXT("Inventory[PreviousHandsIndex] is invalid or PerviousHandsIndex is same with CurrnetHandsIndex"));
 		UnEquip();
 		return;
 	}

@@ -29,11 +29,9 @@ void AHands::Initialize(AActor* Parent)
 	SetOwner(Parent);
 }
 
-// Called when the game starts or when spawned
 void AHands::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -42,6 +40,10 @@ void AHands::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AHands::OnUnEquipped()
+{
+	SetOwner(NULL);
+}
 
 void AHands::StartAction()
 {

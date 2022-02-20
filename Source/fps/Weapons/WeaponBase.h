@@ -138,6 +138,8 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
+	virtual void Initialize(AActor* Parent) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -146,9 +148,7 @@ public:
 	/**************************
 			 on Events
 	***************************/
-	virtual void Initialize(AActor* Parent) override;
-
-	virtual void OnUnEquipped();
+	virtual void OnUnEquipped() override;
 
 	/**************************
 			Action 

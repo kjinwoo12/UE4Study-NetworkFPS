@@ -31,6 +31,7 @@ public:
 	/**************************
 			 Planting
 	***************************/
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<class ATimeBomb> TimeBombSubclass;
 
 	FTimerHandle PlantingTimer;
@@ -56,8 +57,6 @@ public:
 	void StopHandsAnimation();
 
 	void Plant();
-
-
 
 	/**************************
 				RPC

@@ -29,10 +29,11 @@ ATimeBomb::ATimeBomb()
 void ATimeBomb::BeginPlay()
 {
 	Super::BeginPlay();
-	if (GetNetMode() == NM_Client) return;
 
 	CurrentTime = MaxTime;
 	SetActorTickEnabled(true);
+
+	UE_LOG(LogTemp, Log, TEXT("ATimeBomb::BeginPlay"));
 }
 
 void ATimeBomb::Tick(float DeltaTime)
