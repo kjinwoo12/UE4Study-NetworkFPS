@@ -25,6 +25,9 @@ void AHandedTimeBomb::Tick(float DeltaTime)
 void AHandedTimeBomb::StartAction()
 {
 	UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StartAction"));
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetOwner());
+	if (!IsValid(FpsCharacter) || !FpsCharacter->IsPlantable()) return;
+
 	PlayHandsAnimation();
 	
 	float PlantingTime = PlantingAnimation->GetPlayLength();
@@ -84,7 +87,7 @@ void AHandedTimeBomb::Plant()
 	}
 
 	FActorSpawnParameters SpawnParameters;
-	GetWorld()->SpawnActor<ATimeBomb>(TimeBombSubclass, Character->GetActorLocation(), FRotator(0, 180, Character->GetActorRotation().Yaw), SpawnParameters);
+	ATimeBomb* TimeBomb = GetWorld()->SpawnActor<ATimeBomb>(TimeBombSubclass, Character->GetActorLocation(), FRotator(0, 180, Character->GetActorRotation().Yaw), SpawnParameters);
 
 	Character->SwapHandsToPrevious();
 }

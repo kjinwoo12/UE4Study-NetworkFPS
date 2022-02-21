@@ -34,6 +34,8 @@ void ATimeBomb::BeginPlay()
 	SetActorTickEnabled(true);
 
 	UE_LOG(LogTemp, Log, TEXT("ATimeBomb::BeginPlay"));
+
+	
 }
 
 void ATimeBomb::Tick(float DeltaTime)

@@ -45,6 +45,7 @@ public:
 	/**************************
 			  On Events
 	***************************/
+
 	virtual void OnTargetedBy(ACharacter* character) override;
 
 	virtual void OnUntargeted(ACharacter* character) override;

@@ -17,7 +17,6 @@ class FPS_API AHandedTimeBomb : public AHands
 	/**************************
 			Properties
 	***************************/
-public:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float ExplosionTime;
 
@@ -35,6 +34,7 @@ public:
 	TSubclassOf<class ATimeBomb> TimeBombSubclass;
 
 	FTimerHandle PlantingTimer;
+
 
 public:
 	AHandedTimeBomb();
@@ -57,8 +57,4 @@ public:
 	void StopHandsAnimation();
 
 	void Plant();
-
-	/**************************
-				RPC
-	***************************/
 };
