@@ -4,6 +4,9 @@
 #include "TimeBomb.h"
 #include "Net/UnrealNetwork.h"
 #include "FpsCharacter.h"
+#include "../GameMode/PlantBombMode.h"
+
+#include "Kismet/GameplayStatics.h"
 
 ATimeBomb::ATimeBomb()
 {
@@ -29,24 +32,13 @@ ATimeBomb::ATimeBomb()
 void ATimeBomb::BeginPlay()
 {
 	Super::BeginPlay();
-
-	CurrentTime = MaxTime;
-	SetActorTickEnabled(true);
-
 	UE_LOG(LogTemp, Log, TEXT("ATimeBomb::BeginPlay"));
 
-	
+	ServerRpcActivate();
 }
 
 void ATimeBomb::Tick(float DeltaTime)
 {
-	CurrentTime -= DeltaTime;
-	if (CurrentTime <= 0.f)
-	{
-		CurrentTime = 0;
-		SetActorTickEnabled(false);
-		// TODO : Event for explosion
-	}
 }
 
 void ATimeBomb::OnTargetedBy(ACharacter* character)
@@ -83,7 +75,19 @@ void ATimeBomb::OnInteractionStop(ACharacter* character)
 	IsDismantiling = false;
 }
 
-float ATimeBomb::GetCurrentTime()
+void ATimeBomb::Activate()
 {
-	return CurrentTime;
+	APlantBombMode* PlantBombMode = Cast<APlantBombMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!IsValid(PlantBombMode))
+	{
+		UE_LOG(LogTemp, Log, TEXT("ATimeBomb::Activate PlantBombMode is invalid"));
+		return;
+	}
+
+	PlantBombMode->OnBombPlant(MaxTime);
+}
+
+void ATimeBomb::ServerRpcActivate_Implementation()
+{
+	Activate();
 }

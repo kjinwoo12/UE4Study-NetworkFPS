@@ -88,6 +88,14 @@ void APlantBombMode::OnRoundSecondTick()
 	}
 }
 
+void APlantBombMode::OnBombPlant(float BombTime)
+{
+	APlantBombState* state = GetGameState<APlantBombState>();
+	if (!IsValid(state)) return;
+
+	state->RoundProgressTime = BombTime;
+}
+
 void APlantBombMode::OnRoundEnd()
 {
 	UE_LOG(LogTemp, Log, TEXT("APlantBombMode::OnRoundEnd"));
