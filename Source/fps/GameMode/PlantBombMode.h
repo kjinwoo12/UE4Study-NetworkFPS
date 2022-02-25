@@ -39,6 +39,8 @@ public:
 
 	void OnRoundSecondTick();
 
+	void OnBombPlant(float BombTime);
+
 	void OnRoundEnd();
 
 	/**************************

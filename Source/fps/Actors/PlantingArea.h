@@ -4,21 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "EventArea.generated.h"
+#include "PlantingArea.generated.h"
 
 UCLASS()
-class FPS_API AEventArea : public AActor
+class FPS_API APlantingArea : public AActor
 {
 	GENERATED_BODY()
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* EventAreaMesh;
-
-	TArray<AActor*> EnteredActors;
 	
 public:	
 	// Sets default values for this actor's properties
-	AEventArea();
+	APlantingArea();
 
 protected:
 	// Called when the game starts or when spawned

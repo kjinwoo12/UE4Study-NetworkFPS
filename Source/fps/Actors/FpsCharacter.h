@@ -115,6 +115,9 @@ class FPS_API AFpsCharacter : public ACharacter
 	UPROPERTY(Replicated)
 	AGunShop* GunShop;
 
+	UPROPERTY(Replicated)
+	bool Plantable = false;
+
 public:
 	// Sets default values for this character's properties
 	AFpsCharacter();
@@ -322,4 +325,8 @@ public:
 	void SetInteractiveTarget(AInteractiveActor* Actor);
 
 	void SetHandsAtInventory(AHands* HandsInstance, int Index);
+
+	void EnablePlanting(bool IsPlantable);
+
+	bool IsPlantable();
 };

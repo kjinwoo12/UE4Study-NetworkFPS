@@ -120,6 +120,7 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, GunShop);
 	DOREPLIFETIME(AFpsCharacter, CurrentHandsIndex);
 	DOREPLIFETIME(AFpsCharacter, Inventory);
+	DOREPLIFETIME(AFpsCharacter, Plantable);
 }
 
 // Called every frame
@@ -817,4 +818,14 @@ void AFpsCharacter::SetInteractiveTarget(AInteractiveActor* Actor)
 void AFpsCharacter::SetHandsAtInventory(AHands* HandsInstance, int Index)
 {
 	Inventory[Index] = HandsInstance;
+}
+
+void AFpsCharacter::EnablePlanting(bool IsPlantable)
+{
+	Plantable = IsPlantable;
+}
+
+bool AFpsCharacter::IsPlantable()
+{
+	return Plantable;
 }

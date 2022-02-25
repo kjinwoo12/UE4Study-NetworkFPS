@@ -20,8 +20,6 @@ class FPS_API ATimeBomb : public AInteractiveActor
 	UPROPERTY(EditAnywhere)
 	float MaxTime = 45.f;
 
-	float CurrentTime;
-
 	bool IsDismantiling = false;
 
 	float MaxDiffusingTime = 7.f;
@@ -54,7 +52,10 @@ public:
 	virtual void OnInteractionStop(ACharacter* character) override;
 
 	/**************************
-		  Getter & Setter
+			  On Events
 	***************************/
-	float GetCurrentTime();
+	void Activate();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRpcActivate();
 };
