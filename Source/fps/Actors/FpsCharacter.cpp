@@ -79,19 +79,18 @@ void AFpsCharacter::InitializeGameplayVariable()
 	Armor = 50;
 	AimPitch = 0;
 	AimYaw = 0;
-	GunShop = nullptr;
 }
 
 void AFpsCharacter::InitializeGunShop()
 {
-	GunShop = GetWorld()->SpawnActor<AGunShop>();
-	if (IsValid(GunShop)) 
+	if (!IsValid(GunShop))
 	{
-		UE_LOG(LogTemp, Log, TEXT("GunShop is spawned"));
+		GunShop = GetWorld()->SpawnActor<AGunShop>();
 	}
-	else
+	if (!IsValid(GunShop)) 
 	{
 		UE_LOG(LogTemp, Log, TEXT("GunShop is invalid"));
+		return;
 	}
 	GunShop->SetOwner(this);
 }
@@ -671,13 +670,13 @@ void AFpsCharacter::DropWeapon()
 	);
 
 	//Unequip and Spawn APickupableActor
-	AHands* HandsInstance = UnEquip();
-	APickupableActor* PickupableActor = HandsInstance->CreatePickupableActor();
+	APickupableActor* PickupableActor = Hands->CreatePickupableActor();
 	if (!IsValid(PickupableActor))
 	{
 		UE_LOG(LogTemp, Log, TEXT("PickupableActor is invalid"));
 		return;
 	}
+	AHands* HandsInstance = UnEquip();
 	PickupableActor->SetHandsInstance(HandsInstance);
 
 	//Add impulse to viewpoint direction
@@ -688,7 +687,7 @@ void AFpsCharacter::DropWeapon()
 
 void AFpsCharacter::Acquire(AHands* HandsInstance, int HandsIndex)
 {
-	UE_LOG(LogTemp, Log, TEXT("AFpsChar7acter::Acquire(%s, %d)"), *HandsInstance->GetName(), HandsIndex);
+	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Acquire(%s, %d)"), *HandsInstance->GetName(), HandsIndex);
 	if (!IsValid(Inventory[HandsIndex]))
 	{
 		UnEquip();
@@ -697,9 +696,7 @@ void AFpsCharacter::Acquire(AHands* HandsInstance, int HandsIndex)
 	{
 		if (HandsIndex != CurrentHandsIndex)
 		{
-			UnEquip();
-			Equip(Inventory[HandsIndex]);
-			CurrentHandsIndex = HandsIndex;
+			SwapHandsTo(HandsIndex);
 		}
 		DropWeapon();
 	}

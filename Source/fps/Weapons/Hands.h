@@ -84,6 +84,12 @@ public:
 	APickupableActor* CreatePickupableActor();
 
 	/**************************
+				RPC
+	***************************/
+	UFUNCTION(Client, Reliable)
+	void ClientRpcOnUnEquipped();
+
+	/**************************
 		  Getter & Setter
 	***************************/
 	int GetHandsIndex();
