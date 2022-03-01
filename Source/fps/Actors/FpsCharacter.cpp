@@ -503,7 +503,7 @@ void AFpsCharacter::ServerRpcPickUp_Implementation(APickupableActor* PickupableA
 		TSubclassOf<AHands> HandsSubclass = PickupableActor->GetHandsSubclass();
 		if (!IsValid(HandsSubclass)) return;
 
-		HandsInstance = AWeaponBase::SpawnWeapon(GetWorld(), HandsSubclass);
+		HandsInstance = GetWorld()->SpawnActor<AWeaponBase>(HandsSubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
 	}
 
 	Acquire(HandsInstance, HandsInstance->GetHandsIndex());

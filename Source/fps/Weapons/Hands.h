@@ -17,7 +17,7 @@ class FPS_API AHands : public AActor
 	/**************************
 			   const
 	***************************/
-const FVector DefaultLocationOfWeaponMeshComponent = FVector(0, 0, -150.f);
+const FVector DefaultLocationOfHandsMeshComponent = FVector(0, 0, -150.f);
 
 protected:
 	/**************************
@@ -40,7 +40,7 @@ protected:
 			  Gameplay
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	TSubclassOf<APickupableActor> PickableActorSubclass;
+	TSubclassOf<APickupableActor> PickupableActorSubclass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AHandsModelForBody> ModelForBodySubclass;
@@ -48,11 +48,6 @@ protected:
 public:	
 	// Sets default values for this actor's properties
 	AHands();
-
-	/**************************
-			Initialize
-	***************************/
-	virtual void Initialize(AActor* Parent);
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,6 +57,11 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+	/**************************
+			Initialize
+	***************************/
+	virtual void Initialize(AActor* Parent);
+
 	/**************************
 			 on Events
 	***************************/

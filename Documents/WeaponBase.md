@@ -8,22 +8,18 @@ WeaponBase is the base class for a gun and knife.
 
 # Tutorial
 ## How to create a new weapon BP.
-1. Create a new Blueprint inherits `WeaponBase` at `C++ class/FPS`.
-2. Set default variables.
-    - Set `Attaching Grip Point Name`. It's for equipment system. Instances of `AWeaponBase` and `WeaponModelForBody` is attached to a socket with the same name as this.
-    - Set `WeaponType`. It's for holding weapon motion. You can checkout what is the motion for `WeaponType` at `MyContent/Animation/ABP_ThirdPerson`
-        - None <img src="./img/CharacterMotion_WeaponType_None.jpg"/>
-        - Rifle <img src="./img/CharacterMotion_WeaponType_Rifle.jpg"/>
-        - Knife <img src="./img/CharacterMotion_WeaponType_Knife.jpg"/>
-    - Set `Reach`. It is range of your weapon.
+1. Create a new Blueprint inherits `WeaponBase` at `C++ class/FPS/Weapon`. And Follow the tutorial of [Hands.md](./Hands.md)
+2. Set properties value.
+    - Set `Action/Subaction Delay`. It makes extra time between each actions/subactions. If the value is 0, your weapon is going to be extremely fast but i don't want to recommend it.
     - Set `ActionLoopEnable` and `SubactionLoopEnable`. They allow to repeat `OnAction()` and `OnSubaction()` until player release key : `Mouse1` and `Mouse2`.
-    - Set `Delay Action/Subaction`. It makes extra time between each actions/subactions. If the value is 0, your weapon is going to be extremely fast but i don't want to recommend it.
+    - Set `ReloadDelay`. It means time to finish reload.
     - Set `Ammo` information.
         - `Magazine Size` : The size of one magazine
         - `Current Ammo` : Left ammo of magazine
         - `Sub Ammo` : Total ammo player has.
         - `Is Ammo Infinite` : The title says it all.
-    - Set `HandIndex`. It is for switch weapon number key(1~5).
+    - Set `Damage`.
+    
 3. Set skeletal mesh at `WeaponMesh`. 
 4. Set `Muzzle` location. It's not necessary work. `Muzzle` is just for effects. You can handle it.
 5. Set Animations at `Animation - Hands` and `Animation - Body`. There are played when each function is run.
@@ -130,7 +126,6 @@ The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. a
 |int|GetCurrentAmmo||
 |int|GetSubAmmo||
 |FName|GetAttachingGripPointName||
-|[EWeaponType](./WeaponType.md)|GetWeaponType||
 |void|SetHandsAnimInstance<br/>(<br/>&emsp;UAnimInstance* AnimInstance<br/>)||
 |void|SetBodyAnimInstance<br/>(<br/>&emsp;UAnimInstance* AnimInstance<br/>)||
 |[APickUpWeapon](./PickUpWeapon.md)*|SpawnPickUpWeaponActor||

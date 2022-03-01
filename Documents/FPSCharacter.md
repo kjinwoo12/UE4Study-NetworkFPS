@@ -1,7 +1,6 @@
 # AFpsCharacter
 It is general playable character class.
 
-
 # Index
 - [Tutorial](#_Tutorial)
 - [How to guide](#_How_to_Guide)
@@ -57,6 +56,8 @@ It is general playable character class.
 If you need other actions or want to change actions, You can also change actions at `AFpsCharacter::SetupPlayerInputComponent`.
 
 # How_to_Guide
+## Drop Weapon
+abc
 
 # Technical_reference
 ## Variables

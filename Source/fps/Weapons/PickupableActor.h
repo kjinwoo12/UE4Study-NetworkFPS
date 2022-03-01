@@ -45,7 +45,7 @@ public:
 	virtual void OnInteractionStop(ACharacter* character) override;
 
 	UFUNCTION()
-	void OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
+	void OnMeshComponentHit(UPrimitiveComponent* HitComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComponent,
 		FVector NormalImpulse,
@@ -60,9 +60,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AHands* GetHandsInstance();
 
-	UFUNCTION(BlueprintCallable, Category = "Getter")
-	TSubclassOf<AHands> GetHandsSubclass();
-
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetHandsInstance(AHands* Instance);
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	TSubclassOf<AHands> GetHandsSubclass();
 };
