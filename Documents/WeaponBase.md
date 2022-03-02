@@ -19,35 +19,23 @@ WeaponBase is the base class for a gun and knife.
         - `Sub Ammo` : Total ammo player has.
         - `Is Ammo Infinite` : The title says it all.
     - Set `Damage`.
-    
-3. Set skeletal mesh at `WeaponMesh`. 
-4. Set `Muzzle` location. It's not necessary work. `Muzzle` is just for effects. You can handle it.
-5. Set Animations at `Animation - Hands` and `Animation - Body`. There are played when each function is run.
+3. Set `Muzzle` location. It's not necessary work. The `Muzzle` is just for effects.
+4. Set Animations at `Animation - Hands` and `Animation - Body`. There are played when each function is run.
     - `Hands/Body Action Animation`
     - `Hands/Body Subaction Animation`
     - `Hands/Body Reload Animation`
-6. Set Sounds at `Sound`. There are played when each function is run.
+5. Set Sounds at `Sound`. There are played when each function is run.
     - `Action Sound`
     - `Subaction Sound`
     - `Reload Sound`
-7. Set `PickUpWeapon Blueprint`
-    - You need to create `PickUpWeapon` based blueprint. Checkout [PickUpWeapon.md](./PickUpWeapon.md)
-8. Set `WeaponModelForBody Blueprint`
-    - You need to create `WeaponModelForBody` based blueprint. Checkout [WeaponModelForBody.md](./WeaponModelForBody.md)
+6. Set `PickupableActor Blueprint`
+    - You need to create `PickupableActor` based blueprint. Checkout [PickupableActor.md](./PickupableActor.md)
+7. Set `HandsModelForBody Blueprint`
+    - You need to create `HandsModelForBody` based blueprint. Checkout [HandsModelForBody.md](./HandsModelForBody.md)
 
 # How_to_Guide
 ## Equip weapon
-1. Copy blueprint reference of your weapon.
-2. Modify
-    - original : Blueprint'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun'
-    - Modified : `Class`'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun`_C`'
-3. Use `EquipWeapon(const TCHAR*)` in `FPSCharacter`. The param is the reference what you modified.
-```C++
-//In AFPSCharacter class
-AWeaponBase *WeaponBase = AWeaponBase::SpawnWeapon(GetWorld(), "Class'/Game/MyContent/Blueprints/BP_WeaponBase_TestGun.BP_WeaponBase_TestGun_C'");
-EquipWeapon(WeaponBase)
-```
-The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. and EquipWeapon  
+Same with [Hands.md - #Equipment](./Hands.md). Use `AFpsCharacter::Equip`
 
 # Technical_reference
 
@@ -57,9 +45,6 @@ The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. a
 
 ||Name|Description|
 |-|-|-|
-|USkeletalMeshComponent*|WeaponMesh||
-|FName|AttachingGripPointName||
-|EWeaponType|WeaponType||
 |float|ActionDelay||
 |float|SubactionDelay||
 |bool|ActionLoopEnable||
@@ -72,8 +57,6 @@ The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. a
 |float|Accuracy||
 |float|MovementStability||
 |float|Damage||
-|About|animation||
-|UAnimInstance*|HandsAnimInstance||
 |UAnimInstance*|BodyAnimInstance||
 |UAnimMontage*|HandsActionAnimation||
 |UAnimMontage*|HandsSubactionAnimation||
@@ -83,53 +66,10 @@ The actor WeaponBase is spawned by SpawnWeapon at (0, 0, 0) in world location. a
 |UAnimMontage*|BodyReloadAnimation||
 |USoundBase*|ActionSound||
 |USoundBase*|SubactionSound||
-|USoundBase*|ReloadSound||
-|TSubclassOf\<[APickUpWeapon](./PickUpWeapon.md)>|PickUpWeaponSubclass||
-|TSubclassOf\<[AWeaponModelForBody](WeaponModelForBody.md)>|WeaponModelForBodySubclass||
+|USoundBase*|ReloadSound||WeaponModelForBodySubclass||
 |FTimerHandle|TimerHandle||
 |void|(AWeaponBase::* FunctionAfterDelay)()||
 |FTimerHandle|TimerHandleForExtraInput||
 |void|(AWeaponBase::* FunctionAfterDelayForExtraInput)()||
-
-</details>
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|virtual void|BeginPlay||
-|virtual void|Initialize<br/>(<br/>&emsp;AFpsCharacter* FPSCharacter<br/>)||
-|virtual void|OnUnEquipped||
-|void|StartAction||
-|void|StopAction||
-|void|StartSubaction||
-|void|StopSubaction||
-|void|StartReload||
-|virtual void|OnAction||
-|void|MulticastRPCOnActionFx||
-|void|OnSubaction||
-|void|OnReload||
-|float|GetDelay||
-|float|GetMovementStability||
-|int|GetCurrentAmmo||
-|int|GetSubAmmo||
-|FName|GetAttachingGripPointName||
-|void|SetHandsAnimInstance<br/>(<br/>&emsp;UAnimInstance* AnimInstance<br/>)||
-|void|SetBodyAnimInstance<br/>(<br/>&emsp;UAnimInstance* AnimInstance<br/>)||
-|[APickUpWeapon](./PickUpWeapon.md)*|SpawnPickUpWeaponActor||
-|[AWeaponModelForBody](./WeaponModelForBody.md)*|SpawnWeaponModelForBodyActor||
-|static [AWeaponBase](./WeaponBase.md)*|SpawnWeapon<br/>(<br/>&emsp;UWorld* World,<br/>&emsp;UClass* GeneratedBP<br/>)||
 
 </details>

@@ -21,7 +21,6 @@ HUD Class : BP_FpsCharacterHud
 ## Variables
 <details open>
 <summary></summary>
-</details>
 
 ||Name|Description|
 |-|-|-|
@@ -30,30 +29,5 @@ HUD Class : BP_FpsCharacterHud
 |const float|TransitionTimeForOnRoundStart|Default 15.f|
 |const float|TimeForRoundRunTime|Default 160.f|
 |TSubclassOf<`AGameModeBase`>|PreparedGameModeSubclass|
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|virtual void|BeginPlay() override||
-|virtual void|PostLogin(APlayerController* NewPlayer)||
-|void|OnPlayerJoinTeam()||
-|void|OnPlayerFull()||
-|void|OnRoundReady()||
-|void|OnRoundStart()||
-|void|OnRoundEnd()||
-|bool|IsPlayerFullOnTeam()||
 
 </details>

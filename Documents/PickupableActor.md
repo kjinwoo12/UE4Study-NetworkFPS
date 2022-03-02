@@ -30,28 +30,3 @@ PickupableWeapon is the base class for pickable actor. It is  for WeaponBase act
 |USoundCue*|DropSound||
 
 </details>
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|virtual void|BeginPlay||
-|void|OnMeshComponentHit<br/>(<br/>&emsp;UPrimitiveComponent* HitComponent,<br/>&emsp;AActor* OtherActor,<br/>&emsp;UPrimitiveComponent* OtherComponent,<br/>&emsp;FVector NormalImpulse,<br/>&emsp;const FHitResult& HitResult<br/>)||
-|UStaticMeshComponent*|GetMesh||
-|AWeaponBase*|GetHandsInstance||
-|void|SetHandsInstance<br/>(<br/>&emsp;AWeaponBase* Instance<br/>)||
-|TSubclassOf\<[AWeaponBase](./WeaponBase.md)>|GetHandsSubclass||
-
-</details>

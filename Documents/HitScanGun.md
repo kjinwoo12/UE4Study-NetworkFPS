@@ -37,26 +37,3 @@ Same with [AHitScanWeapon.md](./WeaponBase.md).
 |FTimerHandle|MuzzleEffectTimer||
 
 </details>
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|void|ServerRpcBuyItem<br/>(<br/>&emsp;TSubclassOf\<[AWeaponBase](./WeaponBase.md)> WeaponBlueprint<br/>)||
-|virtual void|OnAction||
-|void|ClientRPCOnActionFx||
-|AActor*|SpawnBulletTracer<br/>(<br/>&emsp;const FVector SpawnPosition,<br/>&emsp;const FVector ImpactPoint<br/>)||
-
-</details>

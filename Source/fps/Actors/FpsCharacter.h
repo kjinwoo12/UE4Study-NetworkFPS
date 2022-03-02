@@ -15,7 +15,7 @@ UENUM(BlueprintType)
 enum class EFpsCharacterStatus : uint8
 {
 	Alive UMETA(DisplayName = "Alive"), // Controllable all
-	Stopped UMETA(DisplayName = "Stopped"), // Controllable only Aim
+	Stopped UMETA(DisplayName = "Stopped"), // Controllable only camera
 	Freeze UMETA(DisplayName = "Freeze"), // Controllable nothing
 	Dead UMETA(DisplayName = "Dead"), // Same with Freeze but the character is dead.
 };
@@ -156,9 +156,6 @@ public:
 	UFUNCTION()
 	void UpdateCrosshair();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRpcSetCameraRotation(FQuat CameraRotation);
-
 	void UpdateAim(float DeltaTime);
 
 	void UpdateActorDirection(float DeltaTime);
@@ -216,6 +213,9 @@ public:
 	/**************************
 				Rpc
 	***************************/
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRpcSetCameraRotation(FQuat CameraRotation);
+
 	UFUNCTION(Client, Reliable)
 	void ClientRpcUpdateCameraRotationToServer();
 

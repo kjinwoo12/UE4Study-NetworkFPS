@@ -42,26 +42,3 @@ Equip(Hands);
 |TSubclassOf<AHandsModelForBody>|ModelForBodySubclass|Attached at character on 3rd-camera|
 
 </details>
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|virtual void|BeginPlay||
-|virtual void|Initialize<br/>(<br/>&emsp;AFpsCharacter* FPSCharacter<br/>)||
-|virtual void|Tick<br/>(<br/>&emsp;float DeltaTime<br/>)||
-|virtual void|OnUnEquipped||
-|void|StartAction||
-|void|StopAction||
-|void|StartSubaction||
-|void|StopSubaction||
-|void|StartReload||
-|void|ClientRpcOnUnEquippeed||
-|void|GetHandsIndex||
-|FName|GetAttachingGripPointName||
-
-</details>
