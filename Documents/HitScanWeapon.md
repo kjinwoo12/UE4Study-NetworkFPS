@@ -27,26 +27,3 @@ Same with [AWeaponBase.md](./WeaponBase.md).
 |FCollisionQueryParams|LineTraceCollisionQueryParams||
 
 </details>
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|virtual void|Initialize<br/>(<br/>&emsp;[AFpsCharacter](./FpsCharacter.md)* FPSCharacter<br/>)||
-|virtual void|OnUnEquipped||
-|virtual void|OnAction||
-|bool|LineTrace<br/>(<br/>&emsp;FHitResult& HitResult<br/>)||
-
-</details>

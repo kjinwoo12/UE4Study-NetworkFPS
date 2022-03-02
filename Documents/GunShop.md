@@ -34,23 +34,3 @@
 |-|-|-|
 
 </details>
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|void|ServerRpcBuyItem<br/>(<br/>&emsp;TSubclassOf\<[AWeaponBase](./WeaponBase.md)> WeaponBlueprint<br/>)||
-
-</details>

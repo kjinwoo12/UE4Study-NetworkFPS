@@ -39,31 +39,3 @@ HUD with dynamic crosshair. It is used by [FpsCharacter](./FpsCharacter.md).
 
 </details>
 
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|virtual void|DrawHUD||
-|virtual void|BeginPlay||
-|void|InitDefaultWidget||
-|void|InitGunShopWidget||
-|void|DrawCrosshair|Called every tick|
-|void|OpenGunShop||
-|void|CloseGunShop||
-|bool|IsOpenGunShop||
-|void|SetCrosshairCenterOffset<br/>(<br/>&emsp;float Value<br/>)||
-
-</details>
-

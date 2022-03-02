@@ -1,7 +1,6 @@
 # AFpsCharacter
 It is general playable character class.
 
-
 # Index
 - [Tutorial](#_Tutorial)
 - [How to guide](#_How_to_Guide)
@@ -65,114 +64,31 @@ If you need other actions or want to change actions, You can also change actions
 
 ||Name|Description|
 |-|-|-|
-|const FVector|DefaultLocationOfHandsMeshComponent|Location of `HandsMeshComponent` for initializing|
-|const FRotator|DefaultRotatorOfHandsMeshComponent|Rotator of `HandsMeshComponent` for initializing|
 |const FVector|DefaultLocationOfBodyMeshComponent|Location of `BodyMeshComponent` for initializing|
 |const FRotator|DefaultRotatorOfBodyMeshComponent|Rotator of `BodyMeshComponent` for initializing|
 |const float|InteractionReach||
 |UCameraComponent*|CameraComponent||
-|USkeletalMeshComponent*|HandsMeshComponent|Hands mesh for owner can only see|
 |USkeletalMeshComponent*|BodyMeshComponent|Body mesh for players. But owner can't see|
-|[AWeaponBase](./WeaponBase.md)*|PrimaryWeapon|Weapon that player equipped|
-|[AWeaponModelForBody](./WeaponModelForBody.md)*|WeaponModelForBody|Weapon Model for other players can see with `BodyMeshComponent`|
+|[AHands](./Hands.md)*|Hands||
+|[AHandsModelForBody](./HandsModelForBody.md)*|HandsModelForBody|Hands Model for other players can see with `BodyMeshComponent`|
 |UCharacterMovementComponent*|MovementComponent||
 |TSubclassOf\<[AHUD]>|HudSubclass|HUD blueprint. HUD will be added when the player possesses on the character.|
 |float|MaxHealth||
 |float|Health|Current health of character|
 |float|MaxArmor||
 |float|Armor|Current Armor of character|
-|bool|IsDead||
+|EFpsCharacterStatus|CharacterStatus|Alive: controllable all<br/>Stopped: Controllable only camera. Can't move<br/>Freeze: Can't control<br/>Dead: Same with Freeze but the character is dead.|
 |FTimerHandle|RespawnTimerHandle||
 |FTransform|SpawnTransform|Transform for spawning character|
 |float|AimPitch||
 |float|AimYaw||
+|int|CurrentHandsIndex||
+|int|PreviousHandsIndex||
+|TArray<AHands*>|Inventory|`AHands` instances for swap hands|
 |FCollisionQueryParams|LineTraceCollisionQUeryParams|It is for detecting `InteractiveTarget` using Line Trace.|
 |[AInteractiveActor](./InteractiveActor.md)*|InteractiveTarget|Default is null. When the PlayerController of the Character get InteractiveActor from Line trace|=
 |[AGunShop](./GunShop.md)*|GunShop||
+|bool|Plantable|For using [AHandedTimeBomb](HandedTimeBomb.md). If it is false, can't use the TimeBomb.|
 
-
-</details>
-
-## Constructors
-<details open>
-<summary></summary>
-
-|prarams|Description|
-|-|-|
-|none|none|
-
-</details>
-
-## Functions
-<details open>
-<summary></summary>
-
-||Name|Description|
-|-|-|-|
-|void|InitializeCollisionComponent||
-|void|InitializeMovementComponent||
-|void|InitializeCamera||
-|void|InitializeHandsMesh||
-|void|InitializeBodyMesh||
-|void|InitializeGameplayVariable||
-|void|InitializeGunShop||
-|virtual void|BeginPlay||
-|void|GetLifetimeReplicatedProps<br/>(<br/>&emsp;TArray\<FLifetimeProperty>& OutLifetimeProps<br/>)||
-|virtual void|Tick<br/>(<br/>&emsp;float DeltaTime<br/>)|| 
-|void|UpdateCrosshair||
-|void|ServerRpcSetCameraRotation<br/>(<br/>&emsp;FQuat CameraRotation<br/>)||
-|void|UpdateActorDirection<br/>(<br/>&emsp;float DeltaTime<br/>)||
-|void|UpdateCameraRotation()||
-|void|UpdateInteractiveTarget<br/>(<br/>&emsp;float DeltaTime<br/>)|Update `InteractiveTarget` as detected actor from Line Trace|
-|virtual void|SetupPlayerInputComponentTick<br/>(<br/>&emsp;UInputComponent* PlayerInputComponent<br/>)||
-|void|MoveForwardTick<br/>(<br/>&emsp;float Value<br/>)||
-|void|MoveRightTick<br/>(<br/>&emsp;float Value<br/>)||
-|void|AddControllerPitchInputTick<br/>(<br/>&emsp;float Value<br/>)||
-|void|AddControllerYawInputTick<br/>(<br/>&emsp;float Value<br/>)||
-|void|Jump||
-|void|CrouchPressed||
-|void|CrouchReleased||
-|void|ActionPressed||
-|void|ActionReleased||
-|void|SubactionPressed||
-|void|SubactionReleased||
-|void|ReloadPressed||
-|void|PickUpWeaponPressed||
-|void|DropWeaponPressed||
-|void|GunShopPressed||
-|void|OnPossessed||
-|void|OnPlayerFull||
-|void|OnRoundStart||
-|void|OnRoundEnd||
-|void|ServerRpcStartAction||
-|void|ServerRpcStopAction||
-|void|ServerRpcStartSubaction||
-|void|ServerRpcStopSubaction||
-|void|ServerRpcStartReload||
-|void|ServerRpcPickUpWeapon||
-|void|ServerRpcDropWeapon||
-|void|MulticastRpcSetActorRotation<br/>(<br/>&emsp;FRotator<br/>)||
-|void|OnRep_InitializePrimaryWeapon||
-|virtual float|TakeDamage<br/>(<br/>&emsp;float Damage,<br/>&emsp;FDamageEvent const& DamageEvent,<br/>&emsp;AController* EventInstigator,<br/>&emsp;AActor* DamageCauser<br/>)||
-|void|Die||
-|void|Respawn||
-|void|KnockoutBodyMesh||
-|void|WakeUpBodyMesh||
-|void|EquipWeapon<br/>(<br/>&emsp;[AWeaponBase](./WeaponBase.md)* WeaponBase<br/>)||
-|[AWeaponBase](./WeaponBase.md)*|UnEquipWeapon||
-|void|DropWeapon||
-|void|PickUpWeapon||
-|float|GetHealth||
-|float|GetArmor||
-|UCameraComponent*|GetCameraComponent||
-|[AWeaponBase](./WeaponBase.md)*|GetPrimaryWeapon||
-|USkeletalMeshComponent*|GetHandsMeshComponent||
-|USkeletalMeshComponent*|GetBodyMeshComponent||
-|float|GetAimPtich||
-|float|GetAimYaw||
-|TSubclassOf\<AHUD>|GetHudSubclass||
-|[AGunShop](./GunShop.md)*|GetGunShop||
-|void|SetPickableWeapon<br/>(<br/>&emsp;[APickUpWeapon](./PickUpWeapon.md)* Instance<br/>)||
-|void|SetSpawnTransform<br/>(<br/>&emsp;FTransform Transform<br/>)|Player is going to teleport at `Transfrom` when `Respawn` is called|
 
 </details>

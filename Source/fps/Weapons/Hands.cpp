@@ -20,7 +20,7 @@ AHands::AHands()
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HandsMeshs"));
 	HandsMesh->SetOnlyOwnerSee(true);
-	HandsMesh->SetRelativeLocation(DefaultLocationOfWeaponMeshComponent);
+	HandsMesh->SetRelativeLocation(DefaultLocationOfHandsMeshComponent);
 	HandsMesh->SetupAttachment(RootComponent);
 }
 
@@ -42,7 +42,8 @@ void AHands::Tick(float DeltaTime)
 
 void AHands::OnUnEquipped()
 {
-	SetOwner(NULL);
+	ClientRpcOnUnEquipped();
+	SetOwner(nullptr);
 }
 
 void AHands::StartAction()
@@ -78,7 +79,12 @@ AHandsModelForBody* AHands::CreateHandsModelForBody()
 APickupableActor* AHands::CreatePickupableActor()
 {
 	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickupableActor>(PickableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+	return GetWorld()->SpawnActor<APickupableActor>(PickupableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
+}
+
+void AHands::ClientRpcOnUnEquipped_Implementation()
+{
+	SetOwner(nullptr);
 }
 
 int AHands::GetHandsIndex()

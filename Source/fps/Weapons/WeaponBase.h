@@ -10,14 +10,6 @@ class AFpsCharacter;
 class APickupableActor;
 class AHandsModelForBody;
 
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	Rifle UMETA(DisplayName = "Rifle"),
-	Knife UMETA(DisplayName = "Knife"),
-};
-
 UCLASS()
 class FPS_API AWeaponBase : public AHands
 {
@@ -28,9 +20,6 @@ protected:
 	/**************************
 			 Properties
 	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	EWeaponType WeaponType;
-
 	// Delay of Action for next action
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float ActionDelay;
@@ -184,21 +173,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	int GetSubAmmo();
 
-	UFUNCTION(BlueprintCallable, Category = "Getter")
-	EWeaponType GetWeaponType();
-
 	UFUNCTION(BlueprintCallable, Category = "Setter")
 	void SetBodyAnimInstance(UAnimInstance* AnimInstance);
-
-	/**************************
-				etc
-	***************************/
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	APickupableActor* SpawnPickUpWeaponActor();
-
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	AHandsModelForBody* SpawnModelForBodyActor();
-
-public:
-	static AWeaponBase* SpawnWeapon(UWorld* World, UClass* GeneratedBP); 
 };

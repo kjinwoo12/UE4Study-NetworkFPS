@@ -31,7 +31,7 @@ APickupableActor::APickupableActor()
 	Mesh->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
 	Mesh->SetGenerateOverlapEvents(false);
 	Mesh->SetNotifyRigidBodyCollision(true);
-	Mesh->OnComponentHit.AddDynamic(this, &APickupableActor::OnWeaponMeshComponentHit);
+	Mesh->OnComponentHit.AddDynamic(this, &APickupableActor::OnMeshComponentHit);
 }
 
 // Called when the game starts or when spawned
@@ -69,7 +69,7 @@ void APickupableActor::OnInteractionStop(ACharacter* character)
 	UE_LOG(LogTemp, Log, TEXT("APickupableActor::OnInteractionStop"));
 }
 
-void APickupableActor::OnWeaponMeshComponentHit(UPrimitiveComponent* HitComponent,
+void APickupableActor::OnMeshComponentHit(UPrimitiveComponent* HitComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComponent,
 	FVector NormalImpulse,

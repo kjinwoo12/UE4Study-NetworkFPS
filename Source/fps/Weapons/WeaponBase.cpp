@@ -16,7 +16,6 @@
 AWeaponBase::AWeaponBase() : AHands()
 {
 	// properties
-	WeaponType = EWeaponType::Rifle;
 	ActionDelay = 0.125f;
 	ActionLoopEnable = true;
 	SubactionDelay = 1.f;
@@ -247,29 +246,7 @@ int AWeaponBase::GetSubAmmo()
 	return SubAmmo;
 }
 
-EWeaponType AWeaponBase::GetWeaponType()
-{
-	return WeaponType;
-}
-
 void AWeaponBase::SetBodyAnimInstance(UAnimInstance* Instance)
 {
 	BodyAnimInstance = Instance;
-}
-
-APickupableActor* AWeaponBase::SpawnPickUpWeaponActor()
-{
-	FRotator Rotation = GetActorRotation();
-	return GetWorld()->SpawnActor<APickupableActor>(PickableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
-}
-
-AHandsModelForBody* AWeaponBase::SpawnModelForBodyActor()
-{
-	return GetWorld()->SpawnActor<AHandsModelForBody>(ModelForBodySubclass, FVector(0, 0, 0), FRotator::ZeroRotator);
-}
-
-AWeaponBase* AWeaponBase::SpawnWeapon(UWorld* World, UClass* GeneratedBP)
-{
-	FActorSpawnParameters SpawnParameters;
-	return World->SpawnActor<AWeaponBase>(GeneratedBP, FVector(0, 0, 0), FRotator::ZeroRotator, SpawnParameters);
 }
