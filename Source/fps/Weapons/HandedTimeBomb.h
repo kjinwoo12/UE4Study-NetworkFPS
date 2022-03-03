@@ -15,12 +15,6 @@ class FPS_API AHandedTimeBomb : public AHands
 	GENERATED_BODY()
 	
 	/**************************
-			Properties
-	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	float ExplosionTime;
-
-	/**************************
 			 Animation
 	***************************/
 	// AnimationMontage to play each time do action

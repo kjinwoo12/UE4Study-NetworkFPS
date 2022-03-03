@@ -1,4 +1,4 @@
-# AWeaponBase
+# AHands
 Base class for 1st Camera hands.
 
 # Index
