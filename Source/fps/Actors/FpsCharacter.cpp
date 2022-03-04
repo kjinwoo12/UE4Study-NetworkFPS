@@ -629,14 +629,22 @@ void AFpsCharacter::Equip(AHands* HandsInstance)
 
 AHands* AFpsCharacter::UnEquip()
 {
-	if (!IsValid(Hands)) return nullptr;
+	if (!IsValid(Hands))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UnEquip Hands is already invalid"));
+		return nullptr;
+	}
 
 	Hands->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	Hands->OnUnEquipped();
 	Hands = nullptr;
 
 	// UnEquip WeaponModelForThirdPerson
-	if (!IsValid(HandsModelForBody)) return Hands;
+	if (!IsValid(HandsModelForBody)) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UnEquip HandsModelForBody is invalid"))
+		return Hands;
+	}
 	HandsModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	HandsModelForBody->Destroy();
 
