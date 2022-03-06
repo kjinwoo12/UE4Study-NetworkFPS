@@ -219,6 +219,7 @@ void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime)
 {
 	if (GetNetMode() == NM_DedicatedServer) return;
 	APlayerController* PlayerController = GetController<APlayerController>();
+
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UpdateInteractiveTarget PlayerController is invalid"));
@@ -623,8 +624,8 @@ void AFpsCharacter::Equip(AHands* HandsInstance)
 
 	HandsModelForBody = Hands->CreateHandsModelForBody();
 	if (!IsValid(HandsModelForBody)) return;
-	HandsModelForBody->SetOwner(this);
 	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), Hands->GetAttachingGripPointName());
+	HandsModelForBody->Initialize(this);
 }
 
 AHands* AFpsCharacter::UnEquip()
@@ -803,6 +804,11 @@ TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()
 AGunShop* AFpsCharacter::GetGunShop()
 {
 	return GunShop;
+}
+
+AHandsModelForBody* AFpsCharacter::GetHandsModelForBody()
+{
+	return HandsModelForBody;
 }
 
 void AFpsCharacter::SetSpawnTransform(FTransform Transform) 

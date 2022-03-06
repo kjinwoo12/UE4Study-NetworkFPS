@@ -2,6 +2,7 @@
 
 
 #include "HandsModelForBody.h"
+#include "../Actors/FpsCharacter.h"
 
 // Sets default values
 AHandsModelForBody::AHandsModelForBody()
@@ -32,3 +33,13 @@ void AHandsModelForBody::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AHandsModelForBody::Initialize(AActor* Parent)
+{
+	SetOwner(Parent);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
+	if (!IsValid(FpsCharacter))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandsModelForBody::Initialize FpsCharacter is invalid"));
+		return;
+	}
+}

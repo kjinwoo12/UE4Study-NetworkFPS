@@ -318,6 +318,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AGunShop* GetGunShop();
 
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	AHandsModelForBody* GetHandsModelForBody();
+
 	void SetSpawnTransform(FTransform Transform);
 
 	void SetCharacterStatus(EFpsCharacterStatus Status);

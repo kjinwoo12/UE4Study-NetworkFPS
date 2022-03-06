@@ -19,6 +19,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Component")
 	USceneComponent* Muzzle;
+
 public:	
 	// Sets default values for this actor's properties
 	AHandsModelForBody();
@@ -31,4 +32,5 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void Initialize(AActor* Parent);
 };
