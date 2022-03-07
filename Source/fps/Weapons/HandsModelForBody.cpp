@@ -18,6 +18,9 @@ AHandsModelForBody::AHandsModelForBody()
 	RootComponent = WeaponMesh;
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(RootComponent);
+
+	// Properties
+	AttachingGripPointName = "GripPoint";
 }
 
 // Called when the game starts or when spawned
@@ -42,4 +45,9 @@ void AHandsModelForBody::Initialize(AActor* Parent)
 		UE_LOG(LogTemp, Log, TEXT("AHandsModelForBody::Initialize FpsCharacter is invalid"));
 		return;
 	}
+}
+
+FName AHandsModelForBody::GetAttachingGripPointName()
+{
+	return AttachingGripPointName;
 }

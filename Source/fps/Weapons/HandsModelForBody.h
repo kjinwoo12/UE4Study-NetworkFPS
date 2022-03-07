@@ -20,6 +20,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Component")
 	USceneComponent* Muzzle;
 
+	/**************************
+			Properties
+	***************************/
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	FName AttachingGripPointName;
+
 public:	
 	// Sets default values for this actor's properties
 	AHandsModelForBody();
@@ -33,4 +39,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void Initialize(AActor* Parent);
+
+	/**************************
+		  Getter & Setter
+	***************************/
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	FName GetAttachingGripPointName();
 };

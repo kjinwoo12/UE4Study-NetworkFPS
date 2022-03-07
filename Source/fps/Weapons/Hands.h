@@ -30,11 +30,7 @@ protected:
 			Properties
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	FName AttachingGripPointName;
-
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	int HandsIndex;
-
 
 	/**************************
 			  Gameplay
@@ -93,8 +89,5 @@ public:
 		  Getter & Setter
 	***************************/
 	int GetHandsIndex();
-
-	UFUNCTION(BlueprintCallable, Category = "Getter")
-	FName GetAttachingGripPointName();
 
 };

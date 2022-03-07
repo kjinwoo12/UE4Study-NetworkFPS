@@ -624,7 +624,7 @@ void AFpsCharacter::Equip(AHands* HandsInstance)
 
 	HandsModelForBody = Hands->CreateHandsModelForBody();
 	if (!IsValid(HandsModelForBody)) return;
-	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), Hands->GetAttachingGripPointName());
+	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), HandsModelForBody->GetAttachingGripPointName());
 	HandsModelForBody->Initialize(this);
 }
 

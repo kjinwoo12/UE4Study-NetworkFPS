@@ -12,7 +12,6 @@ AHands::AHands()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Properties
-	AttachingGripPointName = "GripPoint";
 	HandsIndex = 0;
 
 	// Components
@@ -92,9 +91,4 @@ void AHands::ClientRpcOnUnEquipped_Implementation()
 int AHands::GetHandsIndex()
 {
 	return HandsIndex;
-}
-
-FName AHands::GetAttachingGripPointName()
-{
-	return AttachingGripPointName;
 }
