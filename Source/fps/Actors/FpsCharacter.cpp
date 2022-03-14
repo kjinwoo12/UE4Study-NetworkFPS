@@ -482,6 +482,14 @@ void AFpsCharacter::OnRoundStart()
 {
 	SetCharacterStatus(EFpsCharacterStatus::Alive);
 	ClientRpcSetAlertTextOnHud("Round Start");
+
+	const float TextDuration = 2.0f;
+	GetWorldTimerManager().SetTimer(RoundTextTimerHandle, this, &AFpsCharacter::OnTextDurationFinished, TextDuration, false, TextDuration);
+}
+
+void AFpsCharacter::OnTextDurationFinished()
+{
+	ClientRpcSetAlertTextOnHud("");
 }
 
 void AFpsCharacter::OnRoundEnd()

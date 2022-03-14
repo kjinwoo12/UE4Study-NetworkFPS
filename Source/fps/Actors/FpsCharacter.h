@@ -80,6 +80,8 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	FTimerHandle RespawnTimerHandle;
 
+	FTimerHandle RoundTextTimerHandle;
+
 	FTransform SpawnTransform;
 
 	/**************************
@@ -207,6 +209,8 @@ public:
 	void OnRoundReady();
 
 	void OnRoundStart();
+
+	void OnTextDurationFinished();
 
 	void OnRoundEnd();
 
