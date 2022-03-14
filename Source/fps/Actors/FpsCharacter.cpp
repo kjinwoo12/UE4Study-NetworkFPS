@@ -189,23 +189,27 @@ void AFpsCharacter::UpdateAim(float DeltaTime)
 
 void AFpsCharacter::UpdateActorDirection(float DeltaTime)
 {
-	if (GetNetMode() == NM_Client) return;
-
 	// if the character is moving, or the Controller's aim direction is over 90 degree,
 	// then make body of the character to follow the aim direction.
-	FRotator AimRotator = FRotator(AimPitch, AimYaw, 0);
+
+	if (GetNetMode() == NM_Client) return;
+
 	FRotator ControlRotation = GetControlRotation();
 	FRotator ActorRotation = GetActorRotation();
+
 	float CharacterSpeed = 0;
 	FVector BodyDirection;
 	GetVelocity().ToDirectionAndLength(BodyDirection, CharacterSpeed);
-	if (CharacterSpeed > 0)
-	{ 
-		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
-	}
-	else if (AimRotator.Yaw < -90 || 90 < AimRotator.Yaw)
+	if (0 < CharacterSpeed)
 	{
-		MulticastRpcSetActorRotation(FRotator(0, ActorRotation.Yaw + AimRotator.Yaw - AimYaw, 0));
+		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
+		return;
+	}
+
+	float AlphaRotation = ControlRotation.Yaw - ActorRotation.Yaw;
+	if (AlphaRotation < -90 || 90 < AlphaRotation)
+	{
+		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw - AimYaw, 0));
 	}
 }
 
@@ -217,12 +221,11 @@ void AFpsCharacter::UpdateCameraRotation()
 
 void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime) 
 {
-	if (GetNetMode() == NM_DedicatedServer) return;
-	APlayerController* PlayerController = GetController<APlayerController>();
+	if (GetNetMode() != NM_Client) return;
+	APlayerController* PlayerController = Cast<APlayerController>(GetOwner());
 
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UpdateInteractiveTarget PlayerController is invalid"));
 		return;
 	}
 
