@@ -70,6 +70,7 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 void AWeaponBase::OnUnEquipped()
 {
+	Super::OnUnEquipped();
 	SetBodyAnimInstance(NULL);
 }
 

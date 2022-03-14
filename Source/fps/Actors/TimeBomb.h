@@ -20,11 +20,11 @@ class FPS_API ATimeBomb : public AInteractiveActor
 	UPROPERTY(EditAnywhere)
 	float MaxTime = 45.f;
 
-	bool IsDismantiling = false;
+	bool IsOnDefusing = false;
 
-	float MaxDiffusingTime = 7.f;
+	float MaxDefusingTime = 7.f;
 
-	float CurrentDiffusingTime = 0.f;
+	float CurrentDefusingTime = 0.f;
 
 public:
 	// Sets default values for this actor's properties

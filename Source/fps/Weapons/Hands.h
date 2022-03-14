@@ -30,11 +30,7 @@ protected:
 			Properties
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	FName AttachingGripPointName;
-
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	int HandsIndex;
-
 
 	/**************************
 			  Gameplay
@@ -44,7 +40,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AHandsModelForBody> ModelForBodySubclass;
-	
 public:	
 	// Sets default values for this actor's properties
 	AHands();
@@ -65,6 +60,7 @@ public:
 	/**************************
 			 on Events
 	***************************/
+
 	virtual void OnUnEquipped();
 
 	/**************************
@@ -94,6 +90,4 @@ public:
 	***************************/
 	int GetHandsIndex();
 
-	UFUNCTION(BlueprintCallable, Category = "Getter")
-	FName GetAttachingGripPointName();
 };

@@ -12,7 +12,6 @@ AHands::AHands()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Properties
-	AttachingGripPointName = "GripPoint";
 	HandsIndex = 0;
 
 	// Components
@@ -42,6 +41,7 @@ void AHands::Tick(float DeltaTime)
 
 void AHands::OnUnEquipped()
 {
+	UE_LOG(LogTemp, Log, TEXT("OnUnEquipped"));
 	ClientRpcOnUnEquipped();
 	SetOwner(nullptr);
 }
@@ -84,15 +84,11 @@ APickupableActor* AHands::CreatePickupableActor()
 
 void AHands::ClientRpcOnUnEquipped_Implementation()
 {
+	UE_LOG(LogTemp, Log, TEXT("ClientRpcOnUnEquipped"));
 	SetOwner(nullptr);
 }
 
 int AHands::GetHandsIndex()
 {
 	return HandsIndex;
-}
-
-FName AHands::GetAttachingGripPointName()
-{
-	return AttachingGripPointName;
 }

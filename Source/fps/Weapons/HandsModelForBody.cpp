@@ -2,6 +2,7 @@
 
 
 #include "HandsModelForBody.h"
+#include "../Actors/FpsCharacter.h"
 
 // Sets default values
 AHandsModelForBody::AHandsModelForBody()
@@ -17,6 +18,9 @@ AHandsModelForBody::AHandsModelForBody()
 	RootComponent = WeaponMesh;
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(RootComponent);
+
+	// Properties
+	AttachingGripPointName = "GripPoint";
 }
 
 // Called when the game starts or when spawned
@@ -32,3 +36,18 @@ void AHandsModelForBody::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AHandsModelForBody::Initialize(AActor* Parent)
+{
+	SetOwner(Parent);
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
+	if (!IsValid(FpsCharacter))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHandsModelForBody::Initialize FpsCharacter is invalid"));
+		return;
+	}
+}
+
+FName AHandsModelForBody::GetAttachingGripPointName()
+{
+	return AttachingGripPointName;
+}

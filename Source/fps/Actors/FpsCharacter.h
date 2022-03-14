@@ -80,6 +80,8 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	FTimerHandle RespawnTimerHandle;
 
+	FTimerHandle RoundTextTimerHandle;
+
 	FTransform SpawnTransform;
 
 	/**************************
@@ -208,6 +210,8 @@ public:
 
 	void OnRoundStart();
 
+	void OnTextDurationFinished();
+
 	void OnRoundEnd();
 
 	/**************************
@@ -317,6 +321,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Getter")
 	AGunShop* GetGunShop();
+
+	UFUNCTION(BlueprintCallable, Category = "Getter")
+	AHandsModelForBody* GetHandsModelForBody();
 
 	void SetSpawnTransform(FTransform Transform);
 

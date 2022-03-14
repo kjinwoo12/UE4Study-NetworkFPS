@@ -60,7 +60,7 @@ void ATimeBomb::OnInteractWith(ACharacter* character)
 		return;
 	}
 	FpsCharacter->SetCharacterStatus(EFpsCharacterStatus::Freeze);
-	IsDismantiling = true;
+	IsOnDefusing = true;
 }
 
 void ATimeBomb::OnInteractionStop(ACharacter* character)
@@ -72,7 +72,7 @@ void ATimeBomb::OnInteractionStop(ACharacter* character)
 		return;
 	}
 	FpsCharacter->SetCharacterStatus(EFpsCharacterStatus::Alive);
-	IsDismantiling = false;
+	IsOnDefusing = false;
 }
 
 void ATimeBomb::Activate()

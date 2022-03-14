@@ -219,6 +219,7 @@ void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime)
 {
 	if (GetNetMode() == NM_DedicatedServer) return;
 	APlayerController* PlayerController = GetController<APlayerController>();
+
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UpdateInteractiveTarget PlayerController is invalid"));
@@ -481,6 +482,14 @@ void AFpsCharacter::OnRoundStart()
 {
 	SetCharacterStatus(EFpsCharacterStatus::Alive);
 	ClientRpcSetAlertTextOnHud("Round Start");
+
+	const float TextDuration = 2.0f;
+	GetWorldTimerManager().SetTimer(RoundTextTimerHandle, this, &AFpsCharacter::OnTextDurationFinished, TextDuration, false, TextDuration);
+}
+
+void AFpsCharacter::OnTextDurationFinished()
+{
+	ClientRpcSetAlertTextOnHud("");
 }
 
 void AFpsCharacter::OnRoundEnd()
@@ -623,20 +632,28 @@ void AFpsCharacter::Equip(AHands* HandsInstance)
 
 	HandsModelForBody = Hands->CreateHandsModelForBody();
 	if (!IsValid(HandsModelForBody)) return;
-	HandsModelForBody->SetOwner(this);
-	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), Hands->GetAttachingGripPointName());
+	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), HandsModelForBody->GetAttachingGripPointName());
+	HandsModelForBody->Initialize(this);
 }
 
 AHands* AFpsCharacter::UnEquip()
 {
-	if (!IsValid(Hands)) return nullptr;
+	if (!IsValid(Hands))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UnEquip Hands is already invalid"));
+		return nullptr;
+	}
 
 	Hands->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	Hands->OnUnEquipped();
 	Hands = nullptr;
 
 	// UnEquip WeaponModelForThirdPerson
-	if (!IsValid(HandsModelForBody)) return Hands;
+	if (!IsValid(HandsModelForBody)) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UnEquip HandsModelForBody is invalid"))
+		return Hands;
+	}
 	HandsModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	HandsModelForBody->Destroy();
 
@@ -795,6 +812,11 @@ TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()
 AGunShop* AFpsCharacter::GetGunShop()
 {
 	return GunShop;
+}
+
+AHandsModelForBody* AFpsCharacter::GetHandsModelForBody()
+{
+	return HandsModelForBody;
 }
 
 void AFpsCharacter::SetSpawnTransform(FTransform Transform) 
