@@ -22,6 +22,12 @@ class FPS_API APlantBombState : public AGameStateBase
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	float RoundProgressTime = 0;
+
+	UPROPERTY(Replicated)
+	int TerrorTeamPoint = 0;
+
+	UPROPERTY(Replicated)
+	int CounterTerrorTeamPoint = 0;
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -33,6 +39,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetMaxTeamSize();
 
-	UFUNCTION(Blueprintcallable)
+	UFUNCTION(BlueprintCallable)
 	float GetMaximumTimeForRound();
+
+	UFUNCTION(BlueprintCallable)
+	int GetTerrorTeamPoint();
+
+	UFUNCTION(BlueprintCallable)
+	int GetCounterTerrorTeamPoint();
 };

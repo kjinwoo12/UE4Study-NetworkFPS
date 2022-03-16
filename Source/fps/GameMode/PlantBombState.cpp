@@ -14,6 +14,8 @@ void APlantBombState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(APlantBombState, RoundProgressTime);
+	DOREPLIFETIME(APlantBombState, TerrorTeamPoint);
+	DOREPLIFETIME(APlantBombState, CounterTerrorTeamPoint);
 }
 
 int APlantBombState::GetTerrorTeamSize()
@@ -54,3 +56,13 @@ float APlantBombState::GetMaximumTimeForRound()
 	return MaximumTimeForRound;
 }
 
+
+int APlantBombState::GetTerrorTeamPoint()
+{
+	return TerrorTeamPoint;
+}
+
+int APlantBombState::GetCounterTerrorTeamPoint()
+{
+	return CounterTerrorTeamPoint;
+}
