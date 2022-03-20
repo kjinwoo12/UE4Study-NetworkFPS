@@ -29,6 +29,9 @@ void APlantBombMode::OnPlayerJoinTeam()
 	{
 		OnPlayerFull();
 	}
+
+	//For testing on the viewport
+	//OnPlayerFull();
 }
 
 void APlantBombMode::OnPlayerFull()

@@ -39,6 +39,7 @@ void ATimeBomb::BeginPlay()
 
 void ATimeBomb::Tick(float DeltaTime)
 {
+
 }
 
 void ATimeBomb::OnTargetedBy(ACharacter* character)
@@ -85,6 +86,19 @@ void ATimeBomb::Activate()
 	}
 
 	PlantBombMode->OnBombPlant(MaxTime);
+
+	GetWorld()->GetTimerManager().SetTimer(
+		ExplosionFxTimer,
+		this,
+		&ATimeBomb::Explode,
+		MaxTime,
+		false,
+		MaxTime);
+}
+
+void ATimeBomb::Explode()
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFx, GetTransform());
 }
 
 void ATimeBomb::ServerRpcActivate_Implementation()

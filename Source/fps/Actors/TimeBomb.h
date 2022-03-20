@@ -26,6 +26,11 @@ class FPS_API ATimeBomb : public AInteractiveActor
 
 	float CurrentDefusingTime = 0.f;
 
+	UPROPERTY(EditDefaultsOnly)
+	UParticleSystem* ExplosionFx;
+
+	FTimerHandle ExplosionFxTimer;
+
 public:
 	// Sets default values for this actor's properties
 	ATimeBomb();
@@ -52,10 +57,15 @@ public:
 	virtual void OnInteractionStop(ACharacter* character) override;
 
 	/**************************
-			  On Events
+			  Actions
 	***************************/
 	void Activate();
 
+	void Explode();
+
+	/**************************
+				RPC
+	***************************/
 	UFUNCTION(Server, Reliable)
 	void ServerRpcActivate();
 };

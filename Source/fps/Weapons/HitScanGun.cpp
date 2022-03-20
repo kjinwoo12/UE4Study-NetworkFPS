@@ -47,7 +47,7 @@ void AHitScanGun::ClientRPCOnActionFx_Implementation()
 				MuzzleFlashTextureEffect->SetVisibility(false);
 			}),
 		WaitTime,
-				false);
+		false);
 }
 
 AActor* AHitScanGun::SpawnBulletTracer(const FVector SpawnPosition, const FVector ImpactPoint)
