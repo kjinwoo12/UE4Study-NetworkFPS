@@ -12,6 +12,7 @@ void APlantBombMode::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Log, TEXT("APlantBombMode::BeginPlay"));
+	LeadTeam = EPlayerTeam::None;
 }
 
 void APlantBombMode::PostLogin(APlayerController* newPlayer)
@@ -28,6 +29,9 @@ void APlantBombMode::OnPlayerJoinTeam()
 	{
 		OnPlayerFull();
 	}
+
+	//For testing on the viewport
+	//OnPlayerFull();
 }
 
 void APlantBombMode::OnPlayerFull()
@@ -48,6 +52,8 @@ void APlantBombMode::OnPlayerFull()
 void APlantBombMode::OnRoundReady()
 {
 	UE_LOG(LogTemp, Log, TEXT("APlantBombMode::OnRoundReady"));
+	LeadTeam = EPlayerTeam::None;
+
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
@@ -63,6 +69,8 @@ void APlantBombMode::OnRoundReady()
 void APlantBombMode::OnRoundStart()
 {
 	UE_LOG(LogTemp, Log, TEXT("APlantBombMode::OnRoundStart"));
+	LeadTeam = EPlayerTeam::TeamCounterTerror;
+
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());
@@ -90,6 +98,8 @@ void APlantBombMode::OnRoundSecondTick()
 
 void APlantBombMode::OnBombPlant(float BombTime)
 {
+	LeadTeam = EPlayerTeam::TeamTerror;
+
 	APlantBombState* state = GetGameState<APlantBombState>();
 	if (!IsValid(state)) return;
 
@@ -99,6 +109,18 @@ void APlantBombMode::OnBombPlant(float BombTime)
 void APlantBombMode::OnRoundEnd()
 {
 	UE_LOG(LogTemp, Log, TEXT("APlantBombMode::OnRoundEnd"));
+
+	APlantBombState* state = GetGameState<APlantBombState>();
+	if (!IsValid(state)) return;
+	if (LeadTeam == EPlayerTeam::TeamTerror)
+	{
+		state->TerrorTeamPoint++;
+	}
+	else if (LeadTeam == EPlayerTeam::TeamCounterTerror)
+	{
+		state->CounterTerrorTeamPoint++;
+	}
+
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		AFpsPlayerController* FpsPlayerController = Cast<AFpsPlayerController>(Iterator->Get());

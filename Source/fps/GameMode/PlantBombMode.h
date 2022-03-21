@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "../PlayerController/PlayerTeam.h"
 #include "PlantBombMode.generated.h"
 
 /**
@@ -20,6 +21,9 @@ private:
 public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGameModeBase> PreparedGameModeSubclass;
+
+	UPROPERTY(EditAnywhere)
+	EPlayerTeam LeadTeam;
 
 public:
 	virtual void BeginPlay() override;
