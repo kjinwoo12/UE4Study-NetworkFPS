@@ -29,6 +29,9 @@ class FPS_API ATimeBomb : public AInteractiveActor
 	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* ExplosionFx;
 
+	UPROPERTY(EditDefaultsOnly)
+	USoundWave* ExplosionSoundFx;
+
 	FTimerHandle ExplosionFxTimer;
 
 public:

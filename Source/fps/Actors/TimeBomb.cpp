@@ -98,7 +98,9 @@ void ATimeBomb::Activate()
 
 void ATimeBomb::Explode()
 {
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionFx, GetTransform());
+	UWorld* World = GetWorld();
+	if(ExplosionFx != nullptr) UGameplayStatics::SpawnEmitterAtLocation(World, ExplosionFx, GetTransform());
+	if(ExplosionSoundFx != nullptr) UGameplayStatics::PlaySoundAtLocation(World, ExplosionSoundFx, GetActorLocation());
 }
 
 void ATimeBomb::ServerRpcActivate_Implementation()
