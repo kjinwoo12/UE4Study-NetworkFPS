@@ -632,7 +632,6 @@ void AFpsCharacter::Equip(AHands* HandsInstance)
 	Hands = HandsInstance;
 	Hands->AttachToComponent(CameraComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true));
 	Hands->Initialize(this);
-	Hands->SetActorScale3D(FVector(0.4f, 0.4f, 0.4f));
 
 	HandsModelForBody = Hands->CreateHandsModelForBody();
 	if (!IsValid(HandsModelForBody)) return;
