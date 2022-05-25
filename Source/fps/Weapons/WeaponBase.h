@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Hands.h"
+#include "Engine/DataTable.h"
 #include "WeaponBase.generated.h"
 
 class AFpsCharacter;
@@ -66,6 +67,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Damage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	float MaxRecoilRecoveryTime;
+
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UDataTable* RecoilDatatable;
+
 	/**************************
 			 Animation
 	***************************/
@@ -127,7 +134,7 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
-	virtual void Initialize(AActor* Parent) override;
+	virtual void Initialize(AFpsCharacter* FpsCharacter) override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -137,16 +144,22 @@ public:
 	/**************************
 			 on Events
 	***************************/
-	virtual void OnUnEquipped() override;
+	virtual void OnUnequipHands(AHands* Hands) override;
+
+	virtual void OnActionPressed() override;
+	virtual void OnActionReleased() override;
+	virtual void OnSubactionPressed() override;
+	virtual void OnSubactionReleased() override;
+	virtual void OnReloadPressed() override;
 
 	/**************************
 			Action 
 	***************************/
-	virtual void StartAction() override;
-	virtual void StopAction() override;
-	virtual void StartSubaction() override;
-	virtual void StopSubaction() override;
-	virtual void StartReload() override;
+	virtual void StartAction();
+	virtual void StopAction();
+	virtual void StartSubaction();
+	virtual void StopSubaction();
+	virtual void StartReload();
 
 	/**************************
 			about Actions

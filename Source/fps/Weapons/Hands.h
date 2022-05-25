@@ -2,15 +2,20 @@
 
 #pragma once
 
+#include <vector>
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../Interface/FpsCharacterEvent.h"
+#include "../Interface/HandsEvent.h"
 #include "Hands.generated.h"
 
+class AFpsCharacter;
 class APickupableActor;
 class AHandsModelForBody;
 
 UCLASS()
-class FPS_API AHands : public AActor
+class FPS_API AHands : public AActor, public IFpsCharacterEvent
 {
 	GENERATED_BODY()
 
@@ -33,13 +38,18 @@ protected:
 	int HandsIndex;
 
 	/**************************
-			  Gameplay
+			  Subclass
 	***************************/
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<APickupableActor> PickupableActorSubclass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AHandsModelForBody> ModelForBodySubclass;
+
+	/**************************
+			   Event
+	***************************/
+	std::vector<IHandsEvent*> EventObservers;
 public:	
 	// Sets default values for this actor's properties
 	AHands();
@@ -55,22 +65,15 @@ public:
 	/**************************
 			Initialize
 	***************************/
-	virtual void Initialize(AActor* Parent);
+	virtual void Initialize(AFpsCharacter* FpsCharacter);
 
 	/**************************
-			 on Events
+			   Events
 	***************************/
+	void AddObserver(IHandsEvent* Observer);
+	void RemoveObserver(IHandsEvent* Observer);
 
-	virtual void OnUnEquipped();
-
-	/**************************
-			  Actions
-	***************************/
-	virtual void StartAction();
-	virtual void StopAction();
-	virtual void StartSubaction();
-	virtual void StopSubaction();
-	virtual void StartReload();
+	virtual void OnUnequipHands(AHands* Hands) override;
 
 	/**************************
 			Game Play
@@ -83,7 +86,7 @@ public:
 				RPC
 	***************************/
 	UFUNCTION(Client, Reliable)
-	void ClientRpcOnUnEquipped();
+	void ClientRpcOnUnequipped();
 
 	/**************************
 		  Getter & Setter

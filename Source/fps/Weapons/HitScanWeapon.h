@@ -32,12 +32,12 @@ public:
 	AHitScanWeapon();
 
 public:
-	virtual void Initialize(AActor* Parent) override;
+	virtual void Initialize(AFpsCharacter* FpsCharacter) override;
 
 	/**************************
 			 on Events
 	***************************/
-	virtual void OnUnEquipped() override;
+	virtual void OnUnequipHands(AHands* Hands) override;
 
 	virtual void OnAction() override;
 

@@ -11,15 +11,15 @@ AHitScanWeapon::AHitScanWeapon() : AWeaponBase()
 	Reach = 6000.f;
 }
 
-void AHitScanWeapon::Initialize(AActor* Parent)
+void AHitScanWeapon::Initialize(AFpsCharacter* FpsCharacter)
 {
-	AWeaponBase::Initialize(Parent);
-	LineTraceCollisionQueryParams.AddIgnoredActor(Parent);
+	AWeaponBase::Initialize(FpsCharacter);
+	LineTraceCollisionQueryParams.AddIgnoredActor(FpsCharacter);
 }
 
-void AHitScanWeapon::OnUnEquipped()
+void AHitScanWeapon::OnUnequipHands(AHands* Hands)
 {
-	Super::OnUnEquipped();
+	Super::OnUnequipHands(Hands);
 	LineTraceCollisionQueryParams.ClearIgnoredActors();
 }
 

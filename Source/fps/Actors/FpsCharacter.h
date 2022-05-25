@@ -2,14 +2,21 @@
 
 #pragma once
 
+#include <vector>
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../Interface/FpsCharacterEvent.h"
 #include "FpsCharacter.generated.h"
 
 #define WEAPON_INDEX_SIZE 5
 
+// Include classes
+class AHands;
+class AHandsModelForBody;
 class AGunShop;
 class AInteractiveActor;
+class URecoilComponent;
 
 UENUM(BlueprintType)
 enum class EFpsCharacterStatus : uint8
@@ -38,16 +45,18 @@ class FPS_API AFpsCharacter : public ACharacter
 			Components
 	***************************/
 	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* CameraComponent;
+	UCameraComponent* CameraComponent;
+
+	URecoilComponent* RecoilComponent;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing = OnRep_InitializePrimaryWeapon)
-	class AHands* Hands;
+	AHands* Hands;
 
 	UPROPERTY(EditDefaultsOnly, Replicated)
-	class AHandsModelForBody* HandsModelForBody;
+	AHandsModelForBody* HandsModelForBody;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -93,6 +102,9 @@ class FPS_API AFpsCharacter : public ACharacter
 	UPROPERTY(Replicated)
 	float AimYaw;
 
+	// CollisionParams for LineTrace
+	FCollisionQueryParams LineTraceCollisionQueryParams;
+
 	/**************************
 		   Weapon Switch
 	***************************/
@@ -104,21 +116,24 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	UPROPERTY(Replicated)
 	TArray<AHands*> Inventory;
+
+	UPROPERTY(Replicated)
+	AGunShop* GunShop;
 	 
 	/**************************
 				etc
 	***************************/
-	// CollisionParams for LineTrace
-	FCollisionQueryParams LineTraceCollisionQueryParams;
 
 	UPROPERTY(Replicated)
 	AInteractiveActor* InteractiveTarget;
 
 	UPROPERTY(Replicated)
-	AGunShop* GunShop;
-
-	UPROPERTY(Replicated)
 	bool Plantable = false;
+
+	/**************************
+		   Event Observer
+	***************************/
+	std::vector<IFpsCharacterEvent*> EventObservers;
 
 public:
 	// Sets default values for this character's properties
@@ -131,6 +146,8 @@ private:
 	void InitializeCollisionComponent();
 
 	void InitializeMovementComponent();
+
+	void InitializeRecoilComponent();
 
 	void InitializeCamera();
 
@@ -200,8 +217,12 @@ public:
 	void GunShopPressed();
 
 	/**************************
-			  OnEvent
+			  Event
 	***************************/
+	void AddObserver(IFpsCharacterEvent* EventObserver);
+
+	void RemoveObserver(IFpsCharacterEvent* EventObserver);
+
 	void OnPossessed();
 
 	void OnPlayerFull();
@@ -274,7 +295,7 @@ public:
 	void Equip(AHands* HandsInstance);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AHands* UnEquip();
+	AHands* Unequip();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();

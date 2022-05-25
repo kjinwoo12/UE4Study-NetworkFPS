@@ -42,10 +42,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/**************************
+			   Event
+	***************************/
+	virtual void OnActionPressed() override;
+	virtual void OnActionReleased() override;
+
+	/**************************
 			  Actions
 	***************************/
-	virtual void StartAction() override;
-	virtual void StopAction() override;
+	void StartAction();
+	void StopAction();
 
 	void PlayHandsAnimation();
 	void StopHandsAnimation();
