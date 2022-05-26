@@ -5,14 +5,14 @@
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "../Interface/FpsCharacterEvent.h"
-#include "../Interface/HandsEvent.h"
+#include "../Interface/WeaponEvent.h"
 #include "RecoilComponent.generated.h"
 
 class AFpsCharacter;
 class AHands;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class FPS_API URecoilComponent : public USceneComponent, public IFpsCharacterEvent, public IHandsEvent
+class FPS_API URecoilComponent : public USceneComponent, public IFpsCharacterEvent, public IWeaponEvent
 {
 	GENERATED_BODY()
 	
@@ -36,4 +36,8 @@ public:
 	// IFpsCharacterEvent
 	virtual void OnEquipHands(AHands* Hands) override;
 	virtual void OnUnequipHands(AHands* Hands) override;
+
+	// IWeaponEvent
+	virtual void OnActionEvent(AWeaponBase* WeaponBase) override;
+	virtual void OnSubactionEvent(AWeaponBase* WeaponBase) override;
 };

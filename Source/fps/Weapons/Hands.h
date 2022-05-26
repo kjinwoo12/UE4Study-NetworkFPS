@@ -2,12 +2,9 @@
 
 #pragma once
 
-#include <vector>
-
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Interface/FpsCharacterEvent.h"
-#include "../Interface/HandsEvent.h"
 #include "Hands.generated.h"
 
 class AFpsCharacter;
@@ -46,10 +43,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 	TSubclassOf<AHandsModelForBody> ModelForBodySubclass;
 
-	/**************************
-			   Event
-	***************************/
-	std::vector<IHandsEvent*> EventObservers;
 public:	
 	// Sets default values for this actor's properties
 	AHands();
@@ -70,9 +63,6 @@ public:
 	/**************************
 			   Events
 	***************************/
-	void AddObserver(IHandsEvent* Observer);
-	void RemoveObserver(IHandsEvent* Observer);
-
 	virtual void OnUnequipHands(AHands* Hands) override;
 
 	/**************************

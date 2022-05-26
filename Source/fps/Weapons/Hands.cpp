@@ -39,21 +39,6 @@ void AHands::Initialize(AFpsCharacter* FpsCharacter)
 {
 	SetOwner(FpsCharacter);
 	FpsCharacter->AddObserver(this);
-
-}
-
-void AHands::AddObserver(IHandsEvent* Observer)
-{
-	EventObservers.push_back(Observer);
-}
-
-void AHands::RemoveObserver(IHandsEvent* Observer)
-{
-	auto FindInfo = std::find(EventObservers.begin(), EventObservers.end(), Observer);
-	if (FindInfo != EventObservers.end())
-	{
-		EventObservers.erase(FindInfo);
-	}
 }
 
 void AHands::OnUnequipHands(AHands* Hands)

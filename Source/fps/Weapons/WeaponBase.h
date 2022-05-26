@@ -2,9 +2,12 @@
 
 #pragma once
 
+#include <vector>
+
 #include "CoreMinimal.h"
 #include "Hands.h"
 #include "Engine/DataTable.h"
+#include "../Interface/WeaponEvent.h"
 #include "WeaponBase.generated.h"
 
 class AFpsCharacter;
@@ -115,6 +118,11 @@ protected:
 	class USoundBase* ReloadSound;
 
 	/**************************
+			  Events
+	***************************/
+	std::vector<IWeaponEvent*> EventObservers;
+
+	/**************************
 				etc
 	***************************/
 private:
@@ -142,15 +150,22 @@ protected:
 
 public:
 	/**************************
-			 on Events
+			  Events
 	***************************/
-	virtual void OnUnequipHands(AHands* Hands) override;
+	//WeaponBase
+	void AddObserver(IWeaponEvent* Observer);
+	void RemoveObserver(IWeaponEvent* Observer);
 
+	//FpsCharacterEvent
+	virtual void OnUnequipHands(AHands* Hands) override;
 	virtual void OnActionPressed() override;
 	virtual void OnActionReleased() override;
 	virtual void OnSubactionPressed() override;
 	virtual void OnSubactionReleased() override;
 	virtual void OnReloadPressed() override;
+
+	//WeaponEvent
+	
 
 	/**************************
 			Action 

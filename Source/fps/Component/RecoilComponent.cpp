@@ -4,6 +4,7 @@
 
 #include "../Actors/FpsCharacter.h"
 #include "../Weapons/Hands.h"
+#include "../Weapons/WeaponBase.h"
 
 // Sets default values for this component's properties
 URecoilComponent::URecoilComponent()
@@ -42,11 +43,27 @@ void URecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 void URecoilComponent::OnEquipHands(AHands* Hands)
 {
-	Hands->AddObserver(this);
+	AWeaponBase* WeaponBase = Cast<AWeaponBase>(Hands);
+	if (!IsValid(WeaponBase)) return;
 
+	WeaponBase->AddObserver(this);
+	
+	RecoilIndex = 0;
+	CurrentRecoveryTime = 0.f;
 }
 
 void URecoilComponent::OnUnequipHands(AHands* Hands)
 {
-	Hands->RemoveObserver(this);
+	AWeaponBase* WeaponBase = Cast<AWeaponBase>(Hands);
+	if (!IsValid(WeaponBase)) return;
+
+	WeaponBase->RemoveObserver(this);
+}
+
+void URecoilComponent::OnActionEvent(AWeaponBase* WeaponBase)
+{
+}
+
+void URecoilComponent::OnSubactionEvent(AWeaponBase* WeaponBase)
+{
 }

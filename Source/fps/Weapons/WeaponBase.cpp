@@ -67,6 +67,20 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
+void AWeaponBase::AddObserver(IWeaponEvent* Observer)
+{
+	EventObservers.push_back(Observer);
+}
+
+void AWeaponBase::RemoveObserver(IWeaponEvent* Observer)
+{
+	auto FindInfo = std::find(EventObservers.begin(), EventObservers.end(), Observer);
+	if (FindInfo != EventObservers.end())
+	{
+		EventObservers.erase(FindInfo);
+	}
+}
+
 void AWeaponBase::OnUnequipHands(AHands* Hands)
 {
 	Super::OnUnequipHands(Hands);
@@ -206,6 +220,11 @@ void AWeaponBase::OnAction()
 	CurrentAmmo -= !IsAmmoInfinite;
 
 	MulticastRPCOnActionFx();
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnActionEvent(this);
+	}
 }
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
@@ -241,6 +260,11 @@ void AWeaponBase::OnSubaction()
 	// Play sound
 	if (SubactionSound != NULL)
 		UGameplayStatics::PlaySoundAtLocation(this, SubactionSound, GetActorLocation());
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnSubactionEvent(this);
+	}
 }
 
 void AWeaponBase::OnReload()
@@ -251,6 +275,11 @@ void AWeaponBase::OnReload()
 	int ChargedAmmo = (RequiredAmmo < SubAmmo) ? RequiredAmmo : SubAmmo;
 	SubAmmo -= ChargedAmmo;
 	CurrentAmmo += ChargedAmmo;
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnReloadEvent(this);
+	}
 }
 
 float AWeaponBase::GetDelay()
