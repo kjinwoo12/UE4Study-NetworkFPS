@@ -39,6 +39,7 @@ void AHands::Initialize(AFpsCharacter* FpsCharacter)
 {
 	SetOwner(FpsCharacter);
 	FpsCharacter->AddObserver(this);
+	SetActorScale3D(FVector(0.2f));
 }
 
 void AHands::OnUnequipHands(AHands* Hands)

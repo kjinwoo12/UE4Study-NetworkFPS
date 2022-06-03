@@ -70,7 +70,7 @@ void AFpsCharacter::InitializeCamera()
 	// Camera
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(RecoilComponent);
-	CameraComponent->bUsePawnControlRotation = true;
+	CameraComponent->bUsePawnControlRotation = false;
 }
 
 void AFpsCharacter::InitializeBodyMesh()
@@ -90,8 +90,8 @@ void AFpsCharacter::InitializeGameplayVariable()
 	Health = 100;
 	MaxArmor = 100;
 	Armor = 50;
-	AimPitch = 0;
-	AimYaw = 0;
+	BodyMeshAimPitch = 0;
+	BodyMeshAimYaw = 0;
 }
 
 void AFpsCharacter::InitializeGunShop()
@@ -127,8 +127,8 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, Hands);
 	DOREPLIFETIME(AFpsCharacter, HandsModelForBody);
 	DOREPLIFETIME(AFpsCharacter, CharacterStatus);
-	DOREPLIFETIME(AFpsCharacter, AimPitch);
-	DOREPLIFETIME(AFpsCharacter, AimYaw);
+	DOREPLIFETIME(AFpsCharacter, BodyMeshAimPitch);
+	DOREPLIFETIME(AFpsCharacter, BodyMeshAimYaw);
 	DOREPLIFETIME(AFpsCharacter, GunShop);
 	DOREPLIFETIME(AFpsCharacter, CurrentHandsIndex);
 	DOREPLIFETIME(AFpsCharacter, Inventory);
@@ -139,7 +139,7 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 void AFpsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UpdateAim(DeltaTime);
+	UpdateBodyMeshAimOffset(DeltaTime);
 	UpdateActorDirection(DeltaTime);
 	UpdateCameraRotation();
 	UpdateCrosshair();
@@ -168,26 +168,21 @@ void AFpsCharacter::UpdateCrosshair()
 	FpsHud->SetCrosshairCenterOffset(CrosshairCenterOffset);
 }
 
-void AFpsCharacter::ClientRpcUpdateCameraRotationToServer_Implementation()
-{
-	ServerRpcSetCameraRotation(CameraComponent->GetComponentToWorld().GetRotation());
-}
-
-bool AFpsCharacter::ServerRpcSetCameraRotation_Validate(FQuat CameraRotation)
+bool AFpsCharacter::ServerRpcSetCameraRotation_Validate(FRotator CameraRotation)
 {
 	return true;
 }
 
-void AFpsCharacter::ServerRpcSetCameraRotation_Implementation(FQuat CameraRotation)
+void AFpsCharacter::ServerRpcSetCameraRotation_Implementation(FRotator CameraRotation)
 {
 	CameraComponent->SetWorldRotation(CameraRotation);
 }
 
-void AFpsCharacter::UpdateAim(float DeltaTime) 
+void AFpsCharacter::UpdateBodyMeshAimOffset(float DeltaTime) 
 {
 	if (GetNetMode() == NM_Client) return;
 
-	FRotator AimRotator = FRotator(AimPitch, AimYaw, 0);
+	FRotator AimRotator = FRotator(BodyMeshAimPitch, BodyMeshAimYaw, 0);
 	FRotator ControlRotation = GetControlRotation();
 	FRotator ActorRotation = GetActorRotation();
 	AimRotator = UKismetMathLibrary::RInterpTo(
@@ -196,40 +191,24 @@ void AFpsCharacter::UpdateAim(float DeltaTime)
 		DeltaTime,
 		0
 	);
-	AimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
-	AimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
+	BodyMeshAimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
+	BodyMeshAimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
 }
 
 void AFpsCharacter::UpdateActorDirection(float DeltaTime)
 {
-	// if the character is moving, or the Controller's aim direction is over 90 degree,
-	// then make body of the character to follow the aim direction.
-
 	if (GetNetMode() == NM_Client) return;
 
 	FRotator ControlRotation = GetControlRotation();
-	FRotator ActorRotation = GetActorRotation();
-
-	float CharacterSpeed = 0;
-	FVector BodyDirection;
-	GetVelocity().ToDirectionAndLength(BodyDirection, CharacterSpeed);
-	if (0 < CharacterSpeed)
-	{
-		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
-		return;
-	}
-
-	float AlphaRotation = ControlRotation.Yaw - ActorRotation.Yaw;
-	if (AlphaRotation < -90 || 90 < AlphaRotation)
-	{
-		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw - AimYaw, 0));
-	}
+	SetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
 }
 
 void AFpsCharacter::UpdateCameraRotation()
 {
-	if (GetNetMode() != ENetMode::NM_DedicatedServer) return;
-	ClientRpcUpdateCameraRotationToServer();
+	if (GetNetMode() == NM_Client) return;
+
+	FRotator ControlRotation = GetControlRotation();
+	CameraComponent->SetRelativeRotation(FRotator(ControlRotation.Pitch, 0, 0));
 }
 
 void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime) 
@@ -463,16 +442,12 @@ void AFpsCharacter::GunShopPressed()
 
 void AFpsCharacter::AddObserver(IFpsCharacterEvent* Observer)
 {
-	EventObservers.push_back(Observer);
+	EventObservers.Add(Observer);
 }
 
 void AFpsCharacter::RemoveObserver(IFpsCharacterEvent* Observer)
 {
-	auto FindInfo = std::find(EventObservers.begin(), EventObservers.end(), Observer);
-	if (FindInfo != EventObservers.end())
-	{
-		EventObservers.erase(FindInfo);
-	}
+	EventObservers.Remove(Observer);
 }
 
 void AFpsCharacter::OnPossessed()
@@ -827,12 +802,12 @@ USkeletalMeshComponent* AFpsCharacter::GetBodyMeshComponent()
 
 float AFpsCharacter::GetAimPtich()
 {
-	return AimPitch;
+	return BodyMeshAimPitch;
 }
 
 float AFpsCharacter::GetAimYaw()
 {
-	return AimYaw;
+	return BodyMeshAimYaw;
 }
 
 TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()

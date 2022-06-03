@@ -2,11 +2,8 @@
 
 #pragma once
 
-#include <vector>
-
 #include "CoreMinimal.h"
 #include "Hands.h"
-#include "Engine/DataTable.h"
 #include "../Interface/WeaponEvent.h"
 #include "WeaponBase.generated.h"
 
@@ -73,9 +70,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float MaxRecoilRecoveryTime;
 
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	UDataTable* RecoilDatatable;
-
 	/**************************
 			 Animation
 	***************************/
@@ -120,7 +114,7 @@ protected:
 	/**************************
 			  Events
 	***************************/
-	std::vector<IWeaponEvent*> EventObservers;
+	TArray<IWeaponEvent*> EventObservers;
 
 	/**************************
 				etc

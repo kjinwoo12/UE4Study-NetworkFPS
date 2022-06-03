@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../Interface/FpsCharacterEvent.h"
@@ -44,11 +42,14 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 			Components
 	***************************/
+public:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComponent;
 
+	UPROPERTY(VisibleAnywhere)
 	URecoilComponent* RecoilComponent;
 
+private:
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
 
@@ -97,10 +98,10 @@ class FPS_API AFpsCharacter : public ACharacter
 				Aim
 	***************************/
 	UPROPERTY(Replicated)
-	float AimPitch;
+	float BodyMeshAimPitch;
 
 	UPROPERTY(Replicated)
-	float AimYaw;
+	float BodyMeshAimYaw;
 
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
@@ -133,7 +134,7 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 		   Event Observer
 	***************************/
-	std::vector<IFpsCharacterEvent*> EventObservers;
+	TArray<IFpsCharacterEvent*> EventObservers;
 
 public:
 	// Sets default values for this character's properties
@@ -175,7 +176,7 @@ public:
 	UFUNCTION()
 	void UpdateCrosshair();
 
-	void UpdateAim(float DeltaTime);
+	void UpdateBodyMeshAimOffset(float DeltaTime);
 
 	void UpdateActorDirection(float DeltaTime);
 
@@ -239,10 +240,7 @@ public:
 				Rpc
 	***************************/
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRpcSetCameraRotation(FQuat CameraRotation);
-
-	UFUNCTION(Client, Reliable)
-	void ClientRpcUpdateCameraRotationToServer();
+	void ServerRpcSetCameraRotation(FRotator CameraRotation);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRpcPickUp(APickupableActor* PickupableActor);

@@ -69,16 +69,12 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 void AWeaponBase::AddObserver(IWeaponEvent* Observer)
 {
-	EventObservers.push_back(Observer);
+	EventObservers.Add(Observer);
 }
 
 void AWeaponBase::RemoveObserver(IWeaponEvent* Observer)
 {
-	auto FindInfo = std::find(EventObservers.begin(), EventObservers.end(), Observer);
-	if (FindInfo != EventObservers.end())
-	{
-		EventObservers.erase(FindInfo);
-	}
+	EventObservers.Remove(Observer);
 }
 
 void AWeaponBase::OnUnequipHands(AHands* Hands)

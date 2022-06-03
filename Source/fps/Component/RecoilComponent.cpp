@@ -25,13 +25,6 @@ void URecoilComponent::BeginPlay()
 
 void URecoilComponent::Initialize(AFpsCharacter* FpsCharacter)
 {
-	/*
-	목적 : 옵저버 패턴으로 캐릭터의 각종 이벤트를 전달받아 이벤트에 맞는 일을 해야함
-	할 일
-	1. 이벤트 전달받았다고 가정하고 어떤 식으로 사용할지 작성
-	2. 작성된 내용을 바탕으로 이벤트 전달하는 부분을 구현
-	*/
-
 	FpsCharacter->AddObserver(this);
 }
 
@@ -39,6 +32,10 @@ void URecoilComponent::Initialize(AFpsCharacter* FpsCharacter)
 void URecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
+	//ReduceRotation(DeltaTime);
+	//ReduceRecoveryTime(DeltaTime);
+	//if(!bIsActionPressed) UpdateRecoilIndex();
 }
 
 void URecoilComponent::OnEquipHands(AHands* Hands)
@@ -46,10 +43,9 @@ void URecoilComponent::OnEquipHands(AHands* Hands)
 	AWeaponBase* WeaponBase = Cast<AWeaponBase>(Hands);
 	if (!IsValid(WeaponBase)) return;
 
-	WeaponBase->AddObserver(this);
-	
-	RecoilIndex = 0;
 	CurrentRecoveryTime = 0.f;
+
+	WeaponBase->AddObserver(this);
 }
 
 void URecoilComponent::OnUnequipHands(AHands* Hands)
@@ -60,10 +56,28 @@ void URecoilComponent::OnUnequipHands(AHands* Hands)
 	WeaponBase->RemoveObserver(this);
 }
 
-void URecoilComponent::OnActionEvent(AWeaponBase* WeaponBase)
+void URecoilComponent::OnActionPressed()
 {
+	bIsActionPressed = true;
 }
 
-void URecoilComponent::OnSubactionEvent(AWeaponBase* WeaponBase)
+void URecoilComponent::OnActionReleased()
 {
+	bIsActionPressed = false;
+}
+
+void URecoilComponent::OnActionEvent(AWeaponBase* WeaponBase)
+{
+	UE_LOG(LogTemp, Log, TEXT("URecoilComponent::OnActionEvent"));
+}
+
+FRotator URecoilComponent::CalculateCameraRotation(FRotator Base, FRotator ErrorRange)
+{
+	UE_LOG(LogTemp, Log, TEXT("Base(%f, %f, %f)"), Base.Pitch, Base.Yaw, Base.Roll);
+	UE_LOG(LogTemp, Log, TEXT("ErrorRange(%f, %f, %f)"), ErrorRange.Pitch, ErrorRange.Yaw, ErrorRange.Roll);
+	return FRotator(
+		FMath::RandRange(Base.Pitch, Base.Pitch+ErrorRange.Pitch),
+		FMath::RandRange(Base.Yaw, Base.Yaw+ErrorRange.Yaw),
+		FMath::RandRange(Base.Roll, Base.Roll+ErrorRange.Roll)
+	);
 }

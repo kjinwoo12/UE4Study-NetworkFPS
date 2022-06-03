@@ -15,9 +15,10 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPS_API URecoilComponent : public USceneComponent, public IFpsCharacterEvent, public IWeaponEvent
 {
 	GENERATED_BODY()
-	
-	int RecoilIndex;
+
+	FString RecoilDataContext;
 	float CurrentRecoveryTime;
+	bool bIsActionPressed;
 
 public:	
 	// Sets default values for this component's properties
@@ -36,8 +37,13 @@ public:
 	// IFpsCharacterEvent
 	virtual void OnEquipHands(AHands* Hands) override;
 	virtual void OnUnequipHands(AHands* Hands) override;
+	virtual void OnActionPressed() override;
+	virtual void OnActionReleased() override;
 
 	// IWeaponEvent
 	virtual void OnActionEvent(AWeaponBase* WeaponBase) override;
-	virtual void OnSubactionEvent(AWeaponBase* WeaponBase) override;
+
+private:
+	// Calculate Recoil
+	FRotator CalculateCameraRotation(FRotator Base, FRotator ErrorRange);
 };
