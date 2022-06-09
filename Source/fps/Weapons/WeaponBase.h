@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Hands.h"
 #include "../Interface/WeaponEvent.h"
+#include "Components/TimeLineComponent.h"
 #include "WeaponBase.generated.h"
 
 class AFpsCharacter;
@@ -68,7 +69,9 @@ protected:
 	float Damage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
-	float MaxRecoilRecoveryTime;
+	float RecoilRecoveryTime;
+
+	float CurrentRecoilRecoveryTime;
 
 	/**************************
 			 Animation
@@ -117,7 +120,18 @@ protected:
 	TArray<IWeaponEvent*> EventObservers;
 
 	/**************************
-				etc
+		  Recoil TimeLine
+	***************************/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
+	UCurveVector* CameraRecoilCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
+	UCurveVector* BulletRecoilCurve;
+
+	FTimeline RecoilTimeline;
+	
+	/**************************
+			    ETC
 	***************************/
 private:
 	// TimerHandle to make weapon on delay
@@ -142,6 +156,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+private:
+	void InitializeRecoilTimeline();
+
 public:
 	/**************************
 			  Events
@@ -160,6 +180,16 @@ public:
 
 	//WeaponEvent
 	
+
+	//Timeline Callback
+	UFUNCTION()
+	void OnCameraRecoilProgress(FVector CameraRecoil);
+	
+	UFUNCTION()
+	void OnBulletRecoilProgress(FVector BulletRecoil);
+
+	UFUNCTION()
+	void OnRecoilTimelineFinish();
 
 	/**************************
 			Action 

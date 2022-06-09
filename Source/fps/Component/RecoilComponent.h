@@ -41,7 +41,9 @@ public:
 	virtual void OnActionReleased() override;
 
 	// IWeaponEvent
-	virtual void OnActionEvent(AWeaponBase* WeaponBase) override;
+	virtual void OnCameraRecoilProgress(FVector CameraRecoil) override;
+	virtual void OnBulletRecoilProgress(FVector BulletRecoil) override;
+	virtual void OnRecoilStop(float RecoveryTime) override;
 
 private:
 	// Calculate Recoil

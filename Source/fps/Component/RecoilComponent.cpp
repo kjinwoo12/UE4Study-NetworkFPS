@@ -32,10 +32,17 @@ void URecoilComponent::Initialize(AFpsCharacter* FpsCharacter)
 void URecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	//ReduceRotation(DeltaTime);
-	//ReduceRecoveryTime(DeltaTime);
-	//if(!bIsActionPressed) UpdateRecoilIndex();
+
+	if (0.f <= CurrentRecoveryTime)
+	{
+		FRotator Rotation = GetRelativeRotation();
+		float ReducedRecoveryTime = CurrentRecoveryTime - DeltaTime;
+		Rotation.Pitch *= ReducedRecoveryTime / CurrentRecoveryTime;
+		Rotation.Yaw *= ReducedRecoveryTime / CurrentRecoveryTime;
+		Rotation.Roll *= ReducedRecoveryTime / CurrentRecoveryTime;
+		SetRelativeRotation(Rotation);
+		CurrentRecoveryTime = ReducedRecoveryTime;
+	}
 }
 
 void URecoilComponent::OnEquipHands(AHands* Hands)
@@ -66,9 +73,19 @@ void URecoilComponent::OnActionReleased()
 	bIsActionPressed = false;
 }
 
-void URecoilComponent::OnActionEvent(AWeaponBase* WeaponBase)
+void URecoilComponent::OnCameraRecoilProgress(FVector CameraRecoil)
 {
-	UE_LOG(LogTemp, Log, TEXT("URecoilComponent::OnActionEvent"));
+	SetRelativeRotation(FRotator(CameraRecoil.Y, CameraRecoil.Z, CameraRecoil.X));
+}
+
+void URecoilComponent::OnBulletRecoilProgress(FVector BulletRecoil)
+{
+}
+
+void URecoilComponent::OnRecoilStop(float RecoveryTime)
+{
+	UE_LOG(LogTemp, Log, TEXT("OnRecoilStop %f"), RecoveryTime);
+	CurrentRecoveryTime = RecoveryTime;
 }
 
 FRotator URecoilComponent::CalculateCameraRotation(FRotator Base, FRotator ErrorRange)

@@ -29,12 +29,6 @@ void AHands::BeginPlay()
 	Super::BeginPlay();
 }
 
-// Called every frame
-void AHands::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AHands::Initialize(AFpsCharacter* FpsCharacter)
 {
 	SetOwner(FpsCharacter);

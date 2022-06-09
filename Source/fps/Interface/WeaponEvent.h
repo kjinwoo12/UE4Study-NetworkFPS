@@ -27,4 +27,7 @@ public:
 	virtual void OnActionEvent(AWeaponBase* WeaponBase);
 	virtual void OnSubactionEvent(AWeaponBase* WeaponBase);
 	virtual void OnReloadEvent(AWeaponBase* WeaponBase);
+	virtual void OnCameraRecoilProgress(FVector CameraRecoil);
+	virtual void OnBulletRecoilProgress(FVector BulletRecoil);
+	virtual void OnRecoilStop(float RecoveryTime);
 };

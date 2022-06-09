@@ -16,3 +16,16 @@ void IWeaponEvent::OnSubactionEvent(AWeaponBase* WeaponBase)
 void IWeaponEvent::OnReloadEvent(AWeaponBase* WeaponBase)
 {
 }
+
+
+void IWeaponEvent::OnCameraRecoilProgress(FVector CameraRecoil)
+{
+}
+
+void IWeaponEvent::OnBulletRecoilProgress(FVector BulletRecoil)
+{
+}
+
+void IWeaponEvent::OnRecoilStop(float RecoveryTime)
+{
+}
