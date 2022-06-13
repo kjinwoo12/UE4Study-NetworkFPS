@@ -57,7 +57,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	bool IsAmmoInfinite;
 
-	// 0.f ~ 1.f
+	// 1.f ~ 3.f
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Accuracy;
 
@@ -152,6 +152,8 @@ public:
 
 	virtual void Initialize(AFpsCharacter* FpsCharacter) override;
 
+	void InitializeRecoilTimeline();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -159,8 +161,10 @@ protected:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	void InitializeRecoilTimeline();
+	/**************************
+			  Recoil
+	***************************/
+	virtual void RecoilTick(float DeltaTime);
 
 public:
 	/**************************
@@ -183,16 +187,16 @@ public:
 
 	//Timeline Callback
 	UFUNCTION()
-	void OnCameraRecoilProgress(FVector CameraRecoil);
+	virtual void OnCameraRecoilProgress(FVector CameraRecoil);
 	
 	UFUNCTION()
-	void OnBulletRecoilProgress(FVector BulletRecoil);
+	virtual void OnBulletRecoilProgress(FVector BulletRecoil);
 
 	UFUNCTION()
-	void OnRecoilTimelineFinish();
+	virtual void OnRecoilTimelineFinish();
 
 	/**************************
-			Action 
+			   Action 
 	***************************/
 	virtual void StartAction();
 	virtual void StopAction();
@@ -200,9 +204,6 @@ public:
 	virtual void StopSubaction();
 	virtual void StartReload();
 
-	/**************************
-			about Actions
-	***************************/
 	virtual void OnAction();
 	
 	UFUNCTION(NetMulticast, Reliable)

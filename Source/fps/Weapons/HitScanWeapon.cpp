@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "../Actors/FpsCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AHitScanWeapon::AHitScanWeapon() : AWeaponBase()
 {
@@ -51,6 +52,12 @@ void AHitScanWeapon::OnAction()
 	}
 }
 
+void AHitScanWeapon::OnBulletRecoilProgress(FVector Recoil)
+{
+	Super::OnBulletRecoilProgress(Recoil);
+	BulletRecoil = Recoil;
+}
+
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 {
 	AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
@@ -74,6 +81,14 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 		PlayerViewPointRotation
 	);
 
+	//Recoil
+	float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
+	PlayerViewPointRotation.Pitch += BulletRecoil.Y;
+	PlayerViewPointRotation.Pitch = FMath::RandRange(PlayerViewPointRotation.Pitch, PlayerViewPointRotation.Pitch + RecoilOffset);
+	PlayerViewPointRotation.Yaw += BulletRecoil.Z;
+	PlayerViewPointRotation.Yaw = FMath::RandRange(PlayerViewPointRotation.Yaw - RecoilOffset, PlayerViewPointRotation.Yaw + RecoilOffset);
+	PlayerViewPointRotation.Roll += BulletRecoil.X;
+
 	// Get end point
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
 
@@ -91,4 +106,15 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 	}
 
 	return IsHit;
+}
+
+
+float AHitScanWeapon::GetRecoilOffset()
+{
+	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(GetOwner());
+	if (!IsValid(FpsCharacter)) return 0.f;
+
+	float CharacterSpeed = FpsCharacter->GetVelocity().Size();
+	UCharacterMovementComponent* MovementComponent = FpsCharacter->GetCharacterMovement();
+	return Accuracy * (CurrentRecoilRecoveryTime / RecoilRecoveryTime) + MovementStability * (CharacterSpeed / MovementComponent->MaxWalkSpeed);
 }

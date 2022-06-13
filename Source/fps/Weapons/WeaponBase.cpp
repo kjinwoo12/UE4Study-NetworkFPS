@@ -28,7 +28,7 @@ AWeaponBase::AWeaponBase() : AHands()
 	SubAmmo = 90;
 	IsAmmoInfinite = false;
 	Accuracy = 1.f;
-	MovementStability = 40;
+	MovementStability = 1.f;
 	Damage = 40;
 	RecoilRecoveryTime = 0.3f;
 	CurrentRecoilRecoveryTime = 0.f;
@@ -60,28 +60,6 @@ void AWeaponBase::Initialize(AFpsCharacter* FpsCharacter)
 	if (!IsValid(FpsCharacter)) return;
 	SetBodyAnimInstance(FpsCharacter->GetBodyMeshComponent()->GetAnimInstance());
 }
-// Called when the game starts or when spawned
-void AWeaponBase::BeginPlay()
-{
-	Super::BeginPlay();
-
-	InitializeRecoilTimeline();
-}
-
-// Called every frame
-void AWeaponBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	RecoilTimeline.TickTimeline(DeltaTime);
-
-	if (!RecoilTimeline.IsPlaying() && 0.f <= CurrentRecoilRecoveryTime)
-	{
-		CurrentRecoilRecoveryTime -= DeltaTime;
-		float ReducedTimelinePlayback = RecoilTimeline.GetPlaybackPosition() * (CurrentRecoilRecoveryTime/RecoilRecoveryTime);
-		RecoilTimeline.SetPlaybackPosition(ReducedTimelinePlayback, false);
-	}
-}
 
 void AWeaponBase::InitializeRecoilTimeline()
 {
@@ -102,6 +80,38 @@ void AWeaponBase::InitializeRecoilTimeline()
 	RecoilTimeline.AddInterpVector(CameraRecoilCurve, CameraRecoilCallback);
 	RecoilTimeline.AddInterpVector(BulletRecoilCurve, BulletRecoilCallback);
 	RecoilTimeline.SetTimelineFinishedFunc(TimelineFinishCallback);
+}
+
+
+// Called when the game starts or when spawned
+void AWeaponBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitializeRecoilTimeline();
+}
+
+// Called every frame
+void AWeaponBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	RecoilTick(DeltaTime);
+}
+
+void AWeaponBase::RecoilTick(float DeltaTime)
+{
+	RecoilTimeline.TickTimeline(DeltaTime);
+	if (RecoilTimeline.IsPlaying())
+	{
+		CurrentRecoilRecoveryTime += DeltaTime;
+		if (CurrentRecoilRecoveryTime > RecoilRecoveryTime) CurrentRecoilRecoveryTime = RecoilRecoveryTime;
+	}
+	else if (0.f <= CurrentRecoilRecoveryTime)
+	{
+		CurrentRecoilRecoveryTime -= DeltaTime;
+		float ReducedTimelinePlayback = RecoilTimeline.GetPlaybackPosition() * (CurrentRecoilRecoveryTime / RecoilRecoveryTime);
+		RecoilTimeline.SetPlaybackPosition(ReducedTimelinePlayback, false);
+	}
 }
 
 void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -173,11 +183,12 @@ void AWeaponBase::OnBulletRecoilProgress(FVector BulletRecoil)
 
 void AWeaponBase::OnRecoilTimelineFinish()
 {
-	CurrentRecoilRecoveryTime = RecoilRecoveryTime;
+	/*
 	for (IWeaponEvent* Observer : EventObservers)
 	{
 		Observer->OnRecoilStop(RecoilRecoveryTime);
 	}
+	*/
 }
 
 void AWeaponBase::StartAction()
