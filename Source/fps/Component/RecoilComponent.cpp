@@ -33,25 +33,25 @@ void URecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	FRotator Rotation = FRotator(RecoilControl.Y + RecoilStability.Y, RecoilControl.Z + RecoilStability.Z, RecoilControl.X + RecoilStability.X);
+
 	if (0.f <= CurrentRecoveryTime)
 	{
-		FRotator Rotation = GetRelativeRotation();
 		float ReducedRecoveryTime = CurrentRecoveryTime - DeltaTime;
 		Rotation.Pitch *= ReducedRecoveryTime / CurrentRecoveryTime;
 		Rotation.Yaw *= ReducedRecoveryTime / CurrentRecoveryTime;
 		Rotation.Roll *= ReducedRecoveryTime / CurrentRecoveryTime;
-		SetRelativeRotation(Rotation);
 		CurrentRecoveryTime = ReducedRecoveryTime;
 	}
+
+	SetRelativeRotation(Rotation);
 }
 
 void URecoilComponent::OnEquipHands(AHands* Hands)
 {
 	AWeaponBase* WeaponBase = Cast<AWeaponBase>(Hands);
 	if (!IsValid(WeaponBase)) return;
-
 	CurrentRecoveryTime = 0.f;
-
 	WeaponBase->AddObserver(this);
 }
 
@@ -63,23 +63,14 @@ void URecoilComponent::OnUnequipHands(AHands* Hands)
 	WeaponBase->RemoveObserver(this);
 }
 
-void URecoilComponent::OnActionPressed()
+void URecoilComponent::OnCameraRecoilControlProgress(FVector CameraRecoil)
 {
-	bIsActionPressed = true;
+	RecoilControl = CameraRecoil;
 }
 
-void URecoilComponent::OnActionReleased()
+void URecoilComponent::OnCameraRecoilStabilityProgress(FVector CameraRecoil)
 {
-	bIsActionPressed = false;
-}
-
-void URecoilComponent::OnCameraRecoilProgress(FVector CameraRecoil)
-{
-	SetRelativeRotation(FRotator(CameraRecoil.Y, CameraRecoil.Z, CameraRecoil.X));
-}
-
-void URecoilComponent::OnBulletRecoilProgress(FVector BulletRecoil)
-{
+	RecoilStability = CameraRecoil;
 }
 
 void URecoilComponent::OnRecoilStop(float RecoveryTime)

@@ -120,15 +120,31 @@ protected:
 	TArray<IWeaponEvent*> EventObservers;
 
 	/**************************
-		  Recoil TimeLine
+			  Recoil
 	***************************/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
-	UCurveVector* CameraRecoilCurve;
+	UCurveVector* CameraRecoilControlCurve;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
 	UCurveVector* BulletRecoilCurve;
 
-	FTimeline RecoilTimeline;
+	FTimeline RecoilControlTimeline;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
+	UCurveVector* CameraRecoilStabilityCurve;
+
+	FTimeline RecoilStabilityTimeline;
+
+	bool IsOnAutomaticRecoil;
+
+	FVector MaximumCameraRecoilControl;
+	FVector CurrentCameraRecoilControl;
+
+	FVector MaximumBulletRecoil;
+	FVector CurrentBulletRecoil;
+
+	float MaximumHoldTime;
+	float CurrentHoldTime;
 	
 	/**************************
 			    ETC
@@ -164,7 +180,11 @@ protected:
 	/**************************
 			  Recoil
 	***************************/
-	virtual void RecoilTick(float DeltaTime);
+	virtual void RecoilControlTick(float DeltaTime);
+
+	virtual void AutomaticRecoilControlTick(float DeltaTime);
+
+	virtual void RecoilStabilityTick(float DeltaTime);
 
 public:
 	/**************************
@@ -187,13 +207,16 @@ public:
 
 	//Timeline Callback
 	UFUNCTION()
-	virtual void OnCameraRecoilProgress(FVector CameraRecoil);
+	virtual void OnCameraRecoilControlProgress(FVector CameraRecoil);
 	
 	UFUNCTION()
 	virtual void OnBulletRecoilProgress(FVector BulletRecoil);
 
 	UFUNCTION()
-	virtual void OnRecoilTimelineFinish();
+	virtual void OnRecoilControlTimelineFinish();
+
+	UFUNCTION()
+	virtual void OnCameraRecoilStabilityProgress(FVector CameraRecoil);
 
 	/**************************
 			   Action 

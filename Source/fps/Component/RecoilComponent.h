@@ -20,6 +20,9 @@ class FPS_API URecoilComponent : public USceneComponent, public IFpsCharacterEve
 	float CurrentRecoveryTime;
 	bool bIsActionPressed;
 
+	FVector RecoilControl;
+	FVector RecoilStability;
+
 public:	
 	// Sets default values for this component's properties
 	URecoilComponent();
@@ -37,12 +40,10 @@ public:
 	// IFpsCharacterEvent
 	virtual void OnEquipHands(AHands* Hands) override;
 	virtual void OnUnequipHands(AHands* Hands) override;
-	virtual void OnActionPressed() override;
-	virtual void OnActionReleased() override;
 
 	// IWeaponEvent
-	virtual void OnCameraRecoilProgress(FVector CameraRecoil) override;
-	virtual void OnBulletRecoilProgress(FVector BulletRecoil) override;
+	virtual void OnCameraRecoilControlProgress(FVector CameraRecoil) override;
+	virtual void OnCameraRecoilStabilityProgress(FVector CameraRecoil) override;
 	virtual void OnRecoilStop(float RecoveryTime) override;
 
 private:

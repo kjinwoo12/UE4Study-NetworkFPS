@@ -37,7 +37,7 @@ void AHitScanWeapon::OnAction()
 		DamangeEvent.HitInfo = HitResult;
 
 		AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
-		if (!IsValid(Character)) 
+		if (!IsValid(Character))
 		{
 			UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::OnAction / Owner Character is invalid"));
 			return;
@@ -50,12 +50,6 @@ void AHitScanWeapon::OnAction()
 		}
 		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
 	}
-}
-
-void AHitScanWeapon::OnBulletRecoilProgress(FVector Recoil)
-{
-	Super::OnBulletRecoilProgress(Recoil);
-	BulletRecoil = Recoil;
 }
 
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
@@ -83,11 +77,11 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 
 	//Recoil
 	float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
-	PlayerViewPointRotation.Pitch += BulletRecoil.Y;
+	PlayerViewPointRotation.Pitch += CurrentBulletRecoil.Y;
 	PlayerViewPointRotation.Pitch = FMath::RandRange(PlayerViewPointRotation.Pitch, PlayerViewPointRotation.Pitch + RecoilOffset);
-	PlayerViewPointRotation.Yaw += BulletRecoil.Z;
+	PlayerViewPointRotation.Yaw += CurrentBulletRecoil.Z;
 	PlayerViewPointRotation.Yaw = FMath::RandRange(PlayerViewPointRotation.Yaw - RecoilOffset, PlayerViewPointRotation.Yaw + RecoilOffset);
-	PlayerViewPointRotation.Roll += BulletRecoil.X;
+	PlayerViewPointRotation.Roll += CurrentBulletRecoil.X;
 
 	// Get end point
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;

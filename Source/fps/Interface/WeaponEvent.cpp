@@ -17,8 +17,11 @@ void IWeaponEvent::OnReloadEvent(AWeaponBase* WeaponBase)
 {
 }
 
+void IWeaponEvent::OnCameraRecoilControlProgress(FVector CameraRecoil)
+{
+}
 
-void IWeaponEvent::OnCameraRecoilProgress(FVector CameraRecoil)
+void IWeaponEvent::OnCameraRecoilStabilityProgress(FVector CameraRecoil)
 {
 }
 

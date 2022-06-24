@@ -28,10 +28,6 @@ protected:
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
 
-private:
-	// BulletRecoil
-	FVector BulletRecoil;
-
 public:
 	// Sets default values for this actor's properties
 	AHitScanWeapon();
@@ -45,8 +41,6 @@ public:
 	virtual void OnUnequipHands(AHands* Hands) override;
 
 	virtual void OnAction() override;
-
-	virtual void OnBulletRecoilProgress(FVector BulletRecoil) override;
 
 protected:
 	// For hit character
