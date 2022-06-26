@@ -45,8 +45,4 @@ public:
 	virtual void OnCameraRecoilControlProgress(FVector CameraRecoil) override;
 	virtual void OnCameraRecoilStabilityProgress(FVector CameraRecoil) override;
 	virtual void OnRecoilStop(float RecoveryTime) override;
-
-private:
-	// Calculate Recoil
-	FRotator CalculateCameraRotation(FRotator Base, FRotator ErrorRange);
 };
