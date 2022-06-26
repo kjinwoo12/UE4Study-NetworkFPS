@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Hands.h"
+#include "../Interface/WeaponEvent.h"
+#include "Components/TimeLineComponent.h"
 #include "WeaponBase.generated.h"
 
 class AFpsCharacter;
@@ -55,7 +57,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	bool IsAmmoInfinite;
 
-	// 0.f ~ 1.f
+	// 1.f ~ 3.f
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Accuracy;
 
@@ -65,6 +67,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "properties")
 	float Damage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	float RecoilRecoveryTime;
+
+	float CurrentRecoilRecoveryTime;
 
 	/**************************
 			 Animation
@@ -108,7 +115,39 @@ protected:
 	class USoundBase* ReloadSound;
 
 	/**************************
-				etc
+			  Events
+	***************************/
+	TArray<IWeaponEvent*> EventObservers;
+
+	/**************************
+			  Recoil
+	***************************/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
+	UCurveVector* CameraRecoilControlCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
+	UCurveVector* BulletRecoilCurve;
+
+	FTimeline RecoilControlTimeline;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Timeline", Meta = (AllowPrivateAccess = "true"))
+	UCurveVector* CameraRecoilStabilityCurve;
+
+	FTimeline RecoilStabilityTimeline;
+
+	bool IsOnAutomaticRecoil;
+
+	FVector MaximumCameraRecoilControl;
+	FVector CurrentCameraRecoilControl;
+
+	FVector MaximumBulletRecoil;
+	FVector CurrentBulletRecoil;
+
+	float MaximumHoldTime;
+	float CurrentHoldTime;
+	
+	/**************************
+			    ETC
 	***************************/
 private:
 	// TimerHandle to make weapon on delay
@@ -127,30 +166,67 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
-	virtual void Initialize(AActor* Parent) override;
+	virtual void Initialize(AFpsCharacter* FpsCharacter) override;
+
+	void InitializeRecoilTimeline();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	/**************************
+			  Recoil
+	***************************/
+	virtual void RecoilControlTick(float DeltaTime);
+
+	virtual void AutomaticRecoilControlTick(float DeltaTime);
+
+	virtual void RecoilStabilityTick(float DeltaTime);
+
 public:
 	/**************************
-			 on Events
+			  Events
 	***************************/
-	virtual void OnUnEquipped() override;
+	//WeaponBase
+	void AddObserver(IWeaponEvent* Observer);
+	void RemoveObserver(IWeaponEvent* Observer);
+
+	//FpsCharacterEvent
+	virtual void OnUnequipHands(AHands* Hands) override;
+	virtual void OnActionPressed() override;
+	virtual void OnActionReleased() override;
+	virtual void OnSubactionPressed() override;
+	virtual void OnSubactionReleased() override;
+	virtual void OnReloadPressed() override;
+
+	//WeaponEvent
+	
+
+	//Timeline Callback
+	UFUNCTION()
+	virtual void OnCameraRecoilControlProgress(FVector CameraRecoil);
+	
+	UFUNCTION()
+	virtual void OnBulletRecoilProgress(FVector BulletRecoil);
+
+	UFUNCTION()
+	virtual void OnRecoilControlTimelineFinish();
+
+	UFUNCTION()
+	virtual void OnCameraRecoilStabilityProgress(FVector CameraRecoil);
 
 	/**************************
-			Action 
+			   Action 
 	***************************/
-	virtual void StartAction() override;
-	virtual void StopAction() override;
-	virtual void StartSubaction() override;
-	virtual void StopSubaction() override;
-	virtual void StartReload() override;
+	virtual void StartAction();
+	virtual void StopAction();
+	virtual void StartSubaction();
+	virtual void StopSubaction();
+	virtual void StartReload();
 
-	/**************************
-			about Actions
-	***************************/
 	virtual void OnAction();
 	
 	UFUNCTION(NetMulticast, Reliable)

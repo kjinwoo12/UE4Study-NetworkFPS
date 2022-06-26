@@ -15,6 +15,8 @@
 // Sets default values
 AWeaponBase::AWeaponBase() : AHands()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// properties
 	ActionDelay = 0.125f;
 	ActionLoopEnable = true;
@@ -26,8 +28,10 @@ AWeaponBase::AWeaponBase() : AHands()
 	SubAmmo = 90;
 	IsAmmoInfinite = false;
 	Accuracy = 1.f;
-	MovementStability = 40;
+	MovementStability = 1.f;
 	Damage = 40;
+	RecoilRecoveryTime = 0.3f;
+	CurrentRecoilRecoveryTime = 0.f;
 
 	// Animation instance
 	BodyAnimInstance = NULL;
@@ -44,21 +48,144 @@ AWeaponBase::AWeaponBase() : AHands()
 	ActionSound = NULL;
 	SubactionSound = NULL;
 	ReloadSound = NULL;
+
+	// Timeline
+	CameraRecoilControlCurve = nullptr;
+	BulletRecoilCurve = nullptr;
+	CameraRecoilStabilityCurve = nullptr;
+	MaximumCameraRecoilControl = FVector(0.f, 0.f, 0.f);
+	CurrentCameraRecoilControl = FVector(0.f, 0.f, 0.f);
+	MaximumBulletRecoil = FVector(0.f, 0.f, 0.f);
+	CurrentBulletRecoil = FVector(0.f, 0.f, 0.f);
+	MaximumHoldTime = 0.f;
+	CurrentHoldTime = 0.f;
 }
 
-void AWeaponBase::Initialize(AActor* Parent)
+void AWeaponBase::Initialize(AFpsCharacter* FpsCharacter)
 {
-	Super::Initialize(Parent);
-	AFpsCharacter* FpsCharacter = Cast<AFpsCharacter>(Parent);
+	Super::Initialize(FpsCharacter);
 	if (!IsValid(FpsCharacter)) return;
 	SetBodyAnimInstance(FpsCharacter->GetBodyMeshComponent()->GetAnimInstance());
 }
+
+void AWeaponBase::InitializeRecoilTimeline()
+{
+	if (CameraRecoilControlCurve == nullptr || BulletRecoilCurve == nullptr || CameraRecoilStabilityCurve == nullptr)
+	{
+		return;
+	}
+
+	FOnTimelineVector CameraRecoilControlCallback;
+	FOnTimelineVector BulletRecoilCallback;
+
+	FOnTimelineEventStatic TimelineFinishCallback;
+
+	CameraRecoilControlCallback.BindUFunction(this, FName("OnCameraRecoilControlProgress"));
+	BulletRecoilCallback.BindUFunction(this, FName("OnBulletRecoilProgress"));
+	TimelineFinishCallback.BindUFunction(this, FName("OnRecoilControlTimelineFinish"));
+
+	RecoilControlTimeline.AddInterpVector(CameraRecoilControlCurve, CameraRecoilControlCallback);
+	RecoilControlTimeline.AddInterpVector(BulletRecoilCurve, BulletRecoilCallback);
+	RecoilControlTimeline.SetTimelineFinishedFunc(TimelineFinishCallback);
+
+	FOnTimelineVector CameraRecoilStabilityCallback;
+	CameraRecoilStabilityCallback.BindUFunction(this, FName("OnCameraRecoilStabilityProgress"));
+	RecoilStabilityTimeline.AddInterpVector(CameraRecoilStabilityCurve, CameraRecoilStabilityCallback);
+}
+
 
 // Called when the game starts or when spawned
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitializeRecoilTimeline();
 }
+
+// Called every frame
+void AWeaponBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (IsOnAutomaticRecoil)
+	{
+		AutomaticRecoilControlTick(DeltaTime);
+	}
+	else
+	{
+		RecoilControlTick(DeltaTime);
+	}
+	RecoilStabilityTick(DeltaTime);
+}
+
+void AWeaponBase::RecoilControlTick(float DeltaTime)
+{
+	RecoilControlTimeline.TickTimeline(DeltaTime);
+	if (RecoilControlTimeline.IsPlaying())
+	{
+		CurrentRecoilRecoveryTime += DeltaTime;
+		if (CurrentRecoilRecoveryTime > RecoilRecoveryTime) CurrentRecoilRecoveryTime = RecoilRecoveryTime;
+	}
+	else if (0.f <= CurrentRecoilRecoveryTime)
+	{
+		CurrentRecoilRecoveryTime -= DeltaTime;
+		float ReducedTimelinePlayback = RecoilControlTimeline.GetPlaybackPosition() * (CurrentRecoilRecoveryTime / RecoilRecoveryTime);
+		RecoilControlTimeline.SetPlaybackPosition(ReducedTimelinePlayback, false);
+	}
+}
+
+void AWeaponBase::RecoilStabilityTick(float DeltaTime)
+{
+	RecoilStabilityTimeline.TickTimeline(DeltaTime / ActionDelay);
+}
+
+#define SPRAY_SPEED 10.f
+void AWeaponBase::AutomaticRecoilControlTick(float DeltaTime)
+{
+	// If is the side to aim and the current aim is over that.
+	if ((0.f < MaximumCameraRecoilControl.Z && MaximumCameraRecoilControl.Z <= CurrentCameraRecoilControl.Z)
+		|| (MaximumCameraRecoilControl.Z < 0.f && CurrentCameraRecoilControl.Z <= MaximumCameraRecoilControl.Z))
+	{
+		UE_LOG(LogTemp, Log, TEXT("AWeaponBase::AutomaticRecoilControlTick over"));
+		if (MaximumHoldTime == 0.f)
+		{
+			MaximumHoldTime = FMath::RandRange(0.3f, 0.7f);
+			UE_LOG(LogTemp, Log, TEXT("MaximumHoldTime : %f "), MaximumHoldTime);
+		}
+		
+		CurrentHoldTime += DeltaTime;
+
+		if (MaximumHoldTime < CurrentHoldTime)
+		{
+			MaximumHoldTime = 0.f;
+			CurrentHoldTime = 0.f;
+			MaximumCameraRecoilControl.Z *= -1.f;
+			MaximumBulletRecoil.Z *= -1.f;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("AWeaponBase::AutomaticRecoilControlTick turn"));
+		float SprayDelta = SPRAY_SPEED * DeltaTime;
+		float SprayValue = MaximumCameraRecoilControl.Z - CurrentCameraRecoilControl.Z;
+		if (SprayValue * SprayValue < 1.f) 
+			SprayValue = SprayValue < 0 ? -1.f : 1.f;
+		CurrentCameraRecoilControl.Z += SprayValue * SprayDelta;
+
+
+		SprayValue = MaximumBulletRecoil.Z - CurrentBulletRecoil.Z;
+		if (SprayValue * SprayValue < 1.f)
+			SprayValue = SprayValue < 0 ? -1.f : 1.f;
+		CurrentBulletRecoil.Z += SprayValue * SprayDelta;
+	}
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnCameraRecoilControlProgress(CurrentCameraRecoilControl);
+		Observer->OnBulletRecoilProgress(CurrentBulletRecoil);
+	}
+}
+#undef SPRAY_SPEED
 
 void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -68,10 +195,88 @@ void AWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(AWeaponBase, SubAmmo);
 }
 
-void AWeaponBase::OnUnEquipped()
+void AWeaponBase::AddObserver(IWeaponEvent* Observer)
 {
-	Super::OnUnEquipped();
+	EventObservers.Add(Observer);
+}
+
+void AWeaponBase::RemoveObserver(IWeaponEvent* Observer)
+{
+	EventObservers.Remove(Observer);
+}
+
+void AWeaponBase::OnUnequipHands(AHands* Hands)
+{
+	Super::OnUnequipHands(Hands);
 	SetBodyAnimInstance(NULL);
+	StopAction();
+	StopSubaction();
+}
+
+void AWeaponBase::OnActionPressed()
+{
+	StartAction();
+}
+
+void AWeaponBase::OnActionReleased()
+{
+	StopAction();
+}
+
+void AWeaponBase::OnSubactionPressed()
+{
+	StartSubaction();
+}
+
+void AWeaponBase::OnSubactionReleased()
+{
+	StopSubaction();
+}
+
+void AWeaponBase::OnReloadPressed()
+{
+	StartReload();
+}
+
+void AWeaponBase::OnCameraRecoilControlProgress(FVector CameraRecoil)
+{
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnCameraRecoilControlProgress(CameraRecoil);
+	}
+
+	MaximumCameraRecoilControl.X = CameraRecoil.X > MaximumCameraRecoilControl.X ? CameraRecoil.X : MaximumCameraRecoilControl.X;
+	MaximumCameraRecoilControl.Y = CameraRecoil.Y > MaximumCameraRecoilControl.Y ? CameraRecoil.Y : MaximumCameraRecoilControl.Y;
+	MaximumCameraRecoilControl.Z = CameraRecoil.Z > MaximumCameraRecoilControl.Z ? CameraRecoil.Z : MaximumCameraRecoilControl.Z;
+	CurrentCameraRecoilControl = CameraRecoil;
+}
+
+void AWeaponBase::OnBulletRecoilProgress(FVector BulletRecoil)
+{
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnBulletRecoilProgress(BulletRecoil);
+	}
+
+	MaximumBulletRecoil.X = MaximumBulletRecoil.X > MaximumBulletRecoil.X ? MaximumBulletRecoil.X : MaximumBulletRecoil.X;
+	MaximumBulletRecoil.Y = MaximumBulletRecoil.Y > MaximumBulletRecoil.Y ? MaximumBulletRecoil.Y : MaximumBulletRecoil.Y;
+	MaximumBulletRecoil.Z = MaximumBulletRecoil.Z > MaximumBulletRecoil.Z ? MaximumBulletRecoil.Z : MaximumBulletRecoil.Z;
+	CurrentBulletRecoil = BulletRecoil;
+}
+
+void AWeaponBase::OnRecoilControlTimelineFinish()
+{
+	UE_LOG(LogTemp, Log, TEXT("AWeaponBase::OnRecoilControlTimelineFinish"));
+	//Start automatic recoil left and right.
+	IsOnAutomaticRecoil = true;
+}
+
+void AWeaponBase::OnCameraRecoilStabilityProgress(FVector CameraRecoil)
+{
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnCameraRecoilStabilityProgress(CameraRecoil);
+	}
 }
 
 void AWeaponBase::StartAction()
@@ -89,6 +294,8 @@ void AWeaponBase::StartAction()
 
 	FunctionAfterDelay = &AWeaponBase::OnAction;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, ActionDelay, ActionLoopEnable, 0.f);
+
+	RecoilControlTimeline.Play();
 }
 
 void AWeaponBase::StopAction()
@@ -110,6 +317,14 @@ void AWeaponBase::StopAction()
 			//Do nothing. It is just waiting for delay.
 		}
 	), Remaining, false);
+
+	RecoilControlTimeline.Stop();
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnRecoilStop(RecoilRecoveryTime);
+	}
+
+	IsOnAutomaticRecoil = false;
 }
 
 void AWeaponBase::StartSubaction()
@@ -180,6 +395,14 @@ void AWeaponBase::OnAction()
 	CurrentAmmo -= !IsAmmoInfinite;
 
 	MulticastRPCOnActionFx();
+
+	RecoilStabilityTimeline.SetPlaybackPosition(0.f, false);
+	if (!RecoilStabilityTimeline.IsPlaying()) RecoilStabilityTimeline.Play();
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnActionEvent(this);
+	}
 }
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
@@ -215,6 +438,11 @@ void AWeaponBase::OnSubaction()
 	// Play sound
 	if (SubactionSound != NULL)
 		UGameplayStatics::PlaySoundAtLocation(this, SubactionSound, GetActorLocation());
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnSubactionEvent(this);
+	}
 }
 
 void AWeaponBase::OnReload()
@@ -225,6 +453,11 @@ void AWeaponBase::OnReload()
 	int ChargedAmmo = (RequiredAmmo < SubAmmo) ? RequiredAmmo : SubAmmo;
 	SubAmmo -= ChargedAmmo;
 	CurrentAmmo += ChargedAmmo;
+
+	for (IWeaponEvent* Observer : EventObservers)
+	{
+		Observer->OnReloadEvent(this);
+	}
 }
 
 float AWeaponBase::GetDelay()

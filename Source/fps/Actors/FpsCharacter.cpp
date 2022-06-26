@@ -3,20 +3,25 @@
 #include "FpsCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Kismet/KismetMathLibrary.h"
+
 #include "../Weapons/Hands.h"
 #include "../Weapons/WeaponBase.h"
 #include "../Weapons/PickupableActor.h"
 #include "../Weapons/HandsModelForBody.h"
 #include "../Ui/FpsCharacterHud.h"
 #include "../Ui/FpsCharacterWidget.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Net/UnrealNetwork.h"
-#include "Blueprint/UserWidget.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "../PlayerController/FpsPlayerController.h"
 #include "../PlayerController/FpsPlayerState.h"
+#include "../Component/RecoilComponent.h"
+
 #include "GunShop.h"
 #include "InteractiveActor.h"
+
+#include <algorithm>
 
 // Sets default values
 AFpsCharacter::AFpsCharacter()
@@ -28,6 +33,7 @@ AFpsCharacter::AFpsCharacter()
 
 	InitializeCollisionComponent();
 	InitializeMovementComponent();
+	InitializeRecoilComponent();
 	InitializeCamera();
 	InitializeBodyMesh();
 	InitializeGameplayVariable();
@@ -51,13 +57,20 @@ void AFpsCharacter::InitializeMovementComponent()
 	MovementComponent->NavAgentProps.bCanCrouch = true;
 }
 
+void AFpsCharacter::InitializeRecoilComponent()
+{
+	RecoilComponent = CreateDefaultSubobject<URecoilComponent>(TEXT("RecoilComponent"));
+	RecoilComponent->SetupAttachment(GetCapsuleComponent());
+	RecoilComponent->SetRelativeLocation(FVector(0.f, 0.f, BaseEyeHeight));
+	RecoilComponent->Initialize(this);
+}
+
 void AFpsCharacter::InitializeCamera()
 {
 	// Camera
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCameraComponent"));
-	CameraComponent->SetupAttachment(GetCapsuleComponent());
-	CameraComponent->SetRelativeLocation(FVector(0.f, 0.f, BaseEyeHeight));
-	CameraComponent->bUsePawnControlRotation = true;
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	CameraComponent->SetupAttachment(RecoilComponent);
+	CameraComponent->bUsePawnControlRotation = false;
 }
 
 void AFpsCharacter::InitializeBodyMesh()
@@ -77,8 +90,8 @@ void AFpsCharacter::InitializeGameplayVariable()
 	Health = 100;
 	MaxArmor = 100;
 	Armor = 50;
-	AimPitch = 0;
-	AimYaw = 0;
+	BodyMeshAimPitch = 0;
+	BodyMeshAimYaw = 0;
 }
 
 void AFpsCharacter::InitializeGunShop()
@@ -114,8 +127,8 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFpsCharacter, Hands);
 	DOREPLIFETIME(AFpsCharacter, HandsModelForBody);
 	DOREPLIFETIME(AFpsCharacter, CharacterStatus);
-	DOREPLIFETIME(AFpsCharacter, AimPitch);
-	DOREPLIFETIME(AFpsCharacter, AimYaw);
+	DOREPLIFETIME(AFpsCharacter, BodyMeshAimPitch);
+	DOREPLIFETIME(AFpsCharacter, BodyMeshAimYaw);
 	DOREPLIFETIME(AFpsCharacter, GunShop);
 	DOREPLIFETIME(AFpsCharacter, CurrentHandsIndex);
 	DOREPLIFETIME(AFpsCharacter, Inventory);
@@ -126,7 +139,7 @@ void AFpsCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 void AFpsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UpdateAim(DeltaTime);
+	UpdateBodyMeshAimOffset(DeltaTime);
 	UpdateActorDirection(DeltaTime);
 	UpdateCameraRotation();
 	UpdateCrosshair();
@@ -155,26 +168,21 @@ void AFpsCharacter::UpdateCrosshair()
 	FpsHud->SetCrosshairCenterOffset(CrosshairCenterOffset);
 }
 
-void AFpsCharacter::ClientRpcUpdateCameraRotationToServer_Implementation()
-{
-	ServerRpcSetCameraRotation(CameraComponent->GetComponentToWorld().GetRotation());
-}
-
-bool AFpsCharacter::ServerRpcSetCameraRotation_Validate(FQuat CameraRotation)
+bool AFpsCharacter::ServerRpcSetCameraRotation_Validate(FRotator CameraRotation)
 {
 	return true;
 }
 
-void AFpsCharacter::ServerRpcSetCameraRotation_Implementation(FQuat CameraRotation)
+void AFpsCharacter::ServerRpcSetCameraRotation_Implementation(FRotator CameraRotation)
 {
 	CameraComponent->SetWorldRotation(CameraRotation);
 }
 
-void AFpsCharacter::UpdateAim(float DeltaTime) 
+void AFpsCharacter::UpdateBodyMeshAimOffset(float DeltaTime) 
 {
 	if (GetNetMode() == NM_Client) return;
 
-	FRotator AimRotator = FRotator(AimPitch, AimYaw, 0);
+	FRotator AimRotator = FRotator(BodyMeshAimPitch, BodyMeshAimYaw, 0);
 	FRotator ControlRotation = GetControlRotation();
 	FRotator ActorRotation = GetActorRotation();
 	AimRotator = UKismetMathLibrary::RInterpTo(
@@ -183,40 +191,24 @@ void AFpsCharacter::UpdateAim(float DeltaTime)
 		DeltaTime,
 		0
 	);
-	AimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
-	AimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
+	BodyMeshAimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
+	BodyMeshAimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
 }
 
 void AFpsCharacter::UpdateActorDirection(float DeltaTime)
 {
-	// if the character is moving, or the Controller's aim direction is over 90 degree,
-	// then make body of the character to follow the aim direction.
-
 	if (GetNetMode() == NM_Client) return;
 
 	FRotator ControlRotation = GetControlRotation();
-	FRotator ActorRotation = GetActorRotation();
-
-	float CharacterSpeed = 0;
-	FVector BodyDirection;
-	GetVelocity().ToDirectionAndLength(BodyDirection, CharacterSpeed);
-	if (0 < CharacterSpeed)
-	{
-		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
-		return;
-	}
-
-	float AlphaRotation = ControlRotation.Yaw - ActorRotation.Yaw;
-	if (AlphaRotation < -90 || 90 < AlphaRotation)
-	{
-		MulticastRpcSetActorRotation(FRotator(0, ControlRotation.Yaw - AimYaw, 0));
-	}
+	SetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
 }
 
 void AFpsCharacter::UpdateCameraRotation()
 {
-	if (GetNetMode() != ENetMode::NM_DedicatedServer) return;
-	ClientRpcUpdateCameraRotationToServer();
+	if (GetNetMode() == NM_Client) return;
+
+	FRotator ControlRotation = GetControlRotation();
+	CameraComponent->SetRelativeRotation(FRotator(ControlRotation.Pitch, 0, 0));
 }
 
 void AFpsCharacter::UpdateInteractiveTarget(float DeltaTime) 
@@ -355,47 +347,43 @@ void AFpsCharacter::CrouchReleased()
 
 void AFpsCharacter::ActionPressed()
 {
-	if (CharacterStatus == EFpsCharacterStatus::Dead ||
-		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		!IsValid(Hands)) return;
-
-	Hands->StartAction();
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnActionPressed();
+	}
 }
 
 void AFpsCharacter::ActionReleased()
 {
-	if (CharacterStatus == EFpsCharacterStatus::Dead ||
-		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		!IsValid(Hands)) return;
-
-	Hands->StopAction();
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnActionReleased();
+	}
 }
 
 void AFpsCharacter::SubactionPressed()
 {
-	if (CharacterStatus == EFpsCharacterStatus::Dead ||
-		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		!IsValid(Hands)) return;
 
-	Hands->StartSubaction();
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnSubactionPressed();
+	}
 }
 
 void AFpsCharacter::SubactionReleased()
 {
-	if (CharacterStatus == EFpsCharacterStatus::Dead ||
-		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		!IsValid(Hands)) return;
-
-	Hands->StopSubaction();
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnSubactionReleased();
+	}
 }
 
 void AFpsCharacter::ReloadPressed()
 {
-	if (CharacterStatus == EFpsCharacterStatus::Dead ||
-		CharacterStatus == EFpsCharacterStatus::Freeze ||
-		!IsValid(Hands)) return;
-
-	Hands->StartReload();
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnReloadPressed();
+	}
 }
 
 void AFpsCharacter::DropWeaponPressed()
@@ -450,6 +438,16 @@ void AFpsCharacter::GunShopPressed()
 	{
 		FpsHud->OpenGunShop();
 	}
+}
+
+void AFpsCharacter::AddObserver(IFpsCharacterEvent* Observer)
+{
+	EventObservers.Add(Observer);
+}
+
+void AFpsCharacter::RemoveObserver(IFpsCharacterEvent* Observer)
+{
+	EventObservers.Remove(Observer);
 }
 
 void AFpsCharacter::OnPossessed()
@@ -637,24 +635,31 @@ void AFpsCharacter::Equip(AHands* HandsInstance)
 	if (!IsValid(HandsModelForBody)) return;
 	HandsModelForBody->AttachToComponent(BodyMeshComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), HandsModelForBody->GetAttachingGripPointName());
 	HandsModelForBody->Initialize(this);
+
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnEquipHands(Hands);
+	}
 }
 
-AHands* AFpsCharacter::UnEquip()
+AHands* AFpsCharacter::Unequip()
 {
 	if (!IsValid(Hands))
 	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UnEquip Hands is already invalid"));
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Unequip Hands is already invalid"));
 		return nullptr;
 	}
 
 	Hands->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
-	Hands->OnUnEquipped();
-	Hands = nullptr;
+	for (IFpsCharacterEvent* EventObserver : EventObservers)
+	{
+		EventObserver->OnUnequipHands(Hands);
+	}
 
-	// UnEquip WeaponModelForThirdPerson
+	// Unequip WeaponModelForThirdPerson
 	if (!IsValid(HandsModelForBody)) 
 	{
-		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::UnEquip HandsModelForBody is invalid"))
+		UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Unequip HandsModelForBody is invalid"))
 		return Hands;
 	}
 	HandsModelForBody->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
@@ -670,8 +675,6 @@ void AFpsCharacter::DropWeapon()
 		UE_LOG(LogTemp, Log, TEXT("DropWeapon() : Hands is invalid"));
 		return;
 	}
-	Hands->StopAction();
-	Hands->StopSubaction();
 
 	UE_LOG(LogTemp, Log, TEXT("DropWeapon() : dropped!"));
 
@@ -696,7 +699,7 @@ void AFpsCharacter::DropWeapon()
 		UE_LOG(LogTemp, Log, TEXT("PickupableActor is invalid"));
 		return;
 	}
-	AHands* HandsInstance = UnEquip();
+	AHands* HandsInstance = Unequip();
 	PickupableActor->SetHandsInstance(HandsInstance);
 
 	//Add impulse to viewpoint direction
@@ -710,7 +713,7 @@ void AFpsCharacter::Acquire(AHands* HandsInstance, int HandsIndex)
 	UE_LOG(LogTemp, Log, TEXT("AFpsCharacter::Acquire(%s, %d)"), *HandsInstance->GetName(), HandsIndex);
 	if (!IsValid(Inventory[HandsIndex]))
 	{
-		UnEquip();
+		Unequip();
 	}
 	else
 	{
@@ -733,7 +736,7 @@ void AFpsCharacter::SwapHandsTo(int Index)
 	}
 	PreviousHandsIndex = CurrentHandsIndex;
 	CurrentHandsIndex = Index;
-	UnEquip();
+	Unequip();
 	Equip(Inventory[Index]);
 }
 
@@ -742,7 +745,7 @@ void AFpsCharacter::SwapHandsToPrevious()
 	if (!IsValid(Inventory[PreviousHandsIndex]) || PreviousHandsIndex == CurrentHandsIndex) 
 	{
 		UE_LOG(LogTemp, Log, TEXT("Inventory[PreviousHandsIndex] is invalid or PerviousHandsIndex is same with CurrnetHandsIndex"));
-		UnEquip();
+		Unequip();
 		return;
 	}
 
@@ -799,12 +802,12 @@ USkeletalMeshComponent* AFpsCharacter::GetBodyMeshComponent()
 
 float AFpsCharacter::GetAimPtich()
 {
-	return AimPitch;
+	return BodyMeshAimPitch;
 }
 
 float AFpsCharacter::GetAimYaw()
 {
-	return AimYaw;
+	return BodyMeshAimYaw;
 }
 
 TSubclassOf<AHUD> AFpsCharacter::GetHudSubclass()

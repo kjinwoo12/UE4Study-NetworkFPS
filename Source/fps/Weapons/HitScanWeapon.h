@@ -14,7 +14,7 @@ class FPS_API AHitScanWeapon : public AWeaponBase
 {
 	GENERATED_BODY()
 	
-	protected:
+protected:
 	/**************************
 			 Properties
 	***************************/
@@ -27,21 +27,24 @@ class FPS_API AHitScanWeapon : public AWeaponBase
 	***************************/
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
+
 public:
 	// Sets default values for this actor's properties
 	AHitScanWeapon();
 
 public:
-	virtual void Initialize(AActor* Parent) override;
+	virtual void Initialize(AFpsCharacter* FpsCharacter) override;
 
 	/**************************
 			 on Events
 	***************************/
-	virtual void OnUnEquipped() override;
+	virtual void OnUnequipHands(AHands* Hands) override;
 
 	virtual void OnAction() override;
 
 protected:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);
+
+	float GetRecoilOffset();
 };

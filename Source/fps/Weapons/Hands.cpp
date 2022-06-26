@@ -4,6 +4,7 @@
 #include "Hands.h"
 #include "HandsModelForBody.h"
 #include "PickupableActor.h"
+#include "../Actors/FpsCharacter.h"
 
 // Sets default values
 AHands::AHands()
@@ -23,52 +24,23 @@ AHands::AHands()
 	HandsMesh->SetupAttachment(RootComponent);
 }
 
-void AHands::Initialize(AActor* Parent)
-{
-	SetOwner(Parent);
-}
-
 void AHands::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
-void AHands::Tick(float DeltaTime)
+void AHands::Initialize(AFpsCharacter* FpsCharacter)
 {
-	Super::Tick(DeltaTime);
+	SetOwner(FpsCharacter);
+	FpsCharacter->AddObserver(this);
+	SetActorScale3D(FVector(0.2f));
 }
 
-void AHands::OnUnEquipped()
+void AHands::OnUnequipHands(AHands* Hands)
 {
-	UE_LOG(LogTemp, Log, TEXT("OnUnEquipped"));
-	ClientRpcOnUnEquipped();
+	UE_LOG(LogTemp, Log, TEXT("OnUnequipHands"));
+	ClientRpcOnUnequipped();
 	SetOwner(nullptr);
-}
-
-void AHands::StartAction()
-{
-
-}
-
-void AHands::StopAction()
-{
-
-}
-
-void AHands::StartSubaction()
-{
-
-}
-
-void AHands::StopSubaction()
-{
-
-}
-
-void AHands::StartReload()
-{
-
 }
 
 AHandsModelForBody* AHands::CreateHandsModelForBody()
@@ -82,7 +54,7 @@ APickupableActor* AHands::CreatePickupableActor()
 	return GetWorld()->SpawnActor<APickupableActor>(PickupableActorSubclass, GetActorLocation(), FRotator(90, Rotation.Yaw, 0));
 }
 
-void AHands::ClientRpcOnUnEquipped_Implementation()
+void AHands::ClientRpcOnUnequipped_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("ClientRpcOnUnEquipped"));
 	SetOwner(nullptr);

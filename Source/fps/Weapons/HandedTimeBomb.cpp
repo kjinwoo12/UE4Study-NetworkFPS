@@ -22,6 +22,16 @@ void AHandedTimeBomb::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AHandedTimeBomb::OnActionPressed()
+{
+	StartAction();
+}
+
+void AHandedTimeBomb::OnActionReleased()
+{
+	StopAction();
+}
+
 void AHandedTimeBomb::StartAction()
 {
 	UE_LOG(LogTemp, Log, TEXT("AHandedTimeBomb::StartAction"));

@@ -4,12 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../Interface/FpsCharacterEvent.h"
 #include "FpsCharacter.generated.h"
 
 #define WEAPON_INDEX_SIZE 5
 
+// Include classes
+class AHands;
+class AHandsModelForBody;
 class AGunShop;
 class AInteractiveActor;
+class URecoilComponent;
 
 UENUM(BlueprintType)
 enum class EFpsCharacterStatus : uint8
@@ -37,17 +42,22 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 			Components
 	***************************/
+public:
 	UPROPERTY(VisibleAnywhere)
-	class UCameraComponent* CameraComponent;
+	UCameraComponent* CameraComponent;
 
+	UPROPERTY(VisibleAnywhere)
+	URecoilComponent* RecoilComponent;
+
+private:
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing = OnRep_InitializePrimaryWeapon)
-	class AHands* Hands;
+	AHands* Hands;
 
 	UPROPERTY(EditDefaultsOnly, Replicated)
-	class AHandsModelForBody* HandsModelForBody;
+	AHandsModelForBody* HandsModelForBody;
 
 	UCharacterMovementComponent* MovementComponent;
 
@@ -88,10 +98,13 @@ class FPS_API AFpsCharacter : public ACharacter
 				Aim
 	***************************/
 	UPROPERTY(Replicated)
-	float AimPitch;
+	float BodyMeshAimPitch;
 
 	UPROPERTY(Replicated)
-	float AimYaw;
+	float BodyMeshAimYaw;
+
+	// CollisionParams for LineTrace
+	FCollisionQueryParams LineTraceCollisionQueryParams;
 
 	/**************************
 		   Weapon Switch
@@ -104,21 +117,24 @@ class FPS_API AFpsCharacter : public ACharacter
 
 	UPROPERTY(Replicated)
 	TArray<AHands*> Inventory;
+
+	UPROPERTY(Replicated)
+	AGunShop* GunShop;
 	 
 	/**************************
 				etc
 	***************************/
-	// CollisionParams for LineTrace
-	FCollisionQueryParams LineTraceCollisionQueryParams;
 
 	UPROPERTY(Replicated)
 	AInteractiveActor* InteractiveTarget;
 
 	UPROPERTY(Replicated)
-	AGunShop* GunShop;
-
-	UPROPERTY(Replicated)
 	bool Plantable = false;
+
+	/**************************
+		   Event Observer
+	***************************/
+	TArray<IFpsCharacterEvent*> EventObservers;
 
 public:
 	// Sets default values for this character's properties
@@ -131,6 +147,8 @@ private:
 	void InitializeCollisionComponent();
 
 	void InitializeMovementComponent();
+
+	void InitializeRecoilComponent();
 
 	void InitializeCamera();
 
@@ -158,7 +176,7 @@ public:
 	UFUNCTION()
 	void UpdateCrosshair();
 
-	void UpdateAim(float DeltaTime);
+	void UpdateBodyMeshAimOffset(float DeltaTime);
 
 	void UpdateActorDirection(float DeltaTime);
 
@@ -200,8 +218,12 @@ public:
 	void GunShopPressed();
 
 	/**************************
-			  OnEvent
+			  Event
 	***************************/
+	void AddObserver(IFpsCharacterEvent* EventObserver);
+
+	void RemoveObserver(IFpsCharacterEvent* EventObserver);
+
 	void OnPossessed();
 
 	void OnPlayerFull();
@@ -218,10 +240,7 @@ public:
 				Rpc
 	***************************/
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerRpcSetCameraRotation(FQuat CameraRotation);
-
-	UFUNCTION(Client, Reliable)
-	void ClientRpcUpdateCameraRotationToServer();
+	void ServerRpcSetCameraRotation(FRotator CameraRotation);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerRpcPickUp(APickupableActor* PickupableActor);
@@ -274,7 +293,7 @@ public:
 	void Equip(AHands* HandsInstance);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AHands* UnEquip();
+	AHands* Unequip();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void DropWeapon();
