@@ -3,9 +3,9 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class FPSServerTarget : TargetRules
+public class FpsServerTarget : TargetRules
 {
-	public FPSServerTarget(TargetInfo Target) : base(Target)
+	public FpsServerTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
 		DefaultBuildSettings = BuildSettingsVersion.V2;

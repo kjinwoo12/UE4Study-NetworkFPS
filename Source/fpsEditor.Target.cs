@@ -3,9 +3,9 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class FPSEditorTarget : TargetRules
+public class FpsEditorTarget : TargetRules
 {
-	public FPSEditorTarget( TargetInfo Target) : base(Target)
+	public FpsEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
