@@ -9,6 +9,6 @@ public class FpsEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "FPS" } );
+		ExtraModuleNames.AddRange( new string[] { "Fps" } );
 	}
 }

@@ -1,8 +1,19 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{E3AC3032-4EF1-BA9D-5015-C7A34F0F6F6B}",
+	"EngineAssociation": "{BE0A74B0-4802-20D1-FA68-AB8164801F61}",
 	"Category": "",
 	"Description": "",
+	"Modules": [
+		{
+			"Name": "Fps",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"UMG"
+			]
+		}
+	],
 	"Plugins": [
 		{
 			"Name": "StaticMeshEditorExtension",
@@ -12,5 +23,9 @@
 			"Name": "Volumetrics",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"WindowsNoEditor",
+		"WindowsNoEditorWin32"
 	]
 }

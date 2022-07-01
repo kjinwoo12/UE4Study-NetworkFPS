@@ -9,6 +9,6 @@ public class FpsTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "FPS" } );
+		ExtraModuleNames.AddRange( new string[] { "Fps" } );
 	}
 }
