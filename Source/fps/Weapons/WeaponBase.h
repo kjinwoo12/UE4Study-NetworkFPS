@@ -23,52 +23,52 @@ protected:
 			 Properties
 	***************************/
 	// Delay of Action for next action
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float ActionDelay;
 
 	// Delay of Subaction for next action
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float SubactionDelay;
 	
 	// If it's true, action will be run until StopAction is called.
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	bool ActionLoopEnable;
 
 	// If it's true, subaction will be run until StopSubaction is called.
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	bool SubactionLoopEnable;
 
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float ReloadDelay;
 
 	// Ammo count you can hold once at one magazine
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	int MagazineSize;
 
 	// Left ammo you can use before reload
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "properties")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Properties")
 	int CurrentAmmo;
 
 	// Ammo count for reload
-	UPROPERTY(Replicated, EditDefaultsOnly, Category = "properties")
+	UPROPERTY(Replicated, EditDefaultsOnly, Category = "Properties")
 	int SubAmmo;
 
 	// If it's true, you don't consume your ammo.
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	bool IsAmmoInfinite;
 
 	// 1.f ~ 3.f
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float Accuracy;
 
 	// higher is more stable.
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float MovementStability;
 
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float Damage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float RecoilRecoveryTime;
 
 	float CurrentRecoilRecoveryTime;

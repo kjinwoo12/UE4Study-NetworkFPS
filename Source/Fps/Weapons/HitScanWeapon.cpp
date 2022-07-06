@@ -30,46 +30,20 @@ void AHitScanWeapon::OnAction()
 	UE_LOG(LogTemp, Log, TEXT("HitScanWeapon OnAction"));
 	if (CurrentAmmo <= 0) return;
 
-	FHitResult HitResult;
-	if (LineTrace(HitResult))
-	{
-		FPointDamageEvent DamangeEvent;
-		DamangeEvent.HitInfo = HitResult;
-
-		AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
-		if (!IsValid(Character))
-		{
-			UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::OnAction / Owner Character is invalid"));
-			return;
-		}
-		APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-		if (!IsValid(PlayerController))
-		{
-			UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::OnAction / PlayerController is invalid"));
-			return;
-		}
-		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
-	}
-}
-
-bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
-{
 	AFpsCharacter* Character = Cast<AFpsCharacter>(GetOwner());
 	if (!IsValid(Character))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::LineTrace / Owner Character is invalid"));
-		return false;
+		return;
 	}
 	APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::LineTrace / PlayerController is invalid"));
-		return false;
+		return;
 	}
 
 	// Get Player view point
-	FVector PlayerViewPointLocation;
-	FRotator PlayerViewPointRotation;
 	PlayerController->GetPlayerViewPoint(
 		PlayerViewPointLocation,
 		PlayerViewPointRotation
@@ -83,6 +57,17 @@ bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
 	PlayerViewPointRotation.Yaw = FMath::RandRange(PlayerViewPointRotation.Yaw - RecoilOffset, PlayerViewPointRotation.Yaw + RecoilOffset);
 	PlayerViewPointRotation.Roll += CurrentBulletRecoil.X;
 
+	FHitResult HitResult;
+	if (LineTrace(HitResult))
+	{
+		FPointDamageEvent DamangeEvent;
+		DamangeEvent.HitInfo = HitResult;
+		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
+	}
+}
+
+bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
+{
 	// Get end point
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
 

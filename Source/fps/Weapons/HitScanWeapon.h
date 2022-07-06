@@ -19,14 +19,24 @@ protected:
 			 Properties
 	***************************/
 	// Reach of weapon
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float Reach;
+
+	/**************************
+			   Decal
+	***************************/
+	//UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	//Decal Material
 
 	/**************************
 				etc
 	***************************/
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
+
+	FVector PlayerViewPointLocation;
+
+	FRotator PlayerViewPointRotation;
 
 public:
 	// Sets default values for this actor's properties
