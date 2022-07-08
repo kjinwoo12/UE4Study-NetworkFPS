@@ -25,8 +25,8 @@ protected:
 	/**************************
 			   Decal
 	***************************/
-	//UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	//Decal Material
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UMaterial* DecalMaterial;
 
 	/**************************
 				etc
@@ -52,9 +52,25 @@ public:
 
 	virtual void OnAction() override;
 
+	virtual void OnHitResult(FHitResult HitResult, APlayerController* PlayerController);
+
+	/**************************
+			  Common
+	***************************/
+	void GiveDamage(FHitResult HitResult, APlayerController* PlayerController);
+
+	class ADecalActor* SpawnDecalActor(FVector Location, FRotator Rotator);
+
 protected:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);
+	
+	void UpdatePlayerViewPoint(APlayerController* PlayerController);
 
+	void UpdateRecoilOffset();
+
+	/**************************
+		  Getter & Setter
+	***************************/
 	float GetRecoilOffset();
 };

@@ -6,6 +6,8 @@
 #include "../Actors/FpsCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Engine/DecalActor.h"
+#include "Components/DecalComponent.h"
 
 AHitScanWeapon::AHitScanWeapon() : AWeaponBase()
 {
@@ -43,27 +45,59 @@ void AHitScanWeapon::OnAction()
 		return;
 	}
 
-	// Get Player view point
+	
+	UpdatePlayerViewPoint(PlayerController);
+	UpdateRecoilOffset();
+
+	FHitResult HitResult;
+	if (LineTrace(HitResult))
+	{
+		OnHitResult(HitResult, PlayerController);
+	}
+}
+
+void AHitScanWeapon::OnHitResult(FHitResult HitResult, APlayerController* PlayerController)
+{
+	GiveDamage(HitResult, PlayerController);
+	SpawnDecalActor(HitResult.Location, HitResult.ImpactNormal.Rotation());
+}
+
+void AHitScanWeapon::GiveDamage(FHitResult HitResult, APlayerController* PlayerController)
+{
+	FPointDamageEvent DamangeEvent;
+	DamangeEvent.HitInfo = HitResult;
+	AActor* HitActor = HitResult.GetActor();
+	HitActor->TakeDamage(Damage, DamangeEvent, PlayerController, this);
+}
+
+ADecalActor* AHitScanWeapon::SpawnDecalActor(FVector Location, FRotator Rotator)
+{
+	if (DecalMaterial == nullptr) return nullptr;
+	Rotator.Pitch += 90;
+	ADecalActor* DecalActor = GetWorld()->SpawnActor<ADecalActor>(Location, Rotator);
+	if (!IsValid(DecalActor)) return nullptr;
+	DecalActor->SetDecalMaterial(DecalMaterial);
+	DecalActor->SetLifeSpan(5.f);
+	DecalActor->GetDecal()->DecalSize = FVector(8.f, 8.f, 8.f);
+	return DecalActor;
+}
+
+void AHitScanWeapon::UpdatePlayerViewPoint(APlayerController* PlayerController)
+{
 	PlayerController->GetPlayerViewPoint(
 		PlayerViewPointLocation,
 		PlayerViewPointRotation
 	);
+}
 
-	//Recoil
+void AHitScanWeapon::UpdateRecoilOffset()
+{
 	float RecoilOffset = GetRecoilOffset(); // Accuracy + MovementStability;
 	PlayerViewPointRotation.Pitch += CurrentBulletRecoil.Y;
 	PlayerViewPointRotation.Pitch = FMath::RandRange(PlayerViewPointRotation.Pitch, PlayerViewPointRotation.Pitch + RecoilOffset);
 	PlayerViewPointRotation.Yaw += CurrentBulletRecoil.Z;
 	PlayerViewPointRotation.Yaw = FMath::RandRange(PlayerViewPointRotation.Yaw - RecoilOffset, PlayerViewPointRotation.Yaw + RecoilOffset);
 	PlayerViewPointRotation.Roll += CurrentBulletRecoil.X;
-
-	FHitResult HitResult;
-	if (LineTrace(HitResult))
-	{
-		FPointDamageEvent DamangeEvent;
-		DamangeEvent.HitInfo = HitResult;
-		HitResult.GetActor()->TakeDamage(Damage, DamangeEvent, PlayerController, this);
-	}
 }
 
 bool AHitScanWeapon::LineTrace(FHitResult& HitResult)
