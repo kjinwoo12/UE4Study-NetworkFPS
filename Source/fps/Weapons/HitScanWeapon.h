@@ -19,14 +19,24 @@ protected:
 			 Properties
 	***************************/
 	// Reach of weapon
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	float Reach;
+
+	/**************************
+			   Decal
+	***************************/
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UMaterial* DecalMaterial;
 
 	/**************************
 				etc
 	***************************/
 	// CollisionParams for LineTrace
 	FCollisionQueryParams LineTraceCollisionQueryParams;
+
+	FVector PlayerViewPointLocation;
+
+	FRotator PlayerViewPointRotation;
 
 public:
 	// Sets default values for this actor's properties
@@ -42,9 +52,25 @@ public:
 
 	virtual void OnAction() override;
 
+	virtual void OnHitResult(FHitResult HitResult, APlayerController* PlayerController);
+
+	/**************************
+			  Common
+	***************************/
+	void GiveDamage(FHitResult HitResult, APlayerController* PlayerController);
+
+	class ADecalActor* SpawnDecalActor(FVector Location, FRotator Rotator);
+
 protected:
 	// For hit character
 	bool LineTrace(FHitResult& HitResult);
+	
+	void UpdatePlayerViewPoint(APlayerController* PlayerController);
 
+	void UpdateRecoilOffset();
+
+	/**************************
+		  Getter & Setter
+	***************************/
 	float GetRecoilOffset();
 };

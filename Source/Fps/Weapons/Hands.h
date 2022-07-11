@@ -31,7 +31,7 @@ protected:
 	/**************************
 			Properties
 	***************************/
-	UPROPERTY(EditDefaultsOnly, Category = "properties")
+	UPROPERTY(EditDefaultsOnly, Category = "Properties")
 	int HandsIndex;
 
 	/**************************
