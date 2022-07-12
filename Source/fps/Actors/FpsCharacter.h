@@ -61,6 +61,10 @@ private:
 
 	UCharacterMovementComponent* MovementComponent;
 
+	USceneComponent* CameraYawJointComponent;
+
+	USceneComponent* CameraPitchJointComponent;
+
 	/**************************
 			SubClass
 	***************************/
@@ -148,6 +152,8 @@ private:
 
 	void InitializeMovementComponent();
 
+	void InitializeCameraJointComponent();
+
 	void InitializeRecoilComponent();
 
 	void InitializeCamera();
@@ -177,8 +183,6 @@ public:
 	void UpdateCrosshair();
 
 	void UpdateBodyMeshAimOffset(float DeltaTime);
-
-	void UpdateActorDirection(float DeltaTime);
 
 	void UpdateCameraRotation();
 
