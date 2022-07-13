@@ -198,7 +198,6 @@ void AFpsCharacter::UpdateBodyMeshAimOffset(float DeltaTime)
 	if (!GetVelocity().IsZero())
 	{
 		SetActorRotation(FRotator(0.f, ControlRotation.Yaw, 0.f));
-		BodyMeshAimPitch = 0.f;
 		BodyMeshAimYaw = 0.f;
 		return;
 	}
@@ -211,8 +210,8 @@ void AFpsCharacter::UpdateBodyMeshAimOffset(float DeltaTime)
 		DeltaTime,
 		0
 	);
-	BodyMeshAimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -30, 30);
-	BodyMeshAimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -30, 30);
+	BodyMeshAimPitch = UKismetMathLibrary::ClampAngle(AimRotator.Pitch, -90, 90);
+	BodyMeshAimYaw = UKismetMathLibrary::ClampAngle(AimRotator.Yaw, -90, 90);
 
 	if (AimRotator.Yaw < -90 || 90 < AimRotator.Yaw)
 	{
