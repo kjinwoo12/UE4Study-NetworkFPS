@@ -586,7 +586,7 @@ void AFpsCharacter::ServerRpcSwapHandsTo_Implementation(int Index)
 	SwapHandsTo(Index);
 }
 
-void AFpsCharacter::OnRep_InitializePrimaryWeapon()
+void AFpsCharacter::OnRep_InitializeHands()
 {
 	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
 	if (!IsValid(PrimaryWeapon)) return;

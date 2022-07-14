@@ -42,21 +42,19 @@ class FPS_API AFpsCharacter : public ACharacter
 	/**************************
 			Components
 	***************************/
-public:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	URecoilComponent* RecoilComponent;
 
-private:
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* BodyMeshComponent;
 
-	UPROPERTY(EditDefaultsOnly, Replicated, ReplicatedUsing = OnRep_InitializePrimaryWeapon)
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_InitializeHands)
 	AHands* Hands;
 
-	UPROPERTY(EditDefaultsOnly, Replicated)
+	UPROPERTY(Replicated)
 	AHandsModelForBody* HandsModelForBody;
 
 	UCharacterMovementComponent* MovementComponent;
@@ -271,7 +269,7 @@ public:
 				OnRep
 	***************************/
 	UFUNCTION()
-	void OnRep_InitializePrimaryWeapon();
+	void OnRep_InitializeHands();
 
 	/**************************
 	   For character's combat
