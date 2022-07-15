@@ -479,8 +479,8 @@ void AFpsCharacter::OnPlayerFull()
 	AWeaponBase* PrimaryWeapon = Cast<AWeaponBase>(Hands);
 	if (IsValid(PrimaryWeapon))
 	{
-		PrimaryWeapon->StopAction();
-		PrimaryWeapon->StopSubaction();
+		PrimaryWeapon->ServerRpcStopAction();
+		PrimaryWeapon->ServerRpcStopSubaction();
 	}
 
 	SetCharacterStatus(EFpsCharacterStatus::Freeze);

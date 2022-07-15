@@ -221,11 +221,20 @@ public:
 	/**************************
 			   Action 
 	***************************/
-	virtual void StartAction();
-	virtual void StopAction();
-	virtual void StartSubaction();
-	virtual void StopSubaction();
-	virtual void StartReload();
+	UFUNCTION(Server, Reliable)
+	void ServerRpcStartAction();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRpcStopAction();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRpcStartSubaction();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRpcStopSubaction();
+	
+	UFUNCTION(Server, Reliable)
+	void ServerRpcStartReload();
 
 	virtual void OnAction();
 	

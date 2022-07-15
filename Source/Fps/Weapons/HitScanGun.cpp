@@ -9,6 +9,7 @@ AHitScanGun::AHitScanGun() : AHitScanWeapon()
 	//Components
 	Muzzle = CreateDefaultSubobject<USceneComponent>(TEXT("Muzzle"));
 	Muzzle->SetupAttachment(HandsMesh);
+	Muzzle->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
 	MuzzleFlashLight = CreateDefaultSubobject<UPointLightComponent>(TEXT("MuzzleFlashLight"));
 	MuzzleFlashLight->SetIntensity(20000.f);
 	MuzzleFlashLight->SetVisibility(false);
@@ -35,8 +36,7 @@ void AHitScanGun::ClientRPCOnActionFx_Implementation()
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	MuzzleFlashLight->SetVisibility(true);
 	MuzzleFlashTextureEffect->SetVisibility(true);
-	FRotator Rotator = FRotator(FMath::RandRange(-90.f, 90.f), 0, -90);
-	MuzzleFlashTextureEffect->SetRelativeRotation(Rotator);
+	MuzzleFlashTextureEffect->SetRelativeRotation(FRotator(0, FMath::RandRange(-90.f, 90.f), 0));
 	const float WaitTime = 0.05f;
 	TimerManager.ClearTimer(MuzzleEffectTimer);
 	TimerManager.SetTimer(

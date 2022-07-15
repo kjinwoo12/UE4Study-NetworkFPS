@@ -209,33 +209,33 @@ void AWeaponBase::OnUnequipHands(AHands* Hands)
 {
 	Super::OnUnequipHands(Hands);
 	SetBodyAnimInstance(NULL);
-	StopAction();
-	StopSubaction();
+	ServerRpcStopAction();
+	ServerRpcStopSubaction();
 }
 
 void AWeaponBase::OnActionPressed()
 {
-	StartAction();
+	ServerRpcStartAction();
 }
 
 void AWeaponBase::OnActionReleased()
 {
-	StopAction();
+	ServerRpcStopAction();
 }
 
 void AWeaponBase::OnSubactionPressed()
 {
-	StartSubaction();
+	ServerRpcStartSubaction();
 }
 
 void AWeaponBase::OnSubactionReleased()
 {
-	StopSubaction();
+	ServerRpcStopSubaction();
 }
 
 void AWeaponBase::OnReloadPressed()
 {
-	StartReload();
+	ServerRpcStartReload();
 }
 
 void AWeaponBase::OnCameraRecoilControlProgress(FVector CameraRecoil)
@@ -279,13 +279,13 @@ void AWeaponBase::OnCameraRecoilStabilityProgress(FVector CameraRecoil)
 	}
 }
 
-void AWeaponBase::StartAction()
+void AWeaponBase::ServerRpcStartAction_Implementation()
 {
 	//Retry StartAction() after delay.
 	float Delay = GetDelay();
 	if (0.f < Delay)
 	{
-		FunctionAfterDelayForExtraInput = &AWeaponBase::StartAction;
+		FunctionAfterDelayForExtraInput = &AWeaponBase::ServerRpcStartAction;
 		GetWorldTimerManager().SetTimer(TimerHandleForExtraInput, this, FunctionAfterDelayForExtraInput, Delay, false);
 		return;
 	}
@@ -298,9 +298,9 @@ void AWeaponBase::StartAction()
 	RecoilControlTimeline.Play();
 }
 
-void AWeaponBase::StopAction()
+void AWeaponBase::ServerRpcStopAction_Implementation()
 {
-	if (FunctionAfterDelayForExtraInput == &AWeaponBase::StartAction)
+	if (FunctionAfterDelayForExtraInput == &AWeaponBase::ServerRpcStartAction)
 	{
 		FunctionAfterDelayForExtraInput = NULL;
 		GetWorldTimerManager().ClearTimer(TimerHandleForExtraInput);
@@ -327,7 +327,7 @@ void AWeaponBase::StopAction()
 	IsOnAutomaticRecoil = false;
 }
 
-void AWeaponBase::StartSubaction()
+void AWeaponBase::ServerRpcStartSubaction_Implementation()
 {
 	if (SubAmmo <= 0) return;
 
@@ -335,7 +335,7 @@ void AWeaponBase::StartSubaction()
 	float Delay = GetDelay();
 	if (0.f < Delay)
 	{
-		FunctionAfterDelayForExtraInput = &AWeaponBase::StartSubaction;
+		FunctionAfterDelayForExtraInput = &AWeaponBase::ServerRpcStartSubaction;
 		GetWorldTimerManager().SetTimer(TimerHandleForExtraInput, this, FunctionAfterDelayForExtraInput, Delay, false);
 		return;
 	}
@@ -346,9 +346,9 @@ void AWeaponBase::StartSubaction()
 	GetWorldTimerManager().SetTimer(TimerHandle, this, FunctionAfterDelay, SubactionDelay, SubactionLoopEnable, 0.f);
 }
 
-void AWeaponBase::StopSubaction()
+void AWeaponBase::ServerRpcStopSubaction_Implementation()
 {
-	if (FunctionAfterDelayForExtraInput == &AWeaponBase::StartSubaction)
+	if (FunctionAfterDelayForExtraInput == &AWeaponBase::ServerRpcStartSubaction)
 	{
 		FunctionAfterDelayForExtraInput = NULL;
 		GetWorldTimerManager().ClearTimer(TimerHandleForExtraInput);
@@ -368,7 +368,7 @@ void AWeaponBase::StopSubaction()
 	), Remaining, false);
 }
 
-void AWeaponBase::StartReload()
+void AWeaponBase::ServerRpcStartReload_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("StartReload()"));
 
@@ -407,6 +407,7 @@ void AWeaponBase::OnAction()
 
 void AWeaponBase::MulticastRPCOnActionFx_Implementation()
 {
+	UE_LOG(LogTemp, Log, TEXT("AWeaponBase::MulticastRPCOnActionFx()"));
 	// Play animations
 	UAnimInstance* WeaponAnimInstance = HandsMesh->GetAnimInstance();
 	if (IsValid(WeaponAnimInstance))
