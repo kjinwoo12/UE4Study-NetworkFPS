@@ -59,7 +59,7 @@ void AHitScanWeapon::OnAction()
 void AHitScanWeapon::OnHitResult(FHitResult HitResult, APlayerController* PlayerController)
 {
 	GiveDamage(HitResult, PlayerController);
-	SpawnDecalActor(HitResult.Location, HitResult.ImpactNormal.Rotation());
+	MulticastRpcSpawnDecalActor(HitResult.Location, HitResult.ImpactNormal.Rotation());
 }
 
 void AHitScanWeapon::GiveDamage(FHitResult HitResult, APlayerController* PlayerController)
@@ -70,16 +70,19 @@ void AHitScanWeapon::GiveDamage(FHitResult HitResult, APlayerController* PlayerC
 	HitActor->TakeDamage(Damage, DamangeEvent, PlayerController, this);
 }
 
-ADecalActor* AHitScanWeapon::SpawnDecalActor(FVector Location, FRotator Rotator)
+void AHitScanWeapon::MulticastRpcSpawnDecalActor_Implementation(FVector Location, FRotator Rotator)
 {
-	if (DecalMaterial == nullptr) return nullptr;
+	if (DecalMaterial == nullptr || GetNetMode() != ENetMode::NM_Client) return;
 	Rotator.Pitch += 90;
 	ADecalActor* DecalActor = GetWorld()->SpawnActor<ADecalActor>(Location, Rotator);
-	if (!IsValid(DecalActor)) return nullptr;
+	if (!IsValid(DecalActor)) 
+	{
+		UE_LOG(LogTemp, Log, TEXT("AHitScanWeapon::SpawnDecalActor DecalActor is invalid"));
+		return;
+	}
 	DecalActor->SetDecalMaterial(DecalMaterial);
 	DecalActor->SetLifeSpan(5.f);
 	DecalActor->GetDecal()->DecalSize = FVector(8.f, 8.f, 8.f);
-	return DecalActor;
 }
 
 void AHitScanWeapon::UpdatePlayerViewPoint(APlayerController* PlayerController)

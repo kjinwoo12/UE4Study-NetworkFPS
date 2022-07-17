@@ -59,7 +59,8 @@ public:
 	***************************/
 	void GiveDamage(FHitResult HitResult, APlayerController* PlayerController);
 
-	class ADecalActor* SpawnDecalActor(FVector Location, FRotator Rotator);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRpcSpawnDecalActor(FVector Location, FRotator Rotator);
 
 protected:
 	// For hit character
